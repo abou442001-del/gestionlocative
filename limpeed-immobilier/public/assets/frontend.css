@@ -26,6 +26,15 @@
 	flex-shrink: 0;
 }
 
+.limpeed-brand-mark-custom {
+	display: block;
+	max-width: 220px;
+	max-height: 64px;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+}
+
 .limpeed-brand-text {
 	display: flex;
 	flex-direction: column;

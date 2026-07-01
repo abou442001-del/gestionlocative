@@ -74,6 +74,15 @@ body.limpeed-app {
 	flex-shrink: 0;
 }
 
+.limpeed-brand-mark-custom {
+	display: block;
+	max-width: 170px;
+	max-height: 42px;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+}
+
 .limpeed-brand-text {
 	display: flex;
 	flex-direction: column;
@@ -683,6 +692,11 @@ a.limpeed-app-calendar-month-retard:hover {
 	.limpeed-app-nav-label,
 	.limpeed-app-topbar-user span {
 		display: none;
+	}
+
+	.limpeed-brand-mark-custom {
+		max-width: 32px;
+		max-height: 32px;
 	}
 
 	.limpeed-app-nav-item {
