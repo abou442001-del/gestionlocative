@@ -16,8 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes du plugin.
-define( 'LIMPEED_VERSION', '1.0.0' );
-define( 'LIMPEED_DB_VERSION', '1.0.0' );
+define( 'LIMPEED_VERSION', '1.1.0' );
+define( 'LIMPEED_DB_VERSION', '1.1.0' );
 define( 'LIMPEED_PLUGIN_FILE', __FILE__ );
 define( 'LIMPEED_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LIMPEED_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -29,6 +29,7 @@ require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-roles.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-owners.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-properties.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-tenants.php';
+require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-payments.php';
 
 if ( is_admin() ) {
 	require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-admin.php';

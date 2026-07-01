@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-owners-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-properties-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-tenants-page.php';
+require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-payments-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-settings-page.php';
 
 class Limpeed_Admin {
@@ -74,6 +75,15 @@ class Limpeed_Admin {
 
 		add_submenu_page(
 			'limpeed-immobilier',
+			__( 'Paiements', 'limpeed-immobilier' ),
+			__( 'Paiements', 'limpeed-immobilier' ),
+			'manage_limpeed_payments',
+			'limpeed-payments',
+			array( $this, 'render_payments' )
+		);
+
+		add_submenu_page(
+			'limpeed-immobilier',
 			__( 'Réglages', 'limpeed-immobilier' ),
 			__( 'Réglages', 'limpeed-immobilier' ),
 			'manage_limpeed_agents',
@@ -121,6 +131,9 @@ class Limpeed_Admin {
 		$tenants_count    = Limpeed_Tenants::count( array( 'status' => 'actif' ) );
 		$vacant_count     = Limpeed_Properties::count( array( 'status' => 'vacant' ) );
 
+		$current_period  = Limpeed_Payments::get_current_period();
+		$period_summary  = Limpeed_Payments::get_period_summary( $current_period );
+
 		include LIMPEED_PLUGIN_DIR . 'admin/views/dashboard.php';
 	}
 
@@ -145,6 +158,14 @@ class Limpeed_Admin {
 	 */
 	public function render_tenants() {
 		$page = new Limpeed_Tenants_Page();
+		$page->render();
+	}
+
+	/**
+	 * Page Paiements.
+	 */
+	public function render_payments() {
+		$page = new Limpeed_Payments_Page();
 		$page->render();
 	}
 

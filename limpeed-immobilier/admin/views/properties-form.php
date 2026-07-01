@@ -81,6 +81,17 @@ $current_tenant  = $is_edit ? Limpeed_Properties::get_current_tenant( $property-
 				<?php else : ?>
 					<?php esc_html_e( 'Aucun locataire actuel', 'limpeed-immobilier' ); ?>
 				<?php endif; ?>
+				&nbsp;|&nbsp;
+				<?php
+				$payments_url = add_query_arg(
+					array(
+						'page'        => 'limpeed-payments',
+						'property_id' => $property->id,
+					),
+					admin_url( 'admin.php' )
+				);
+				?>
+				<a href="<?php echo esc_url( $payments_url ); ?>"><?php esc_html_e( 'Voir l\'historique des paiements', 'limpeed-immobilier' ); ?></a>
 			</p>
 		</div>
 	<?php endif; ?>

@@ -73,6 +73,25 @@
 	color: #50575e;
 }
 
+.limpeed-badge-paye {
+	background: #d4f4dd;
+	color: #1a7a3e;
+}
+
+.limpeed-badge-partiel {
+	background: #fff3cd;
+	color: #8a6500;
+}
+
+.limpeed-badge-en_retard {
+	background: #fbe1e1;
+	color: #a52424;
+}
+
+.limpeed-card-alert {
+	border-left: 4px solid #d63638;
+}
+
 #limpeed-agent-icon {
 	color: #2271b1;
 }

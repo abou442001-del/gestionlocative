@@ -120,8 +120,32 @@ class Limpeed_Activator {
 			KEY status (status)
 		) {$charset_collate};";
 
+		$payments_table = $wpdb->prefix . 'limpeed_payments';
+
+		$sql_payments = "CREATE TABLE {$payments_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			tenant_id BIGINT UNSIGNED NOT NULL,
+			property_id BIGINT UNSIGNED NOT NULL,
+			amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+			payment_date DATE NULL,
+			period VARCHAR(7) NOT NULL,
+			status VARCHAR(20) NOT NULL DEFAULT 'paye',
+			payment_method VARCHAR(50) NOT NULL DEFAULT 'especes',
+			commission_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+			created_by BIGINT UNSIGNED NULL,
+			updated_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NULL,
+			PRIMARY KEY  (id),
+			KEY tenant_id (tenant_id),
+			KEY property_id (property_id),
+			KEY period (period),
+			KEY status (status)
+		) {$charset_collate};";
+
 		dbDelta( $sql_owners );
 		dbDelta( $sql_properties );
 		dbDelta( $sql_tenants );
+		dbDelta( $sql_payments );
 	}
 }

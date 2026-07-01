@@ -60,6 +60,17 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 					);
 				}
 				?>
+				&nbsp;|&nbsp;
+				<?php
+				$payments_url = add_query_arg(
+					array(
+						'page'      => 'limpeed-payments',
+						'tenant_id' => $tenant->id,
+					),
+					admin_url( 'admin.php' )
+				);
+				?>
+				<a href="<?php echo esc_url( $payments_url ); ?>"><?php esc_html_e( 'Voir l\'historique des paiements', 'limpeed-immobilier' ); ?></a>
 			</p>
 		</div>
 	<?php endif; ?>
