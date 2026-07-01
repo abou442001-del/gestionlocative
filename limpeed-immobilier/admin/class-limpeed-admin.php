@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-owners-page.php';
+require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-buildings-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-properties-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-tenants-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-payments-page.php';
@@ -56,6 +57,15 @@ class Limpeed_Admin {
 			'manage_limpeed_owners',
 			'limpeed-owners',
 			array( $this, 'render_owners' )
+		);
+
+		add_submenu_page(
+			'limpeed-immobilier',
+			__( 'Édifices', 'limpeed-immobilier' ),
+			__( 'Édifices', 'limpeed-immobilier' ),
+			'manage_limpeed_properties',
+			'limpeed-buildings',
+			array( $this, 'render_buildings' )
 		);
 
 		add_submenu_page(
@@ -157,6 +167,7 @@ class Limpeed_Admin {
 		}
 
 		$owners_count     = Limpeed_Owners::count();
+		$buildings_count  = Limpeed_Buildings::count();
 		$properties_count = Limpeed_Properties::count();
 		$tenants_count    = Limpeed_Tenants::count( array( 'status' => 'actif' ) );
 		$vacant_count     = Limpeed_Properties::count( array( 'status' => 'vacant' ) );
@@ -172,6 +183,14 @@ class Limpeed_Admin {
 	 */
 	public function render_owners() {
 		$page = new Limpeed_Owners_Page();
+		$page->render();
+	}
+
+	/**
+	 * Page Édifices.
+	 */
+	public function render_buildings() {
+		$page = new Limpeed_Buildings_Page();
 		$page->render();
 	}
 

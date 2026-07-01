@@ -26,6 +26,7 @@ $tables = array(
 	$wpdb->prefix . 'limpeed_payments',
 	$wpdb->prefix . 'limpeed_tenants',
 	$wpdb->prefix . 'limpeed_properties',
+	$wpdb->prefix . 'limpeed_buildings',
 	$wpdb->prefix . 'limpeed_owners',
 );
 

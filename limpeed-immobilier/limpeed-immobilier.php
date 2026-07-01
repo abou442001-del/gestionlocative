@@ -3,7 +3,7 @@
  * Plugin Name: Limpeed Immobilier - Gestion Locative
  * Plugin URI: https://limpeed-immobilier.com
  * Description: Plugin de gestion locative pour Limpeed Immobilier : biens, propriétaires, locataires, paiements et bordereaux PDF.
- * Version: 1.3.0
+ * Version: 1.4.0
  * Author: Limpeed Immobilier
  * Text Domain: limpeed-immobilier
  * Domain Path: /languages
@@ -16,8 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes du plugin.
-define( 'LIMPEED_VERSION', '1.3.0' );
-define( 'LIMPEED_DB_VERSION', '1.3.0' );
+define( 'LIMPEED_VERSION', '1.4.0' );
+define( 'LIMPEED_DB_VERSION', '1.4.0' );
 define( 'LIMPEED_PLUGIN_FILE', __FILE__ );
 define( 'LIMPEED_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LIMPEED_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -27,6 +27,7 @@ define( 'LIMPEED_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-activator.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-roles.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-owners.php';
+require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-buildings.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-properties.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-tenants.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-payments.php';
@@ -61,6 +62,12 @@ register_deactivation_hook( __FILE__, 'limpeed_deactivate_plugin' );
 /**
  * Vérifie à chaque chargement si une migration de schéma est nécessaire.
  * Compare l'option limpeed_db_version à LIMPEED_DB_VERSION.
+ *
+ * Exécuté sur 'init' plutôt que 'plugins_loaded' : la migration peut créer des
+ * pages (wp_insert_post), ce qui nécessite $wp_rewrite, initialisé par WordPress
+ * seulement après que 'plugins_loaded' se soit déclenché. L'appeler trop tôt
+ * provoque une erreur fatale sur le tout premier chargement suivant une mise
+ * à jour du plugin.
  */
 function limpeed_check_db_version() {
 	$installed_version = get_option( 'limpeed_db_version', '0' );
@@ -68,7 +75,7 @@ function limpeed_check_db_version() {
 		Limpeed_Activator::migrate( $installed_version );
 	}
 }
-add_action( 'plugins_loaded', 'limpeed_check_db_version' );
+add_action( 'init', 'limpeed_check_db_version', 5 );
 
 /**
  * Initialise les pages d'administration.

@@ -38,19 +38,42 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-owners' ), admin_url( 'admi
 		</div>
 	<?php endif; ?>
 
-	<?php if ( $is_edit && current_user_can( 'manage_limpeed_statements' ) ) : ?>
+	<?php if ( $is_edit ) : ?>
 		<div class="limpeed-cross-nav">
 			<p>
 				<?php
-				$statements_url = add_query_arg(
+				$buildings_url = add_query_arg(
 					array(
-						'page'     => 'limpeed-statements',
+						'page'     => 'limpeed-buildings',
+						'owner_id' => $owner->id,
+					),
+					admin_url( 'admin.php' )
+				);
+				$add_building_url = add_query_arg(
+					array(
+						'page'     => 'limpeed-buildings',
+						'action'   => 'add',
 						'owner_id' => $owner->id,
 					),
 					admin_url( 'admin.php' )
 				);
 				?>
-				<a href="<?php echo esc_url( $statements_url ); ?>"><?php esc_html_e( 'Voir les bordereaux de ce propriétaire', 'limpeed-immobilier' ); ?></a>
+				<a href="<?php echo esc_url( $buildings_url ); ?>"><?php esc_html_e( 'Voir les édifices de ce propriétaire', 'limpeed-immobilier' ); ?></a>
+				&nbsp;|&nbsp;
+				<a href="<?php echo esc_url( $add_building_url ); ?>"><?php esc_html_e( 'Ajouter un édifice', 'limpeed-immobilier' ); ?></a>
+				<?php if ( current_user_can( 'manage_limpeed_statements' ) ) : ?>
+					&nbsp;|&nbsp;
+					<?php
+					$statements_url = add_query_arg(
+						array(
+							'page'     => 'limpeed-statements',
+							'owner_id' => $owner->id,
+						),
+						admin_url( 'admin.php' )
+					);
+					?>
+					<a href="<?php echo esc_url( $statements_url ); ?>"><?php esc_html_e( 'Voir les bordereaux de ce propriétaire', 'limpeed-immobilier' ); ?></a>
+				<?php endif; ?>
 			</p>
 		</div>
 	<?php endif; ?>

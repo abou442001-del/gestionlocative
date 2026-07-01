@@ -1,11 +1,12 @@
 <?php
 /**
- * Vue : formulaire d'ajout / modification d'un bien.
+ * Vue : formulaire d'ajout / modification d'un bien (sous-édifice).
  *
  * @var object|null $property
  * @var array       $errors
  * @var array|null  $posted
- * @var array       $owners
+ * @var array       $buildings
+ * @var int         $preselected_building
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -24,11 +25,11 @@ $field = function ( $name, $default = '' ) use ( $property, $posted, $is_edit ) 
 	return $default;
 };
 
-$list_url        = add_query_arg( array( 'page' => 'limpeed-properties' ), admin_url( 'admin.php' ) );
-$current_tenant  = $is_edit ? Limpeed_Properties::get_current_tenant( $property->id ) : null;
+$list_url       = add_query_arg( array( 'page' => 'limpeed-properties' ), admin_url( 'admin.php' ) );
+$current_tenant = $is_edit ? Limpeed_Properties::get_current_tenant( $property->id ) : null;
 ?>
 <div class="wrap limpeed-wrap">
-	<h1><?php echo $is_edit ? esc_html__( 'Modifier le bien', 'limpeed-immobilier' ) : esc_html__( 'Ajouter un bien', 'limpeed-immobilier' ); ?></h1>
+	<h1><?php echo $is_edit ? esc_html__( 'Modifier le bien (sous-édifice)', 'limpeed-immobilier' ) : esc_html__( 'Ajouter un bien (sous-édifice)', 'limpeed-immobilier' ); ?></h1>
 
 	<?php if ( ! empty( $errors ) ) : ?>
 		<div class="notice notice-error">
@@ -44,7 +45,26 @@ $current_tenant  = $is_edit ? Limpeed_Properties::get_current_tenant( $property-
 		<div class="limpeed-cross-nav">
 			<p>
 				<?php
-				$owner = Limpeed_Owners::get( $property->owner_id );
+				$building = Limpeed_Buildings::get( $property->building_id );
+				$owner    = Limpeed_Owners::get( $property->owner_id );
+				if ( $building ) {
+					$building_url = add_query_arg(
+						array(
+							'page'   => 'limpeed-buildings',
+							'action' => 'edit',
+							'id'     => $building->id,
+						),
+						admin_url( 'admin.php' )
+					);
+					printf(
+						/* translators: %s: lien vers l'édifice */
+						esc_html__( 'Édifice : %s', 'limpeed-immobilier' ),
+						'<a href="' . esc_url( $building_url ) . '">' . esc_html( $building->name ) . '</a>'
+					);
+				}
+				?>
+				&nbsp;|&nbsp;
+				<?php
 				if ( $owner ) {
 					$owner_url = add_query_arg(
 						array(
@@ -117,20 +137,40 @@ $current_tenant  = $is_edit ? Limpeed_Properties::get_current_tenant( $property-
 		<table class="form-table" role="presentation">
 			<tbody>
 				<tr>
-					<th scope="row"><label for="owner_id"><?php esc_html_e( 'Propriétaire', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
+					<th scope="row"><label for="building_id"><?php esc_html_e( 'Édifice', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
 					<td>
-						<select name="owner_id" id="owner_id" required>
-							<option value=""><?php esc_html_e( '— Choisir un propriétaire —', 'limpeed-immobilier' ); ?></option>
-							<?php foreach ( $owners as $owner_option ) : ?>
-								<option value="<?php echo esc_attr( $owner_option->id ); ?>" <?php selected( (int) $field( 'owner_id' ), $owner_option->id ); ?>>
-									<?php echo esc_html( $owner_option->full_name ); ?>
-								</option>
-							<?php endforeach; ?>
-						</select>
+						<?php if ( empty( $buildings ) ) : ?>
+							<p class="description">
+								<?php
+								$add_building_url = add_query_arg( array( 'page' => 'limpeed-buildings', 'action' => 'add' ), admin_url( 'admin.php' ) );
+								printf(
+									/* translators: %s: lien vers l'ajout d'un édifice */
+									esc_html__( 'Aucun édifice enregistré. %s avant d\'ajouter un sous-édifice.', 'limpeed-immobilier' ),
+									'<a href="' . esc_url( $add_building_url ) . '">' . esc_html__( 'Créez-en un', 'limpeed-immobilier' ) . '</a>'
+								);
+								?>
+							</p>
+						<?php else : ?>
+							<select name="building_id" id="building_id" required>
+								<option value=""><?php esc_html_e( '— Choisir un édifice —', 'limpeed-immobilier' ); ?></option>
+								<?php foreach ( $buildings as $building_option ) : ?>
+									<?php
+									$owner_option = Limpeed_Owners::get( $building_option->owner_id );
+									$label        = $owner_option
+										? sprintf( '%s — %s', $building_option->name, $owner_option->full_name )
+										: $building_option->name;
+									?>
+									<option value="<?php echo esc_attr( $building_option->id ); ?>" <?php selected( (int) $field( 'building_id', $preselected_building ), $building_option->id ); ?>>
+										<?php echo esc_html( $label ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+							<p class="description"><?php esc_html_e( 'Le propriétaire est déterminé automatiquement à partir de l\'édifice sélectionné.', 'limpeed-immobilier' ); ?></p>
+						<?php endif; ?>
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="address"><?php esc_html_e( 'Adresse', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
+					<th scope="row"><label for="address"><?php esc_html_e( 'Adresse / repère', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
 					<td><textarea name="address" id="address" class="large-text" rows="3" required><?php echo esc_textarea( $field( 'address' ) ); ?></textarea></td>
 				</tr>
 				<tr>

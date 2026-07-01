@@ -37,7 +37,8 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		return array(
-			'address'         => __( 'Adresse', 'limpeed-immobilier' ),
+			'address'         => __( 'Adresse (sous-édifice)', 'limpeed-immobilier' ),
+			'building'        => __( 'Édifice', 'limpeed-immobilier' ),
 			'owner'           => __( 'Propriétaire', 'limpeed-immobilier' ),
 			'type'            => __( 'Type', 'limpeed-immobilier' ),
 			'monthly_rent'    => __( 'Loyer', 'limpeed-immobilier' ),
@@ -116,6 +117,21 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
+			case 'building':
+				$building = Limpeed_Buildings::get( $item->building_id );
+				if ( ! $building ) {
+					return '&mdash;';
+				}
+				$url = add_query_arg(
+					array(
+						'page'   => 'limpeed-buildings',
+						'action' => 'edit',
+						'id'     => $building->id,
+					),
+					admin_url( 'admin.php' )
+				);
+				return sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html( $building->name ) );
+
 			case 'owner':
 				$owner = Limpeed_Owners::get( $item->owner_id );
 				if ( ! $owner ) {
@@ -175,9 +191,11 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 			return;
 		}
 
-		$owners          = Limpeed_Owners::get_all( array( 'per_page' => 9999 ) );
-		$selected_owner  = isset( $_REQUEST['owner_id'] ) ? (int) $_REQUEST['owner_id'] : 0;
-		$selected_status = isset( $_REQUEST['status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['status'] ) ) : '';
+		$owners           = Limpeed_Owners::get_all( array( 'per_page' => 9999 ) );
+		$buildings        = Limpeed_Buildings::get_all( array( 'per_page' => 9999 ) );
+		$selected_owner   = isset( $_REQUEST['owner_id'] ) ? (int) $_REQUEST['owner_id'] : 0;
+		$selected_building = isset( $_REQUEST['building_id'] ) ? (int) $_REQUEST['building_id'] : 0;
+		$selected_status  = isset( $_REQUEST['status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['status'] ) ) : '';
 		?>
 		<div class="alignleft actions">
 			<select name="owner_id">
@@ -185,6 +203,14 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 				<?php foreach ( $owners as $owner ) : ?>
 					<option value="<?php echo esc_attr( $owner->id ); ?>" <?php selected( $selected_owner, $owner->id ); ?>>
 						<?php echo esc_html( $owner->full_name ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			<select name="building_id">
+				<option value=""><?php esc_html_e( 'Tous les édifices', 'limpeed-immobilier' ); ?></option>
+				<?php foreach ( $buildings as $building ) : ?>
+					<option value="<?php echo esc_attr( $building->id ); ?>" <?php selected( $selected_building, $building->id ); ?>>
+						<?php echo esc_html( $building->name ); ?>
 					</option>
 				<?php endforeach; ?>
 			</select>
@@ -211,21 +237,23 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 
-		$search   = isset( $_REQUEST['s'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) : '';
-		$owner_id = isset( $_REQUEST['owner_id'] ) ? (int) $_REQUEST['owner_id'] : 0;
-		$status   = isset( $_REQUEST['status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['status'] ) ) : '';
-		$orderby  = isset( $_REQUEST['orderby'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) ) : 'address';
-		$order    = isset( $_REQUEST['order'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['order'] ) ) : 'ASC';
-		$paged    = isset( $_REQUEST['paged'] ) ? max( 1, (int) $_REQUEST['paged'] ) : 1;
+		$search      = isset( $_REQUEST['s'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) : '';
+		$owner_id    = isset( $_REQUEST['owner_id'] ) ? (int) $_REQUEST['owner_id'] : 0;
+		$building_id = isset( $_REQUEST['building_id'] ) ? (int) $_REQUEST['building_id'] : 0;
+		$status      = isset( $_REQUEST['status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['status'] ) ) : '';
+		$orderby     = isset( $_REQUEST['orderby'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) ) : 'address';
+		$order       = isset( $_REQUEST['order'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['order'] ) ) : 'ASC';
+		$paged       = isset( $_REQUEST['paged'] ) ? max( 1, (int) $_REQUEST['paged'] ) : 1;
 
 		$args = array(
-			'search'   => $search,
-			'owner_id' => $owner_id,
-			'status'   => $status,
-			'orderby'  => $orderby,
-			'order'    => $order,
-			'per_page' => $this->per_page,
-			'paged'    => $paged,
+			'search'      => $search,
+			'owner_id'    => $owner_id,
+			'building_id' => $building_id,
+			'status'      => $status,
+			'orderby'     => $orderby,
+			'order'       => $order,
+			'per_page'    => $this->per_page,
+			'paged'       => $paged,
 		);
 
 		$total_items = Limpeed_Properties::count( $args );

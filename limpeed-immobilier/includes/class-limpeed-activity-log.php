@@ -30,6 +30,7 @@ class Limpeed_Activity_Log {
 	public static function get_object_types() {
 		return array(
 			'owner'     => __( 'Propriétaire', 'limpeed-immobilier' ),
+			'building'  => __( 'Édifice', 'limpeed-immobilier' ),
 			'property'  => __( 'Bien', 'limpeed-immobilier' ),
 			'tenant'    => __( 'Locataire', 'limpeed-immobilier' ),
 			'payment'   => __( 'Paiement', 'limpeed-immobilier' ),

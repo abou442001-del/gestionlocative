@@ -184,6 +184,18 @@ class Limpeed_Owners {
 	public static function delete( $id ) {
 		global $wpdb;
 
+		$buildings_table = Limpeed_Buildings::table();
+		$linked_buildings = (int) $wpdb->get_var(
+			$wpdb->prepare( "SELECT COUNT(*) FROM {$buildings_table} WHERE owner_id = %d", $id )
+		);
+
+		if ( $linked_buildings > 0 ) {
+			return new WP_Error(
+				'limpeed_owner_has_buildings',
+				__( 'Impossible de supprimer ce propriétaire : des édifices lui sont encore rattachés.', 'limpeed-immobilier' )
+			);
+		}
+
 		$properties_table = Limpeed_Properties::table();
 		$linked            = (int) $wpdb->get_var(
 			$wpdb->prepare( "SELECT COUNT(*) FROM {$properties_table} WHERE owner_id = %d", $id )

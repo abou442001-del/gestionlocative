@@ -19,6 +19,7 @@ class Limpeed_Activator {
 		self::create_tables();
 		Limpeed_Roles::add_roles();
 		self::create_pages();
+		self::backfill_default_buildings();
 		update_option( 'limpeed_db_version', LIMPEED_DB_VERSION );
 		update_option( 'limpeed_version', LIMPEED_VERSION );
 	}
@@ -46,6 +47,11 @@ class Limpeed_Activator {
 		// Crée les pages frontend (connexion/inscription) si elles n'existent pas déjà.
 		// Idempotent : ne recrée jamais une page déjà présente.
 		self::create_pages();
+
+		// Rattache les biens existants créés avant l'introduction des édifices
+		// à un édifice par défaut, sans jamais perdre de données. Idempotent :
+		// ne traite que les biens dont building_id est encore vide.
+		self::backfill_default_buildings();
 
 		// Emplacement réservé pour d'éventuelles migrations de données spécifiques
 		// entre versions (ex: renommage de valeurs, backfill de colonnes).
@@ -106,6 +112,64 @@ class Limpeed_Activator {
 	}
 
 	/**
+	 * Crée un édifice par défaut pour chaque propriétaire ayant encore des biens
+	 * sans édifice assigné (biens créés avant l'introduction des édifices), et
+	 * y rattache ces biens. N'écrase et ne supprime jamais de données existantes.
+	 */
+	public static function backfill_default_buildings() {
+		global $wpdb;
+
+		$properties_table = $wpdb->prefix . 'limpeed_properties';
+		$buildings_table   = $wpdb->prefix . 'limpeed_buildings';
+		$owners_table      = $wpdb->prefix . 'limpeed_owners';
+
+		if ( ! $wpdb->get_var( "SHOW TABLES LIKE '{$buildings_table}'" ) ) {
+			return;
+		}
+
+		$owner_ids = $wpdb->get_col(
+			"SELECT DISTINCT owner_id FROM {$properties_table} WHERE building_id IS NULL OR building_id = 0"
+		);
+
+		foreach ( $owner_ids as $owner_id ) {
+			$owner_id = (int) $owner_id;
+			$owner    = $wpdb->get_row( $wpdb->prepare( "SELECT full_name FROM {$owners_table} WHERE id = %d", $owner_id ) );
+
+			// Un owner_id introuvable indique des données déjà incohérentes
+			// (ne devrait pas arriver via l'usage normal du plugin) : on laisse
+			// ces biens orphelins plutôt que de créer un édifice sans propriétaire réel.
+			if ( ! $owner ) {
+				continue;
+			}
+
+			$inserted = $wpdb->insert(
+				$buildings_table,
+				array(
+					'owner_id'   => $owner_id,
+					'name'       => sprintf( __( 'Bâtiment principal de %s', 'limpeed-immobilier' ), $owner->full_name ),
+					'address'    => '',
+					'created_at' => current_time( 'mysql' ),
+				),
+				array( '%d', '%s', '%s', '%s' )
+			);
+
+			if ( ! $inserted ) {
+				continue;
+			}
+
+			$building_id = (int) $wpdb->insert_id;
+
+			$wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$properties_table} SET building_id = %d WHERE owner_id = %d AND (building_id IS NULL OR building_id = 0)",
+					$building_id,
+					$owner_id
+				)
+			);
+		}
+	}
+
+	/**
 	 * Crée ou met à jour les tables du plugin via dbDelta().
 	 */
 	public static function create_tables() {
@@ -116,6 +180,7 @@ class Limpeed_Activator {
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$owners_table     = $wpdb->prefix . 'limpeed_owners';
+		$buildings_table  = $wpdb->prefix . 'limpeed_buildings';
 		$properties_table = $wpdb->prefix . 'limpeed_properties';
 		$tenants_table    = $wpdb->prefix . 'limpeed_tenants';
 
@@ -134,9 +199,24 @@ class Limpeed_Activator {
 			KEY full_name (full_name)
 		) {$charset_collate};";
 
+		$sql_buildings = "CREATE TABLE {$buildings_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			owner_id BIGINT UNSIGNED NOT NULL,
+			name VARCHAR(191) NOT NULL,
+			address TEXT NULL,
+			description TEXT NULL,
+			created_by BIGINT UNSIGNED NULL,
+			updated_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NULL,
+			PRIMARY KEY  (id),
+			KEY owner_id (owner_id)
+		) {$charset_collate};";
+
 		$sql_properties = "CREATE TABLE {$properties_table} (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			owner_id BIGINT UNSIGNED NOT NULL,
+			building_id BIGINT UNSIGNED NULL,
 			address TEXT NOT NULL,
 			type VARCHAR(50) NOT NULL DEFAULT 'appartement',
 			monthly_rent DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -149,6 +229,7 @@ class Limpeed_Activator {
 			updated_at DATETIME NULL,
 			PRIMARY KEY  (id),
 			KEY owner_id (owner_id),
+			KEY building_id (building_id),
 			KEY status (status)
 		) {$charset_collate};";
 
@@ -229,6 +310,7 @@ class Limpeed_Activator {
 		) {$charset_collate};";
 
 		dbDelta( $sql_owners );
+		dbDelta( $sql_buildings );
 		dbDelta( $sql_properties );
 		dbDelta( $sql_tenants );
 		dbDelta( $sql_payments );

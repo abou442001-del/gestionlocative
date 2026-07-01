@@ -71,13 +71,14 @@ class Limpeed_Properties {
 		$table = self::table();
 
 		$defaults = array(
-			'search'   => '',
-			'owner_id' => 0,
-			'status'   => '',
-			'orderby'  => 'address',
-			'order'    => 'ASC',
-			'per_page' => 20,
-			'paged'    => 1,
+			'search'      => '',
+			'owner_id'    => 0,
+			'building_id' => 0,
+			'status'      => '',
+			'orderby'     => 'address',
+			'order'       => 'ASC',
+			'per_page'    => 20,
+			'paged'       => 1,
 		);
 		$args = wp_parse_args( $args, $defaults );
 
@@ -97,6 +98,11 @@ class Limpeed_Properties {
 		if ( ! empty( $args['owner_id'] ) ) {
 			$where   .= ' AND owner_id = %d';
 			$params[] = (int) $args['owner_id'];
+		}
+
+		if ( ! empty( $args['building_id'] ) ) {
+			$where   .= ' AND building_id = %d';
+			$params[] = (int) $args['building_id'];
 		}
 
 		if ( ! empty( $args['status'] ) ) {
@@ -137,6 +143,11 @@ class Limpeed_Properties {
 		if ( ! empty( $args['owner_id'] ) ) {
 			$where   .= ' AND owner_id = %d';
 			$params[] = (int) $args['owner_id'];
+		}
+
+		if ( ! empty( $args['building_id'] ) ) {
+			$where   .= ' AND building_id = %d';
+			$params[] = (int) $args['building_id'];
 		}
 
 		if ( ! empty( $args['status'] ) ) {
@@ -180,11 +191,17 @@ class Limpeed_Properties {
 		global $wpdb;
 		$table = self::table();
 
+		$building = Limpeed_Buildings::get( (int) ( $data['building_id'] ?? 0 ) );
+		if ( ! $building ) {
+			return false;
+		}
+
 		$types    = array_keys( self::get_types() );
 		$statuses = array_keys( self::get_statuses() );
 
 		$record = array(
-			'owner_id'       => (int) $data['owner_id'],
+			'owner_id'       => (int) $building->owner_id,
+			'building_id'    => (int) $building->id,
 			'address'        => sanitize_textarea_field( $data['address'] ),
 			'type'           => in_array( $data['type'] ?? '', $types, true ) ? $data['type'] : 'appartement',
 			'monthly_rent'   => (float) ( $data['monthly_rent'] ?? 0 ),
@@ -195,7 +212,7 @@ class Limpeed_Properties {
 			'created_at'     => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%s', '%s', '%f', '%f', '%f', '%s', '%d', '%s' );
+		$formats = array( '%d', '%d', '%s', '%s', '%f', '%f', '%f', '%s', '%d', '%s' );
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
@@ -219,11 +236,17 @@ class Limpeed_Properties {
 		global $wpdb;
 		$table = self::table();
 
+		$building = Limpeed_Buildings::get( (int) ( $data['building_id'] ?? 0 ) );
+		if ( ! $building ) {
+			return false;
+		}
+
 		$types    = array_keys( self::get_types() );
 		$statuses = array_keys( self::get_statuses() );
 
 		$record = array(
-			'owner_id'       => (int) $data['owner_id'],
+			'owner_id'       => (int) $building->owner_id,
+			'building_id'    => (int) $building->id,
 			'address'        => sanitize_textarea_field( $data['address'] ),
 			'type'           => in_array( $data['type'] ?? '', $types, true ) ? $data['type'] : 'appartement',
 			'monthly_rent'   => (float) ( $data['monthly_rent'] ?? 0 ),
@@ -234,7 +257,7 @@ class Limpeed_Properties {
 			'updated_at'     => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%s', '%s', '%f', '%f', '%f', '%s', '%d', '%s' );
+		$formats = array( '%d', '%d', '%s', '%s', '%f', '%f', '%f', '%s', '%d', '%s' );
 
 		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
 

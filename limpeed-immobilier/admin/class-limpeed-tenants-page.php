@@ -168,6 +168,8 @@ class Limpeed_Tenants_Page {
 
 			$errors     = self::$errors;
 			$posted     = self::$posted;
+			$owners     = Limpeed_Owners::get_all( array( 'per_page' => 9999 ) );
+			$buildings  = Limpeed_Buildings::get_all( array( 'per_page' => 9999 ) );
 			$properties = Limpeed_Properties::get_all( array( 'per_page' => 9999 ) );
 
 			include LIMPEED_PLUGIN_DIR . 'admin/views/tenants-form.php';

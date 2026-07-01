@@ -58,7 +58,7 @@ class Limpeed_Properties_Page {
 			check_admin_referer( 'limpeed_save_property', 'limpeed_property_nonce' );
 
 			$data = array(
-				'owner_id'       => isset( $_POST['owner_id'] ) ? (int) $_POST['owner_id'] : 0,
+				'building_id'    => isset( $_POST['building_id'] ) ? (int) $_POST['building_id'] : 0,
 				'address'        => isset( $_POST['address'] ) ? wp_unslash( $_POST['address'] ) : '',
 				'type'           => isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '',
 				'monthly_rent'   => isset( $_POST['monthly_rent'] ) ? wp_unslash( $_POST['monthly_rent'] ) : '',
@@ -96,8 +96,8 @@ class Limpeed_Properties_Page {
 	private static function validate( $data ) {
 		$errors = array();
 
-		if ( empty( $data['owner_id'] ) || ! Limpeed_Owners::get( $data['owner_id'] ) ) {
-			$errors[] = __( 'Veuillez sélectionner un propriétaire valide.', 'limpeed-immobilier' );
+		if ( empty( $data['building_id'] ) || ! Limpeed_Buildings::get( $data['building_id'] ) ) {
+			$errors[] = __( 'Veuillez sélectionner un édifice valide.', 'limpeed-immobilier' );
 		}
 
 		if ( empty( trim( $data['address'] ) ) ) {
@@ -155,9 +155,10 @@ class Limpeed_Properties_Page {
 				}
 			}
 
-			$errors = self::$errors;
-			$posted = self::$posted;
-			$owners = Limpeed_Owners::get_all( array( 'per_page' => 9999 ) );
+			$errors              = self::$errors;
+			$posted              = self::$posted;
+			$buildings           = Limpeed_Buildings::get_all( array( 'per_page' => 9999 ) );
+			$preselected_building = isset( $_GET['building_id'] ) ? (int) $_GET['building_id'] : 0;
 
 			include LIMPEED_PLUGIN_DIR . 'admin/views/properties-form.php';
 			return;

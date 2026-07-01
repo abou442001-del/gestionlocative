@@ -3,6 +3,7 @@
  * Vue : tableau de bord.
  *
  * @var int    $owners_count
+ * @var int    $buildings_count
  * @var int    $properties_count
  * @var int    $tenants_count
  * @var int    $vacant_count
@@ -26,8 +27,13 @@ $unpaid_count = count( $period_summary['unpaid_tenants'] );
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-owners' ) ); ?>"><?php esc_html_e( 'Voir la liste', 'limpeed-immobilier' ); ?></a>
 		</div>
 		<div class="limpeed-card">
+			<span class="limpeed-card-number"><?php echo esc_html( $buildings_count ); ?></span>
+			<span class="limpeed-card-label"><?php esc_html_e( 'Édifices', 'limpeed-immobilier' ); ?></span>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-buildings' ) ); ?>"><?php esc_html_e( 'Voir la liste', 'limpeed-immobilier' ); ?></a>
+		</div>
+		<div class="limpeed-card">
 			<span class="limpeed-card-number"><?php echo esc_html( $properties_count ); ?></span>
-			<span class="limpeed-card-label"><?php esc_html_e( 'Biens', 'limpeed-immobilier' ); ?></span>
+			<span class="limpeed-card-label"><?php esc_html_e( 'Biens (sous-édifices)', 'limpeed-immobilier' ); ?></span>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-properties' ) ); ?>"><?php esc_html_e( 'Voir la liste', 'limpeed-immobilier' ); ?></a>
 		</div>
 		<div class="limpeed-card">

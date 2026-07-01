@@ -1,10 +1,13 @@
 <?php
 /**
  * Vue : formulaire d'ajout / modification d'un locataire.
+ * Sélection en cascade : propriétaire → édifice → sous-édifice (bien loué).
  *
  * @var object|null $tenant
  * @var array       $errors
  * @var array|null  $posted
+ * @var array       $owners
+ * @var array       $buildings
  * @var array       $properties
  */
 
@@ -23,6 +26,44 @@ $field = function ( $name, $default = '' ) use ( $tenant, $posted, $is_edit ) {
 	}
 	return $default;
 };
+
+// Détermine l'édifice et le propriétaire actuellement liés au bien sélectionné,
+// pour pré-remplir correctement la cascade dès le premier affichage (avant même
+// l'exécution du JS de filtrage).
+$current_property_id = (int) $field( 'property_id' );
+$current_building_id = 0;
+$current_owner_id     = 0;
+
+if ( $current_property_id ) {
+	$current_property = Limpeed_Properties::get( $current_property_id );
+	if ( $current_property ) {
+		$current_building_id = (int) $current_property->building_id;
+		$current_building     = Limpeed_Buildings::get( $current_building_id );
+		if ( $current_building ) {
+			$current_owner_id = (int) $current_building->owner_id;
+		}
+	}
+}
+
+$buildings_for_owner    = array_filter( $buildings, function ( $b ) use ( $current_owner_id ) {
+	return (int) $b->owner_id === $current_owner_id;
+} );
+$properties_for_building = array_filter( $properties, function ( $p ) use ( $current_building_id ) {
+	return (int) $p->building_id === $current_building_id;
+} );
+
+$buildings_json = array_map(
+	function ( $b ) {
+		return array( 'id' => (int) $b->id, 'owner_id' => (int) $b->owner_id, 'label' => $b->name );
+	},
+	$buildings
+);
+$properties_json = array_map(
+	function ( $p ) {
+		return array( 'id' => (int) $p->id, 'building_id' => (int) $p->building_id, 'label' => $p->address );
+	},
+	$properties
+);
 
 $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'admin.php' ) );
 ?>
@@ -96,16 +137,43 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 		<table class="form-table" role="presentation">
 			<tbody>
 				<tr>
-					<th scope="row"><label for="property_id"><?php esc_html_e( 'Bien loué', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
+					<th scope="row"><label for="limpeed_ui_owner_id"><?php esc_html_e( 'Propriétaire', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
 					<td>
-						<select name="property_id" id="property_id" required>
-							<option value=""><?php esc_html_e( '— Choisir un bien —', 'limpeed-immobilier' ); ?></option>
-							<?php foreach ( $properties as $property_option ) : ?>
-								<option value="<?php echo esc_attr( $property_option->id ); ?>" <?php selected( (int) $field( 'property_id' ), $property_option->id ); ?>>
+						<select id="limpeed_ui_owner_id">
+							<option value=""><?php esc_html_e( '— Choisir un propriétaire —', 'limpeed-immobilier' ); ?></option>
+							<?php foreach ( $owners as $owner_option ) : ?>
+								<option value="<?php echo esc_attr( $owner_option->id ); ?>" <?php selected( $current_owner_id, $owner_option->id ); ?>>
+									<?php echo esc_html( $owner_option->full_name ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="limpeed_ui_building_id"><?php esc_html_e( 'Édifice', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
+					<td>
+						<select id="limpeed_ui_building_id" <?php disabled( empty( $current_owner_id ) ); ?>>
+							<option value=""><?php esc_html_e( '— Choisir un édifice —', 'limpeed-immobilier' ); ?></option>
+							<?php foreach ( $buildings_for_owner as $building_option ) : ?>
+								<option value="<?php echo esc_attr( $building_option->id ); ?>" <?php selected( $current_building_id, $building_option->id ); ?>>
+									<?php echo esc_html( $building_option->name ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="property_id"><?php esc_html_e( 'Sous-édifice (bien loué)', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
+					<td>
+						<select name="property_id" id="property_id" required <?php disabled( empty( $current_building_id ) ); ?>>
+							<option value=""><?php esc_html_e( '— Choisir un sous-édifice —', 'limpeed-immobilier' ); ?></option>
+							<?php foreach ( $properties_for_building as $property_option ) : ?>
+								<option value="<?php echo esc_attr( $property_option->id ); ?>" <?php selected( $current_property_id, $property_option->id ); ?>>
 									<?php echo esc_html( $property_option->address ); ?>
 								</option>
 							<?php endforeach; ?>
 						</select>
+						<p class="description"><?php esc_html_e( 'Choisissez d\'abord le propriétaire, puis l\'édifice, pour afficher ses sous-édifices disponibles.', 'limpeed-immobilier' ); ?></p>
 					</td>
 				</tr>
 				<tr>
@@ -156,3 +224,79 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 		<a href="<?php echo esc_url( $list_url ); ?>" class="button"><?php esc_html_e( 'Annuler', 'limpeed-immobilier' ); ?></a>
 	</form>
 </div>
+
+<script type="application/json" id="limpeed-tenant-cascade-data">
+<?php echo wp_json_encode( array( 'buildings' => $buildings_json, 'properties' => $properties_json ) ); ?>
+</script>
+<script>
+( function () {
+	var dataEl = document.getElementById( 'limpeed-tenant-cascade-data' );
+	if ( ! dataEl ) {
+		return;
+	}
+	var data = JSON.parse( dataEl.textContent );
+
+	var ownerSelect    = document.getElementById( 'limpeed_ui_owner_id' );
+	var buildingSelect = document.getElementById( 'limpeed_ui_building_id' );
+	var propertySelect = document.getElementById( 'property_id' );
+
+	if ( ! ownerSelect || ! buildingSelect || ! propertySelect ) {
+		return;
+	}
+
+	function clearOptions( select, placeholder ) {
+		select.innerHTML = '';
+		var opt = document.createElement( 'option' );
+		opt.value = '';
+		opt.textContent = placeholder;
+		select.appendChild( opt );
+	}
+
+	function populateBuildings( ownerId, selectedBuildingId ) {
+		clearOptions( buildingSelect, '<?php echo esc_js( __( '— Choisir un édifice —', 'limpeed-immobilier' ) ); ?>' );
+		buildingSelect.disabled = ! ownerId;
+		if ( ! ownerId ) {
+			return;
+		}
+		data.buildings.forEach( function ( building ) {
+			if ( String( building.owner_id ) === String( ownerId ) ) {
+				var opt = document.createElement( 'option' );
+				opt.value = building.id;
+				opt.textContent = building.label;
+				if ( selectedBuildingId && String( building.id ) === String( selectedBuildingId ) ) {
+					opt.selected = true;
+				}
+				buildingSelect.appendChild( opt );
+			}
+		} );
+	}
+
+	function populateProperties( buildingId, selectedPropertyId ) {
+		clearOptions( propertySelect, '<?php echo esc_js( __( '— Choisir un sous-édifice —', 'limpeed-immobilier' ) ); ?>' );
+		propertySelect.disabled = ! buildingId;
+		if ( ! buildingId ) {
+			return;
+		}
+		data.properties.forEach( function ( property ) {
+			if ( String( property.building_id ) === String( buildingId ) ) {
+				var opt = document.createElement( 'option' );
+				opt.value = property.id;
+				opt.textContent = property.label;
+				if ( selectedPropertyId && String( property.id ) === String( selectedPropertyId ) ) {
+					opt.selected = true;
+				}
+				propertySelect.appendChild( opt );
+			}
+		} );
+	}
+
+	ownerSelect.addEventListener( 'change', function () {
+		populateBuildings( ownerSelect.value, null );
+		populateProperties( null, null );
+	} );
+
+	buildingSelect.addEventListener( 'change', function () {
+		populateProperties( buildingSelect.value, null );
+	} );
+} )();
+</script>
