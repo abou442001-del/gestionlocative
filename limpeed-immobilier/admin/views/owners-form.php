@@ -38,7 +38,19 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-owners' ), admin_url( 'admi
 		</div>
 	<?php endif; ?>
 
-	<form method="post" action="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-owners' ) ); ?>">
+	<?php
+	$form_action = add_query_arg(
+		array_filter(
+			array(
+				'page'   => 'limpeed-owners',
+				'action' => $is_edit ? 'edit' : 'add',
+				'id'     => $is_edit ? $owner->id : null,
+			)
+		),
+		admin_url( 'admin.php' )
+	);
+	?>
+	<form method="post" action="<?php echo esc_url( $form_action ); ?>">
 		<?php wp_nonce_field( 'limpeed_save_owner', 'limpeed_owner_nonce' ); ?>
 		<?php if ( $is_edit ) : ?>
 			<input type="hidden" name="owner_id" value="<?php echo esc_attr( $owner->id ); ?>">

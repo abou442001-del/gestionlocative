@@ -64,15 +64,15 @@ class Limpeed_Tenants_Page {
 				'status'       => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
 			);
 
-			$errors = self::validate( $data );
+			$id = isset( $_POST['tenant_id'] ) ? (int) $_POST['tenant_id'] : 0;
+
+			$errors = self::validate( $data, $id );
 
 			if ( ! empty( $errors ) ) {
 				self::$errors = $errors;
 				self::$posted = $data;
 				return;
 			}
-
-			$id = isset( $_POST['tenant_id'] ) ? (int) $_POST['tenant_id'] : 0;
 
 			if ( $id > 0 ) {
 				Limpeed_Tenants::update( $id, $data );
@@ -88,13 +88,19 @@ class Limpeed_Tenants_Page {
 	 * Valide les données du formulaire.
 	 *
 	 * @param array $data
+	 * @param int   $tenant_id Id du locataire en cours de modification (0 pour un ajout).
 	 * @return array
 	 */
-	private static function validate( $data ) {
+	private static function validate( $data, $tenant_id = 0 ) {
 		$errors = array();
 
 		if ( empty( $data['property_id'] ) || ! Limpeed_Properties::get( $data['property_id'] ) ) {
 			$errors[] = __( 'Veuillez sélectionner un bien valide.', 'limpeed-immobilier' );
+		} elseif ( 'actif' === ( $data['status'] ?? 'actif' ) ) {
+			$current_tenant = Limpeed_Properties::get_current_tenant( $data['property_id'] );
+			if ( $current_tenant && (int) $current_tenant->id !== (int) $tenant_id ) {
+				$errors[] = __( 'Ce bien a déjà un locataire actif. Terminez d\'abord son bail avant d\'en ajouter un nouveau.', 'limpeed-immobilier' );
+			}
 		}
 
 		if ( empty( trim( $data['full_name'] ) ) ) {

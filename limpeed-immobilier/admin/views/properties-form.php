@@ -85,7 +85,19 @@ $current_tenant  = $is_edit ? Limpeed_Properties::get_current_tenant( $property-
 		</div>
 	<?php endif; ?>
 
-	<form method="post" action="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-properties' ) ); ?>">
+	<?php
+	$form_action = add_query_arg(
+		array_filter(
+			array(
+				'page'   => 'limpeed-properties',
+				'action' => $is_edit ? 'edit' : 'add',
+				'id'     => $is_edit ? $property->id : null,
+			)
+		),
+		admin_url( 'admin.php' )
+	);
+	?>
+	<form method="post" action="<?php echo esc_url( $form_action ); ?>">
 		<?php wp_nonce_field( 'limpeed_save_property', 'limpeed_property_nonce' ); ?>
 		<?php if ( $is_edit ) : ?>
 			<input type="hidden" name="property_id" value="<?php echo esc_attr( $property->id ); ?>">

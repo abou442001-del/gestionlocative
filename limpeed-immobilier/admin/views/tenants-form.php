@@ -64,7 +64,19 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 		</div>
 	<?php endif; ?>
 
-	<form method="post" action="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-tenants' ) ); ?>">
+	<?php
+	$form_action = add_query_arg(
+		array_filter(
+			array(
+				'page'   => 'limpeed-tenants',
+				'action' => $is_edit ? 'edit' : 'add',
+				'id'     => $is_edit ? $tenant->id : null,
+			)
+		),
+		admin_url( 'admin.php' )
+	);
+	?>
+	<form method="post" action="<?php echo esc_url( $form_action ); ?>">
 		<?php wp_nonce_field( 'limpeed_save_tenant', 'limpeed_tenant_nonce' ); ?>
 		<?php if ( $is_edit ) : ?>
 			<input type="hidden" name="tenant_id" value="<?php echo esc_attr( $tenant->id ); ?>">
