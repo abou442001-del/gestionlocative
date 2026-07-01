@@ -82,7 +82,7 @@ class Limpeed_Agents_List_Table extends WP_List_Table {
 		);
 
 		if ( get_current_user_id() === $item->ID ) {
-			unset( $actions['revoke'] );
+			unset( $actions['revoke'], $actions['edit'] );
 		}
 
 		return sprintf(

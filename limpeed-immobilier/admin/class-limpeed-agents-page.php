@@ -59,6 +59,10 @@ class Limpeed_Agents_Page {
 			$agent_id = isset( $_POST['agent_id'] ) ? (int) $_POST['agent_id'] : 0;
 
 			if ( $agent_id > 0 ) {
+				if ( get_current_user_id() === $agent_id ) {
+					self::redirect( array( 'message' => 'error', 'error_text' => rawurlencode( __( 'Vous ne pouvez pas modifier votre propre rôle.', 'limpeed-immobilier' ) ) ) );
+				}
+
 				$data = array(
 					'role' => isset( $_POST['role'] ) ? sanitize_text_field( wp_unslash( $_POST['role'] ) ) : '',
 				);
