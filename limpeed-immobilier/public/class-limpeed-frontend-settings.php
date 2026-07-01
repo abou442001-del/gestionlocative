@@ -36,6 +36,15 @@ class Limpeed_Frontend_Settings {
 		$advance_months = min( 12, max( 1, $advance_months ) );
 		update_option( 'limpeed_advance_months', $advance_months );
 
+		if ( isset( $_POST['limpeed_remove_logo'] ) && '1' === $_POST['limpeed_remove_logo'] ) {
+			Limpeed_Branding::remove_logo();
+		} elseif ( ! empty( $_FILES['limpeed_logo']['name'] ) ) {
+			$result = Limpeed_Branding::save_uploaded_logo( $_FILES['limpeed_logo'] );
+			if ( is_wp_error( $result ) ) {
+				Limpeed_Frontend::redirect_to( 'settings', array( 'message' => 'error', 'error_text' => rawurlencode( $result->get_error_message() ) ) );
+			}
+		}
+
 		Limpeed_Frontend::redirect_to( 'settings', array( 'message' => 'saved' ) );
 	}
 }

@@ -1,9 +1,13 @@
 :root {
 	--limpeed-blue: #1d4e89;
 	--limpeed-blue-dark: #143a68;
+	--limpeed-blue-light: #e8eef7;
 	--limpeed-green: #2f9451;
 	--limpeed-green-dark: #1f7a41;
 	--limpeed-green-light: #e9f7ee;
+	--limpeed-orange: #e8973a;
+	--limpeed-orange-light: #fdf3e7;
+	--limpeed-orange-text: #a5650f;
 	--limpeed-bg: #f5f7fa;
 	--limpeed-surface: #ffffff;
 	--limpeed-border: #e3e8ee;
@@ -16,6 +20,30 @@
 	--limpeed-radius: 10px;
 	--limpeed-radius-sm: 7px;
 	--limpeed-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 2px 8px rgba(16, 24, 40, .05);
+	color-scheme: light;
+}
+
+[data-theme="dark"] {
+	--limpeed-blue: #5b9bd8;
+	--limpeed-blue-dark: #3f7ab8;
+	--limpeed-blue-light: #1c2b3f;
+	--limpeed-green: #4caf7d;
+	--limpeed-green-dark: #7bd9a3;
+	--limpeed-green-light: #1c3326;
+	--limpeed-orange: #e8973a;
+	--limpeed-orange-light: #3a2f1a;
+	--limpeed-orange-text: #f0b86b;
+	--limpeed-bg: #10151c;
+	--limpeed-surface: #171d27;
+	--limpeed-border: #2a3444;
+	--limpeed-text: #e6e9ee;
+	--limpeed-text-muted: #9aa4b2;
+	--limpeed-danger: #f2837f;
+	--limpeed-danger-light: #3a2020;
+	--limpeed-warning: #e0b23d;
+	--limpeed-warning-light: #3a331a;
+	--limpeed-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 2px 8px rgba(0, 0, 0, .35);
+	color-scheme: dark;
 }
 
 * {
@@ -156,6 +184,39 @@ body.limpeed-app {
 	border-radius: 50%;
 }
 
+.limpeed-app-theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	padding: 0;
+	border: 1px solid var(--limpeed-border);
+	border-radius: 50%;
+	background: var(--limpeed-bg);
+	color: var(--limpeed-text-muted);
+	cursor: pointer;
+	transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.limpeed-app-theme-toggle:hover {
+	background: var(--limpeed-blue-light);
+	color: var(--limpeed-blue);
+	border-color: var(--limpeed-blue);
+}
+
+.limpeed-theme-icon-moon {
+	display: none;
+}
+
+[data-theme="dark"] .limpeed-theme-icon-sun {
+	display: none;
+}
+
+[data-theme="dark"] .limpeed-theme-icon-moon {
+	display: block;
+}
+
 .limpeed-app-logout {
 	color: var(--limpeed-blue);
 	text-decoration: none;
@@ -218,10 +279,10 @@ body.limpeed-app {
 
 /* Sur la bande d'info des cartes KPI : couleur pleine remplacée par une teinte
    douce, plus lisible pour du texte que l'aplat utilisé pour les pastilles. */
-.limpeed-app-card-bar.limpeed-bar-orange { background: #fdf3e7; color: #a5650f; }
+.limpeed-app-card-bar.limpeed-bar-orange { background: var(--limpeed-orange-light); color: var(--limpeed-orange-text); }
 .limpeed-app-card-bar.limpeed-bar-red { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
 .limpeed-app-card-bar.limpeed-bar-green { background: var(--limpeed-green-light); color: var(--limpeed-green-dark); }
-.limpeed-app-card-bar.limpeed-bar-blue { background: #e8eef7; color: var(--limpeed-blue); }
+.limpeed-app-card-bar.limpeed-bar-blue { background: var(--limpeed-blue-light); color: var(--limpeed-blue); }
 
 /* Panels */
 .limpeed-app-panel {
@@ -373,7 +434,7 @@ body.limpeed-app {
 
 .limpeed-app-badge-partiel { background: var(--limpeed-warning-light); color: var(--limpeed-warning); }
 .limpeed-app-badge-en_retard { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
-.limpeed-app-badge-en_avance { background: #dbeafe; color: var(--limpeed-blue); }
+.limpeed-app-badge-en_avance { background: var(--limpeed-blue-light); color: var(--limpeed-blue); }
 
 .limpeed-text-danger {
 	color: var(--limpeed-danger);
@@ -600,7 +661,7 @@ body.limpeed-app {
 .limpeed-app-calendar-month-partiel { background: var(--limpeed-warning-light); color: var(--limpeed-warning); }
 .limpeed-app-calendar-month-retard { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
 .limpeed-app-calendar-month-a_venir { background: var(--limpeed-bg); color: var(--limpeed-text-muted); }
-.limpeed-app-calendar-month-hors_bail { background: #fafbfc; color: #c3c9d1; }
+.limpeed-app-calendar-month-hors_bail { background: var(--limpeed-border); color: var(--limpeed-text-muted); opacity: .6; }
 
 a.limpeed-app-calendar-month-a_venir:hover,
 a.limpeed-app-calendar-month-retard:hover {

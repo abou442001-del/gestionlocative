@@ -7,4 +7,16 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			}
 		} );
 	} );
+
+	var themeToggle = document.getElementById( 'limpeed-theme-toggle' );
+	if ( themeToggle ) {
+		themeToggle.addEventListener( 'click', function () {
+			var current = document.documentElement.getAttribute( 'data-theme' ) === 'dark' ? 'dark' : 'light';
+			var next    = 'dark' === current ? 'light' : 'dark';
+			document.documentElement.setAttribute( 'data-theme', next );
+			try {
+				localStorage.setItem( 'limpeedTheme', next );
+			} catch ( e ) {}
+		} );
+	}
 } );

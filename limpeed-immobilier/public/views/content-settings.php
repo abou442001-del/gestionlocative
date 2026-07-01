@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $confirm        = '1' === get_option( 'limpeed_confirm_data_deletion', '0' );
 $advance_months = (int) get_option( 'limpeed_advance_months', 1 );
+$logo_url       = Limpeed_Branding::get_logo_url();
 $message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '';
 ?>
 
@@ -24,8 +25,22 @@ $message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $
 	);
 	?>
 
-	<form method="post" action="<?php echo esc_url( Limpeed_Frontend::app_url( 'settings' ) ); ?>" class="limpeed-app-form">
+	<form method="post" action="<?php echo esc_url( Limpeed_Frontend::app_url( 'settings' ) ); ?>" class="limpeed-app-form" enctype="multipart/form-data">
 		<?php wp_nonce_field( 'limpeed_save_settings', 'limpeed_settings_nonce' ); ?>
+
+		<div class="limpeed-form-row">
+			<label for="limpeed_logo"><?php esc_html_e( 'Logo', 'limpeed-immobilier' ); ?></label>
+			<?php if ( $logo_url ) : ?>
+				<p><img src="<?php echo esc_url( $logo_url ); ?>" alt="" style="max-width:220px;max-height:100px;display:block;margin-bottom:8px;"></p>
+				<label>
+					<input type="checkbox" name="limpeed_remove_logo" value="1">
+					<?php esc_html_e( 'Supprimer le logo personnalisé et revenir au logo par défaut.', 'limpeed-immobilier' ); ?>
+				</label>
+				<p class="limpeed-app-description"><?php esc_html_e( 'Pour remplacer le logo actuel, sélectionnez simplement un nouveau fichier ci-dessous.', 'limpeed-immobilier' ); ?></p>
+			<?php endif; ?>
+			<input type="file" name="limpeed_logo" id="limpeed_logo" accept="image/png,image/jpeg,image/gif,image/webp">
+			<p class="limpeed-app-description"><?php esc_html_e( 'Formats acceptés : PNG, JPEG, GIF, WEBP. Taille maximale : 2 Mo. Remplace le logo par défaut sur l\'application frontend et les pages de connexion/inscription.', 'limpeed-immobilier' ); ?></p>
+		</div>
 
 		<div class="limpeed-form-row">
 			<label for="limpeed_advance_months"><?php esc_html_e( 'Mois d\'avance par défaut', 'limpeed-immobilier' ); ?></label>
