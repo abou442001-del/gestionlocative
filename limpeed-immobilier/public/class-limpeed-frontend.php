@@ -40,9 +40,87 @@ class Limpeed_Frontend {
 	public function init() {
 		add_shortcode( 'limpeed_login', array( $this, 'render_login' ) );
 		add_shortcode( 'limpeed_register', array( $this, 'render_register' ) );
+		add_shortcode( 'limpeed_dashboard', array( $this, 'render_dashboard_shortcode' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'template_redirect', array( $this, 'handle_login_submit' ) );
 		add_action( 'template_redirect', array( $this, 'handle_register_submit' ) );
+		add_action( 'template_redirect', array( $this, 'restrict_dashboard_access' ) );
+		add_filter( 'template_include', array( $this, 'maybe_load_dashboard_template' ) );
+	}
+
+	/**
+	 * Id de la page "Tableau de bord" créée à l'activation.
+	 *
+	 * @return int
+	 */
+	public static function dashboard_page_id() {
+		return (int) get_option( 'limpeed_dashboard_page_id' );
+	}
+
+	/**
+	 * URL de la page de connexion frontend.
+	 *
+	 * @return string
+	 */
+	public static function login_url() {
+		$login_page_id = (int) get_option( 'limpeed_login_page_id' );
+		return $login_page_id ? get_permalink( $login_page_id ) : wp_login_url();
+	}
+
+	/**
+	 * Empêche l'accès au tableau de bord frontend aux visiteurs non connectés,
+	 * aux comptes en attente d'approbation, et aux comptes sans capacité Limpeed.
+	 * Exécuté sur template_redirect, avant tout affichage.
+	 */
+	public function restrict_dashboard_access() {
+		$dashboard_page_id = self::dashboard_page_id();
+		if ( ! $dashboard_page_id || ! is_page( $dashboard_page_id ) ) {
+			return;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			$redirect = add_query_arg( 'redirect_to', rawurlencode( get_permalink( $dashboard_page_id ) ), self::login_url() );
+			wp_safe_redirect( $redirect );
+			exit;
+		}
+
+		if ( get_user_meta( get_current_user_id(), Limpeed_Agents::PENDING_META_KEY, true ) ) {
+			wp_safe_redirect( add_query_arg( 'limpeed_message', 'pending', self::login_url() ) );
+			exit;
+		}
+
+		if ( ! current_user_can( 'manage_limpeed_properties' ) ) {
+			wp_die(
+				esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder au tableau de bord.', 'limpeed-immobilier' ),
+				esc_html__( 'Accès refusé', 'limpeed-immobilier' ),
+				array( 'response' => 403 )
+			);
+		}
+	}
+
+	/**
+	 * Remplace le template du thème par notre page "application" autonome
+	 * pour la page Tableau de bord (aucun header/footer/style du thème actif).
+	 *
+	 * @param string $template
+	 * @return string
+	 */
+	public function maybe_load_dashboard_template( $template ) {
+		$dashboard_page_id = self::dashboard_page_id();
+		if ( $dashboard_page_id && is_page( $dashboard_page_id ) ) {
+			return LIMPEED_PLUGIN_DIR . 'public/views/dashboard-app.php';
+		}
+		return $template;
+	}
+
+	/**
+	 * Shortcode [limpeed_dashboard] : filet de sécurité si le template
+	 * personnalisé n'a pas pu être chargé (ex : aperçu, contexte inhabituel).
+	 *
+	 * @return string
+	 */
+	public function render_dashboard_shortcode() {
+		return '<p>' . esc_html__( 'Le tableau de bord doit être consulté directement en visitant cette page.', 'limpeed-immobilier' ) . '</p>';
 	}
 
 	/**

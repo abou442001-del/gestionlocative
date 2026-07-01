@@ -50,7 +50,7 @@ if ( is_dir( $statements_dir ) ) {
 }
 
 // Supprime les pages frontend créées automatiquement (connexion / inscription).
-foreach ( array( 'limpeed_login_page_id', 'limpeed_register_page_id' ) as $page_option ) {
+foreach ( array( 'limpeed_login_page_id', 'limpeed_register_page_id', 'limpeed_dashboard_page_id' ) as $page_option ) {
 	$page_id = (int) get_option( $page_option );
 	if ( $page_id ) {
 		wp_delete_post( $page_id, true );

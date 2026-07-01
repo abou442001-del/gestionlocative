@@ -1,0 +1,294 @@
+* {
+	box-sizing: border-box;
+}
+
+body.limpeed-app {
+	margin: 0;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+	background: #f1f3f6;
+	color: #1d2327;
+}
+
+.limpeed-app-shell {
+	display: flex;
+	min-height: 100vh;
+}
+
+/* Sidebar */
+.limpeed-app-sidebar {
+	width: 240px;
+	flex-shrink: 0;
+	background: #1c2b39;
+	color: #fff;
+	display: flex;
+	flex-direction: column;
+}
+
+.limpeed-app-logo {
+	padding: 20px;
+	font-size: 20px;
+	font-weight: 700;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.limpeed-app-logo span {
+	display: block;
+	font-size: 12px;
+	font-weight: 400;
+	opacity: 0.7;
+}
+
+.limpeed-app-nav {
+	display: flex;
+	flex-direction: column;
+	padding: 10px 0;
+}
+
+.limpeed-app-nav-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 20px;
+	color: #c3d0dc;
+	text-decoration: none;
+	font-size: 14px;
+	border-left: 3px solid transparent;
+}
+
+.limpeed-app-nav-item:hover {
+	background: rgba(255, 255, 255, 0.05);
+	color: #fff;
+}
+
+.limpeed-app-nav-item.is-active {
+	background: rgba(255, 255, 255, 0.08);
+	color: #fff;
+	border-left-color: #2271b1;
+}
+
+/* Main area */
+.limpeed-app-main {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.limpeed-app-topbar {
+	background: #2271b1;
+	color: #fff;
+	padding: 14px 24px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.limpeed-app-topbar-title {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.limpeed-app-topbar-user {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 14px;
+}
+
+.limpeed-app-topbar-user img {
+	border-radius: 50%;
+}
+
+.limpeed-app-logout {
+	color: #fff;
+	text-decoration: underline;
+	margin-left: 10px;
+}
+
+.limpeed-app-content {
+	padding: 24px;
+}
+
+/* KPI cards */
+.limpeed-cards-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.limpeed-app-card {
+	background: #fff;
+	border-radius: 6px;
+	overflow: hidden;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.limpeed-app-card-number {
+	font-size: 30px;
+	font-weight: 700;
+	padding: 16px 16px 0;
+}
+
+.limpeed-app-card-label {
+	padding: 0 16px 16px;
+	color: #50575e;
+	font-size: 13px;
+}
+
+.limpeed-app-card-bar {
+	padding: 6px 16px;
+	color: #fff;
+	font-size: 11px;
+	min-height: 22px;
+}
+
+.limpeed-bar-orange { background: #e8973a; }
+.limpeed-bar-red { background: #d9534f; }
+.limpeed-bar-green { background: #4caf7d; }
+.limpeed-bar-blue { background: #2271b1; }
+
+/* Panels */
+.limpeed-app-panel {
+	background: #fff;
+	border-radius: 6px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	padding: 20px;
+	margin-bottom: 24px;
+}
+
+.limpeed-app-panel h2 {
+	font-size: 15px;
+	margin: 0 0 16px;
+	color: #1d2327;
+}
+
+.limpeed-panel-title-green,
+.limpeed-panel-title-orange,
+.limpeed-panel-title-blue {
+	padding: 8px 12px;
+	color: #fff;
+	border-radius: 4px;
+}
+
+.limpeed-panel-title-green { background: #4caf7d; }
+.limpeed-panel-title-orange { background: #e8973a; }
+.limpeed-panel-title-blue { background: #2271b1; }
+
+/* Chart */
+.limpeed-chart {
+	display: flex;
+	align-items: flex-end;
+	gap: 20px;
+	height: 220px;
+	padding: 10px 0;
+	overflow-x: auto;
+}
+
+.limpeed-chart-month {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	min-width: 70px;
+}
+
+.limpeed-chart-bars {
+	display: flex;
+	align-items: flex-end;
+	gap: 4px;
+	height: 180px;
+}
+
+.limpeed-chart-bar {
+	width: 16px;
+	border-radius: 2px 2px 0 0;
+	min-height: 2px;
+}
+
+.limpeed-chart-label {
+	font-size: 11px;
+	color: #50575e;
+	white-space: nowrap;
+}
+
+.limpeed-chart-legend {
+	display: flex;
+	gap: 20px;
+	justify-content: center;
+	margin-top: 10px;
+	font-size: 12px;
+}
+
+.limpeed-legend-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.limpeed-legend-item i {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border-radius: 2px;
+}
+
+/* Tables */
+.limpeed-tables-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: 24px;
+}
+
+.limpeed-app-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.limpeed-app-table th {
+	text-align: left;
+	border-bottom: 2px solid #eee;
+	padding: 8px;
+	color: #50575e;
+}
+
+.limpeed-app-table td {
+	padding: 8px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.limpeed-app-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	background: #f0f0f1;
+	color: #50575e;
+}
+
+.limpeed-app-badge-actif { background: #d4f4dd; color: #1a7a3e; }
+.limpeed-app-badge-termine { background: #f0f0f1; color: #50575e; }
+
+.limpeed-text-danger {
+	color: #d9534f;
+	font-weight: 600;
+}
+
+@media (max-width: 782px) {
+	.limpeed-app-sidebar {
+		width: 64px;
+	}
+
+	.limpeed-app-logo,
+	.limpeed-app-nav-label,
+	.limpeed-app-topbar-user span {
+		display: none;
+	}
+
+	.limpeed-app-nav-item {
+		justify-content: center;
+	}
+}

@@ -201,25 +201,58 @@ class Limpeed_Payments {
 		$tenants_table  = Limpeed_Tenants::table();
 		$active_tenants = $wpdb->get_results( "SELECT * FROM {$tenants_table} WHERE status = 'actif'" );
 
+		// Une seule requête pour récupérer les locataires déjà payés sur la période,
+		// plutôt qu'une requête par locataire (évite un N+1, sensible dès que
+		// get_monthly_summary() appelle cette méthode plusieurs fois de suite).
+		$paid_tenant_ids = $wpdb->get_col(
+			$wpdb->prepare( "SELECT DISTINCT tenant_id FROM {$table} WHERE period = %s AND status = 'paye'", $period )
+		);
+		$paid_tenant_ids = array_map( 'intval', $paid_tenant_ids );
+
 		$unpaid_tenants = array();
 		foreach ( $active_tenants as $tenant ) {
-			$has_paid = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(*) FROM {$table} WHERE tenant_id = %d AND period = %s AND status = 'paye'",
-					$tenant->id,
-					$period
-				)
-			);
-			if ( ! $has_paid ) {
+			if ( ! in_array( (int) $tenant->id, $paid_tenant_ids, true ) ) {
 				$unpaid_tenants[] = $tenant;
 			}
 		}
 
+		$expected_unpaid = 0.0;
+		foreach ( $unpaid_tenants as $tenant ) {
+			$expected_unpaid += (float) $tenant->rent_amount;
+		}
+
 		return array(
+			'period'         => $period,
 			'collected'      => $collected ? (float) $collected : 0.0,
 			'commission'     => $commission ? (float) $commission : 0.0,
 			'unpaid_tenants' => $unpaid_tenants,
+			'expected_total' => ( $collected ? (float) $collected : 0.0 ) + $expected_unpaid,
 		);
+	}
+
+	/**
+	 * Résumé des recouvrements de loyers sur les N derniers mois (le mois en
+	 * cours inclus), du plus ancien au plus récent. Utilisé pour le graphique
+	 * du tableau de bord.
+	 *
+	 * @param int $months Nombre de mois à inclure.
+	 * @return array
+	 */
+	public static function get_monthly_summary( $months = 6 ) {
+		$summaries         = array();
+		$first_of_month    = new DateTime( current_time( 'Y-m-01' ) );
+
+		// On part toujours du 1er du mois avant de soustraire des mois : soustraire
+		// depuis un autre quantième (ex. le 31) provoquerait un débordement de mois
+		// avec strtotime()/DateTime (le 31 mars moins 1 mois devient le 1er mai au
+		// lieu du 28/29 février), ce qui dupliquerait ou sauterait un mois du graphique.
+		for ( $i = $months - 1; $i >= 0; $i-- ) {
+			$date = clone $first_of_month;
+			$date->modify( "-{$i} months" );
+			$summaries[] = self::get_period_summary( $date->format( 'Y-m' ) );
+		}
+
+		return $summaries;
 	}
 
 	/**

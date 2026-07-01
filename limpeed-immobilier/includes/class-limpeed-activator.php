@@ -80,6 +80,12 @@ class Limpeed_Activator {
 			__( 'Inscription Agent', 'limpeed-immobilier' ),
 			'[limpeed_register]'
 		);
+
+		self::create_page_if_missing(
+			'limpeed_dashboard_page_id',
+			__( 'Tableau de bord', 'limpeed-immobilier' ),
+			'[limpeed_dashboard]'
+		);
 	}
 
 	/**

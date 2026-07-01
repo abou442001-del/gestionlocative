@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,15 @@ Ce plugin permet à plusieurs agents connectés (comptes WordPress) de gérer :
 * Ces pages ne sont jamais recréées si elles existent déjà (vous pouvez déplacer leur contenu dans un thème/page existante en réutilisant simplement les shortcodes).
 * Un formulaire d'inscription inclut un champ piège à robots (honeypot) pour limiter le spam basique.
 
+== Tableau de bord frontend (application autonome) ==
+
+Une troisième page, **Tableau de bord** (`[limpeed_dashboard]`), est créée automatiquement à l'activation. C'est le début d'une bascule progressive de l'administration hors de wp-admin vers une interface "application" dédiée :
+
+* La page est entièrement autonome : elle ignore le thème WordPress actif (aucun header/footer/style du thème) via le filtre `template_include`, et affiche son propre habillage (barre latérale, barre du haut, cartes).
+* Accès réservé aux agents approuvés (capacité `manage_limpeed_properties`) : un visiteur non connecté est redirigé vers la page de connexion, un compte en attente d'approbation est bloqué avec message explicite.
+* Contenu : indicateurs (propriétaires, édifices, biens, locataires), graphique de recouvrement des loyers sur 6 mois (total attendu / payé / impayé), listes des 10 derniers locataires, propriétaires, quittances soldées et quittances en attente.
+* La barre latérale contient déjà les entrées Propriétaires / Édifices / Biens / Locataires / Paiements / Bordereaux : elles pointent pour l'instant vers leurs pages wp-admin respectives, en attendant leur migration progressive vers le frontend.
+
 == Bordereaux PDF ==
 
 Générés via la librairie [Dompdf](https://github.com/dompdf/dompdf) (incluse dans `vendor/`, installée via Composer). Les PDF sont stockés dans `wp-content/uploads/limpeed-statements/`, un dossier protégé contre l'accès web direct (`.htaccess`) ; ils ne sont téléchargeables que depuis l'administration, après vérification des capacités et d'un nonce.
@@ -68,6 +77,7 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 * Phase 3 : bordereaux PDF (Dompdf), historique et téléchargement sécurisé.
 * Phase 4 : gestion des comptes agents (création, changement de rôle, révocation d'accès) et journal d'activité.
 * Pages frontend de connexion et d'inscription (avec validation administrateur des inscriptions).
+* Tableau de bord frontend en application autonome, première étape de la bascule progressive de l'administration hors de wp-admin.
 
 == Installation ==
 
@@ -77,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.5.0 =
+* Nouvelle page frontend "Tableau de bord" (`[limpeed_dashboard]`), créée automatiquement à l'activation, en application autonome indépendante du thème actif (`template_include`).
+* Accès réservé aux agents approuvés ; redirection vers la connexion sinon.
+* Indicateurs, graphique de recouvrement des loyers sur 6 mois, listes des 10 derniers locataires/propriétaires/quittances.
+* Première étape de la bascule progressive de l'administration hors de wp-admin : la barre latérale contient déjà les entrées pour toutes les sections, pointant vers wp-admin en attendant leur migration.
 
 = 1.4.0 =
 * Nouvelle table `wp_limpeed_buildings` (Édifices) : un propriétaire peut posséder plusieurs édifices, chacun composé de plusieurs sous-édifices (biens).
