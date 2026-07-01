@@ -1,0 +1,15 @@
+{
+    "name": "limpeed/limpeed-immobilier",
+    "description": "Plugin WordPress de gestion locative pour Limpeed Immobilier.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4",
+        "dompdf/dompdf": "^2.0"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4"
+        }
+    }
+}

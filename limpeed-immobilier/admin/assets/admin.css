@@ -1,0 +1,78 @@
+.limpeed-wrap .required {
+	color: #d63638;
+}
+
+.limpeed-cross-nav {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-left: 4px solid #2271b1;
+	padding: 8px 12px;
+	margin: 12px 0;
+}
+
+.limpeed-dashboard-cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-top: 20px;
+}
+
+.limpeed-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 20px;
+	min-width: 180px;
+	text-align: center;
+}
+
+.limpeed-card-number {
+	display: block;
+	font-size: 32px;
+	font-weight: 600;
+	color: #2271b1;
+}
+
+.limpeed-card-label {
+	display: block;
+	margin: 6px 0 10px;
+	color: #1d2327;
+}
+
+.limpeed-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.limpeed-badge-loue {
+	background: #d4f4dd;
+	color: #1a7a3e;
+}
+
+.limpeed-badge-vacant {
+	background: #fff3cd;
+	color: #8a6500;
+}
+
+.limpeed-badge-travaux {
+	background: #f0f0f1;
+	color: #50575e;
+}
+
+.limpeed-badge-actif {
+	background: #d4f4dd;
+	color: #1a7a3e;
+}
+
+.limpeed-badge-termine {
+	background: #f0f0f1;
+	color: #50575e;
+}
+
+#limpeed-agent-icon {
+	color: #2271b1;
+}
