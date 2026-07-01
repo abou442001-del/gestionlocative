@@ -75,19 +75,27 @@ class Limpeed_Frontend {
 	 * @return string Balisage HTML (déjà échappé), à afficher directement.
 	 */
 	public static function render_logo( $with_text = true ) {
-		// Reproduction du logo Limpeed Immobilier : ligne diagonale traversant
-		// un empilement de carrés verts en escalier (motif "bâtiment/graphique").
-		$icon = '<svg class="limpeed-brand-mark" viewBox="0 0 48 48" width="34" height="34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
-			. '<line x1="3" y1="45" x2="31" y2="7" stroke="#2c3e50" stroke-width="2" stroke-linecap="round"/>'
-			. '<rect x="21" y="27" width="10" height="10" rx="1.5" fill="#8fd6a4"/>'
-			. '<rect x="32" y="27" width="10" height="10" rx="1.5" fill="#4caf7d"/>'
-			. '<rect x="21" y="16" width="10" height="10" rx="1.5" fill="#3aa655"/>'
-			. '<rect x="32" y="16" width="10" height="10" rx="1.5" fill="#1f7a41"/>'
-			. '<rect x="32" y="5" width="10" height="10" rx="1.5" fill="#175c31"/>'
-			. '</svg>';
+		$custom_logo_url = Limpeed_Branding::get_logo_url();
+
+		if ( $custom_logo_url ) {
+			$icon = '<img src="' . esc_url( $custom_logo_url ) . '" alt="' . esc_attr__( 'Limpeed Immobilier', 'limpeed-immobilier' ) . '" class="limpeed-brand-mark limpeed-brand-mark-custom">';
+		} else {
+			// Reproduction du logo Limpeed Immobilier par défaut : ligne diagonale
+			// traversant un empilement de carrés verts en escalier (motif
+			// "bâtiment/graphique"), utilisée tant qu'aucun logo personnalisé
+			// n'a été téléversé depuis Réglages.
+			$icon = '<svg class="limpeed-brand-mark" viewBox="0 0 48 48" width="34" height="34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
+				. '<line x1="3" y1="45" x2="31" y2="7" stroke="#2c3e50" stroke-width="2" stroke-linecap="round"/>'
+				. '<rect x="21" y="27" width="10" height="10" rx="1.5" fill="#8fd6a4"/>'
+				. '<rect x="32" y="27" width="10" height="10" rx="1.5" fill="#4caf7d"/>'
+				. '<rect x="21" y="16" width="10" height="10" rx="1.5" fill="#3aa655"/>'
+				. '<rect x="32" y="16" width="10" height="10" rx="1.5" fill="#1f7a41"/>'
+				. '<rect x="32" y="5" width="10" height="10" rx="1.5" fill="#175c31"/>'
+				. '</svg>';
+		}
 
 		$text = '';
-		if ( $with_text ) {
+		if ( $with_text && ! $custom_logo_url ) {
 			$text = '<span class="limpeed-brand-text">'
 				. '<span class="limpeed-brand-name">' . esc_html__( 'Limpeed', 'limpeed-immobilier' ) . '</span>'
 				. '<span class="limpeed-brand-sub">' . esc_html__( 'Immobilier', 'limpeed-immobilier' ) . '</span>'

@@ -34,6 +34,7 @@ require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-payments.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-activity-log.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-statements.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-agents.php';
+require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-branding.php';
 
 if ( is_admin() ) {
 	require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-admin.php';
