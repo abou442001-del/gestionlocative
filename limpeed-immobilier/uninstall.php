@@ -48,5 +48,30 @@ if ( is_dir( $statements_dir ) ) {
 	}
 }
 
+// Supprime les pages frontend créées automatiquement (connexion / inscription).
+foreach ( array( 'limpeed_login_page_id', 'limpeed_register_page_id' ) as $page_option ) {
+	$page_id = (int) get_option( $page_option );
+	if ( $page_id ) {
+		wp_delete_post( $page_id, true );
+	}
+	delete_option( $page_option );
+}
+
+// Supprime les demandes d'inscription encore en attente (aucune capacité, aucune
+// donnée métier n'a pu être créée par ces comptes).
+$pending_users = get_users(
+	array(
+		'meta_key'   => 'limpeed_pending_approval', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+		'meta_value' => '1', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		'fields'     => 'ID',
+	)
+);
+if ( $pending_users ) {
+	require_once ABSPATH . 'wp-admin/includes/user.php';
+	foreach ( $pending_users as $pending_user_id ) {
+		wp_delete_user( $pending_user_id );
+	}
+}
+
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-limpeed-roles.php';
 Limpeed_Roles::remove_roles();

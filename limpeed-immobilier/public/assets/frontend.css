@@ -1,0 +1,98 @@
+.limpeed-auth-wrap {
+	max-width: 420px;
+	margin: 2em auto;
+	padding: 2em;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.limpeed-auth-wrap h2 {
+	margin-top: 0;
+	color: #2271b1;
+}
+
+.limpeed-auth-form p {
+	margin-bottom: 1em;
+}
+
+.limpeed-auth-form label {
+	display: block;
+	margin-bottom: 0.3em;
+	font-weight: 600;
+}
+
+.limpeed-auth-form input[type="text"],
+.limpeed-auth-form input[type="email"],
+.limpeed-auth-form input[type="password"] {
+	width: 100%;
+	padding: 0.5em;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+.limpeed-auth-remember label {
+	font-weight: normal;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+}
+
+.limpeed-auth-submit {
+	display: inline-block;
+	background: #2271b1;
+	color: #fff;
+	border: none;
+	padding: 0.7em 1.5em;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 1em;
+	text-decoration: none;
+}
+
+.limpeed-auth-submit:hover {
+	background: #135e96;
+	color: #fff;
+}
+
+.limpeed-auth-links {
+	text-align: center;
+	margin-top: 1em;
+	font-size: 0.9em;
+}
+
+.limpeed-notice {
+	padding: 0.8em 1em;
+	border-radius: 4px;
+	margin-bottom: 1em;
+}
+
+.limpeed-notice ul {
+	margin: 0;
+	padding-left: 1.2em;
+}
+
+.limpeed-notice-error {
+	background: #fbe1e1;
+	color: #a52424;
+}
+
+.limpeed-notice-success {
+	background: #d4f4dd;
+	color: #1a7a3e;
+}
+
+.limpeed-notice-info {
+	background: #e5f2fb;
+	color: #0a4b78;
+}
+
+.limpeed-honeypot {
+	position: absolute;
+	left: -9999px;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}

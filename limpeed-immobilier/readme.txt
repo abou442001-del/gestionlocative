@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,15 @@ Ce plugin permet à plusieurs agents connectés (comptes WordPress) de gérer :
 * Les administrateurs WordPress natifs reçoivent automatiquement ces capacités.
 * Retirer l'accès à un agent ne supprime jamais son compte WordPress ni les données qu'il a créées : seul son rôle Limpeed est retiré.
 
+== Pages frontend (connexion / inscription) ==
+
+À l'activation, le plugin crée automatiquement deux pages WordPress (si elles n'existent pas déjà) :
+
+* **Connexion Agent** (`[limpeed_login]`) : formulaire de connexion frontend basé sur `wp_signon()`.
+* **Inscription Agent** (`[limpeed_register]`) : un candidat crée un compte, mais **aucun accès n'est accordé automatiquement**. Le compte est créé sans aucun rôle Limpeed et apparaît dans Agents > Demandes en attente, où un `limpeed_admin` doit explicitement l'approuver (en choisissant son rôle) ou le rejeter (le compte est alors supprimé, ce qui est sans risque puisqu'il n'a jamais eu la capacité de créer la moindre donnée).
+* Ces pages ne sont jamais recréées si elles existent déjà (vous pouvez déplacer leur contenu dans un thème/page existante en réutilisant simplement les shortcodes).
+* Un formulaire d'inscription inclut un champ piège à robots (honeypot) pour limiter le spam basique.
+
 == Bordereaux PDF ==
 
 Générés via la librairie [Dompdf](https://github.com/dompdf/dompdf) (incluse dans `vendor/`, installée via Composer). Les PDF sont stockés dans `wp-content/uploads/limpeed-statements/`, un dossier protégé contre l'accès web direct (`.htaccess`) ; ils ne sont téléchargeables que depuis l'administration, après vérification des capacités et d'un nonce.
@@ -49,6 +58,7 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 * Phase 2 : suivi des paiements et tableau de bord financier.
 * Phase 3 : bordereaux PDF (Dompdf), historique et téléchargement sécurisé.
 * Phase 4 : gestion des comptes agents (création, changement de rôle, révocation d'accès) et journal d'activité.
+* Pages frontend de connexion et d'inscription (avec validation administrateur des inscriptions).
 
 == Installation ==
 
@@ -58,6 +68,11 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.3.0 =
+* Création automatique de 2 pages frontend à l'activation : Connexion Agent (`[limpeed_login]`) et Inscription Agent (`[limpeed_register]`).
+* Inscription publique avec validation administrateur obligatoire : un compte inscrit en frontend n'a aucun rôle Limpeed tant qu'il n'est pas approuvé depuis Agents > Demandes en attente.
+* Nouvelle section "Demandes en attente" sur la page Agents (approuver avec choix du rôle, ou rejeter).
 
 = 1.2.0 =
 * Phase 3 : table `wp_limpeed_statements`, génération de bordereaux PDF par propriétaire sur une période choisie, historique téléchargeable.

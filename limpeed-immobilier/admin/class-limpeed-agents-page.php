@@ -52,6 +52,30 @@ class Limpeed_Agents_Page {
 			self::redirect( array( 'message' => 'revoked' ) );
 		}
 
+		// Rejet d'une demande d'inscription en attente.
+		if ( isset( $_GET['action'], $_GET['id'] ) && 'reject' === $_GET['action'] ) {
+			$id = (int) $_GET['id'];
+			check_admin_referer( 'limpeed_reject_agent_' . $id );
+
+			Limpeed_Agents::reject( $id );
+			self::redirect( array( 'message' => 'rejected' ) );
+		}
+
+		// Approbation d'une demande d'inscription en attente.
+		if ( isset( $_POST['limpeed_approve_nonce'] ) ) {
+			$pending_id = isset( $_POST['pending_id'] ) ? (int) $_POST['pending_id'] : 0;
+			check_admin_referer( 'limpeed_approve_agent_' . $pending_id, 'limpeed_approve_nonce' );
+
+			$role = isset( $_POST['role'] ) ? sanitize_text_field( wp_unslash( $_POST['role'] ) ) : '';
+
+			if ( ! array_key_exists( $role, Limpeed_Agents::get_available_roles() ) ) {
+				self::redirect( array( 'message' => 'error', 'error_text' => rawurlencode( __( 'Le rôle sélectionné n\'est pas valide.', 'limpeed-immobilier' ) ) ) );
+			}
+
+			Limpeed_Agents::approve( $pending_id, $role );
+			self::redirect( array( 'message' => 'approved' ) );
+		}
+
 		// Création d'un agent.
 		if ( isset( $_POST['limpeed_agent_nonce'] ) ) {
 			check_admin_referer( 'limpeed_save_agent', 'limpeed_agent_nonce' );
@@ -197,6 +221,8 @@ class Limpeed_Agents_Page {
 
 		$list_table = new Limpeed_Agents_List_Table();
 		$list_table->prepare_items();
+
+		$pending = Limpeed_Agents::get_pending();
 
 		include LIMPEED_PLUGIN_DIR . 'admin/views/agents-list.php';
 	}

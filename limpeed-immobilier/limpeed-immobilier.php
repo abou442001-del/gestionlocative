@@ -3,7 +3,7 @@
  * Plugin Name: Limpeed Immobilier - Gestion Locative
  * Plugin URI: https://limpeed-immobilier.com
  * Description: Plugin de gestion locative pour Limpeed Immobilier : biens, propriétaires, locataires, paiements et bordereaux PDF.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Limpeed Immobilier
  * Text Domain: limpeed-immobilier
  * Domain Path: /languages
@@ -16,8 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes du plugin.
-define( 'LIMPEED_VERSION', '1.2.0' );
-define( 'LIMPEED_DB_VERSION', '1.2.0' );
+define( 'LIMPEED_VERSION', '1.3.0' );
+define( 'LIMPEED_DB_VERSION', '1.3.0' );
 define( 'LIMPEED_PLUGIN_FILE', __FILE__ );
 define( 'LIMPEED_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LIMPEED_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -36,6 +36,8 @@ require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-agents.php';
 
 if ( is_admin() ) {
 	require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-admin.php';
+} else {
+	require_once LIMPEED_PLUGIN_DIR . 'public/class-limpeed-frontend.php';
 }
 
 /**
@@ -78,3 +80,14 @@ function limpeed_init_admin() {
 	}
 }
 add_action( 'plugins_loaded', 'limpeed_init_admin' );
+
+/**
+ * Initialise les pages frontend (connexion / inscription des agents).
+ */
+function limpeed_init_frontend() {
+	if ( ! is_admin() ) {
+		$frontend = new Limpeed_Frontend();
+		$frontend->init();
+	}
+}
+add_action( 'plugins_loaded', 'limpeed_init_frontend' );

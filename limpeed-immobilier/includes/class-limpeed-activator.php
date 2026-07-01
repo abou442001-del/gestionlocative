@@ -18,6 +18,7 @@ class Limpeed_Activator {
 	public static function activate() {
 		self::create_tables();
 		Limpeed_Roles::add_roles();
+		self::create_pages();
 		update_option( 'limpeed_db_version', LIMPEED_DB_VERSION );
 		update_option( 'limpeed_version', LIMPEED_VERSION );
 	}
@@ -42,6 +43,10 @@ class Limpeed_Activator {
 		// Recréer/mettre à jour la structure des tables via dbDelta (idempotent et non destructif).
 		self::create_tables();
 
+		// Crée les pages frontend (connexion/inscription) si elles n'existent pas déjà.
+		// Idempotent : ne recrée jamais une page déjà présente.
+		self::create_pages();
+
 		// Emplacement réservé pour d'éventuelles migrations de données spécifiques
 		// entre versions (ex: renommage de valeurs, backfill de colonnes).
 		// Exemple :
@@ -51,6 +56,53 @@ class Limpeed_Activator {
 
 		update_option( 'limpeed_db_version', LIMPEED_DB_VERSION );
 		update_option( 'limpeed_version', LIMPEED_VERSION );
+	}
+
+	/**
+	 * Crée les pages frontend "Connexion" et "Inscription" si elles n'existent pas
+	 * déjà (idempotent : ne recrée jamais une page existante, ne supprime rien).
+	 */
+	public static function create_pages() {
+		self::create_page_if_missing(
+			'limpeed_login_page_id',
+			__( 'Connexion Agent', 'limpeed-immobilier' ),
+			'[limpeed_login]'
+		);
+
+		self::create_page_if_missing(
+			'limpeed_register_page_id',
+			__( 'Inscription Agent', 'limpeed-immobilier' ),
+			'[limpeed_register]'
+		);
+	}
+
+	/**
+	 * Crée une page contenant le shortcode donné si l'option ne pointe pas déjà
+	 * vers une page existante.
+	 *
+	 * @param string $option_name Option stockant l'id de la page.
+	 * @param string $title       Titre de la page à créer.
+	 * @param string $shortcode   Contenu (shortcode) de la page.
+	 */
+	private static function create_page_if_missing( $option_name, $title, $shortcode ) {
+		$page_id = (int) get_option( $option_name );
+
+		if ( $page_id && 'page' === get_post_type( $page_id ) && 'trash' !== get_post_status( $page_id ) ) {
+			return;
+		}
+
+		$page_id = wp_insert_post(
+			array(
+				'post_title'   => $title,
+				'post_content' => $shortcode,
+				'post_status'  => 'publish',
+				'post_type'    => 'page',
+			)
+		);
+
+		if ( $page_id && ! is_wp_error( $page_id ) ) {
+			update_option( $option_name, $page_id );
+		}
 	}
 
 	/**
