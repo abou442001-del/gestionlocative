@@ -1,5 +1,10 @@
 document.addEventListener( 'DOMContentLoaded', function () {
-	// Réservé pour de futures interactions (filtres dynamiques, etc.)
-	// Le graphique de recouvrement est rendu en CSS pur ; les valeurs
-	// exactes sont disponibles via l'attribut title de chaque barre.
+	document.querySelectorAll( '.limpeed-confirm-delete' ).forEach( function ( link ) {
+		link.addEventListener( 'click', function ( event ) {
+			var message = link.getAttribute( 'data-confirm' ) || 'Confirmez-vous cette action ?';
+			if ( ! window.confirm( message ) ) {
+				event.preventDefault();
+			}
+		} );
+	} );
 } );

@@ -1,34 +1,24 @@
 <?php
 /**
- * Template autonome du tableau de bord frontend (chargé via template_include,
- * en dehors du thème WordPress actif — voir Limpeed_Frontend::maybe_load_dashboard_template()).
- *
- * L'accès est normalement déjà restreint par Limpeed_Frontend::restrict_dashboard_access()
- * (hook template_redirect, exécuté avant ce fichier). La vérification ci-dessous
- * est une seconde barrière : ce fichier ne doit jamais afficher de données
- * (noms, téléphones, montants) sans revalider lui-même les droits d'accès.
+ * Contenu de la section "Tableau de bord" de l'application frontend.
+ * Inclus par public/views/app.php entre app-header.php et app-footer.php.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! is_user_logged_in() || get_user_meta( get_current_user_id(), Limpeed_Agents::PENDING_META_KEY, true ) || ! current_user_can( 'manage_limpeed_properties' ) ) {
-	wp_safe_redirect( Limpeed_Frontend::login_url() );
-	exit;
-}
-
 global $wpdb;
 
 // Indicateurs généraux.
-$owners_count         = Limpeed_Owners::count();
-$buildings_count      = Limpeed_Buildings::count();
-$properties_count     = Limpeed_Properties::count();
-$properties_vacant    = Limpeed_Properties::count( array( 'status' => 'vacant' ) );
-$properties_occupied  = Limpeed_Properties::count( array( 'status' => 'loue' ) );
-$tenants_count        = Limpeed_Tenants::count();
-$tenants_active       = Limpeed_Tenants::count( array( 'status' => 'actif' ) );
-$tenants_inactive     = max( 0, $tenants_count - $tenants_active );
+$owners_count        = Limpeed_Owners::count();
+$buildings_count     = Limpeed_Buildings::count();
+$properties_count    = Limpeed_Properties::count();
+$properties_vacant   = Limpeed_Properties::count( array( 'status' => 'vacant' ) );
+$properties_occupied = Limpeed_Properties::count( array( 'status' => 'loue' ) );
+$tenants_count       = Limpeed_Tenants::count();
+$tenants_active      = Limpeed_Tenants::count( array( 'status' => 'actif' ) );
+$tenants_inactive    = max( 0, $tenants_count - $tenants_active );
 
 // Recouvrement des loyers sur les 6 derniers mois.
 $monthly_summary = Limpeed_Payments::get_monthly_summary( 6 );
@@ -45,9 +35,9 @@ $recent_paid    = Limpeed_Payments::get_all( array( 'status' => 'paye', 'orderby
 $unpaid_tenants = array_slice( $current_summary['unpaid_tenants'], 0, 10 );
 
 // Solde du mois en cours pour chaque locataire récent (0 si un paiement "payé" existe déjà ce mois-ci).
-$current_period    = Limpeed_Payments::get_current_period();
-$payments_table    = Limpeed_Payments::table();
-$tenant_balances   = array();
+$current_period  = Limpeed_Payments::get_current_period();
+$payments_table  = Limpeed_Payments::table();
+$tenant_balances = array();
 foreach ( $recent_tenants as $recent_tenant ) {
 	$has_paid = $wpdb->get_var(
 		$wpdb->prepare(
@@ -58,9 +48,6 @@ foreach ( $recent_tenants as $recent_tenant ) {
 	);
 	$tenant_balances[ $recent_tenant->id ] = $has_paid ? 0.0 : (float) $recent_tenant->rent_amount;
 }
-
-$active_page = 'dashboard';
-include LIMPEED_PLUGIN_DIR . 'public/views/app-header.php';
 ?>
 
 <div class="limpeed-cards-row">
@@ -95,10 +82,10 @@ include LIMPEED_PLUGIN_DIR . 'public/views/app-header.php';
 	<div class="limpeed-chart">
 		<?php foreach ( $monthly_summary as $month ) : ?>
 			<?php
-			$impaye     = max( 0, $month['expected_total'] - $month['collected'] );
-			$h_total    = round( ( $month['expected_total'] / $chart_max ) * 100 );
-			$h_paye     = round( ( $month['collected'] / $chart_max ) * 100 );
-			$h_impaye   = round( ( $impaye / $chart_max ) * 100 );
+			$impaye   = max( 0, $month['expected_total'] - $month['collected'] );
+			$h_total  = round( ( $month['expected_total'] / $chart_max ) * 100 );
+			$h_paye   = round( ( $month['collected'] / $chart_max ) * 100 );
+			$h_impaye = round( ( $impaye / $chart_max ) * 100 );
 			?>
 			<div class="limpeed-chart-month">
 				<div class="limpeed-chart-bars">
@@ -223,5 +210,3 @@ include LIMPEED_PLUGIN_DIR . 'public/views/app-header.php';
 		</table>
 	</div>
 </div>
-
-<?php include LIMPEED_PLUGIN_DIR . 'public/views/app-footer.php'; ?>

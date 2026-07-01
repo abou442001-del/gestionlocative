@@ -277,6 +277,120 @@ body.limpeed-app {
 	font-weight: 600;
 }
 
+/* Notices */
+.limpeed-app-notice {
+	padding: 10px 16px;
+	border-radius: 4px;
+	margin-bottom: 16px;
+}
+
+.limpeed-app-notice-success { background: #d4f4dd; color: #1a7a3e; }
+.limpeed-app-notice-error { background: #fbe1e1; color: #a52424; }
+
+.limpeed-app-notice ul { margin: 0; padding-left: 1.2em; }
+
+/* Toolbar / actions */
+.limpeed-app-toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.limpeed-app-btn {
+	display: inline-block;
+	background: #2271b1;
+	color: #fff;
+	padding: 8px 16px;
+	border-radius: 4px;
+	text-decoration: none;
+	border: none;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.limpeed-app-btn:hover { background: #135e96; color: #fff; }
+.limpeed-app-btn-secondary { background: #f0f0f1; color: #1d2327; }
+.limpeed-app-btn-danger { background: #d9534f; color: #fff; }
+
+.limpeed-app-search { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.limpeed-app-search input[type="text"],
+.limpeed-app-search select {
+	padding: 6px 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+.limpeed-app-table .limpeed-app-actions a {
+	margin-right: 10px;
+	font-size: 12px;
+}
+
+/* Pagination */
+.limpeed-app-pagination {
+	margin-top: 16px;
+	display: flex;
+	gap: 6px;
+}
+
+.limpeed-app-pagination a {
+	padding: 6px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	text-decoration: none;
+	color: #1d2327;
+}
+
+.limpeed-app-pagination a.is-active {
+	background: #2271b1;
+	color: #fff;
+	border-color: #2271b1;
+}
+
+/* Forms */
+.limpeed-app-form .limpeed-form-row {
+	margin-bottom: 16px;
+}
+
+.limpeed-app-form label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.limpeed-app-form input[type="text"],
+.limpeed-app-form input[type="email"],
+.limpeed-app-form input[type="password"],
+.limpeed-app-form input[type="number"],
+.limpeed-app-form input[type="date"],
+.limpeed-app-form input[type="month"],
+.limpeed-app-form select,
+.limpeed-app-form textarea {
+	width: 100%;
+	max-width: 480px;
+	padding: 8px 10px;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+}
+
+.limpeed-app-required { color: #d9534f; }
+
+.limpeed-app-description {
+	color: #50575e;
+	font-size: 12px;
+	margin-top: 4px;
+}
+
+.limpeed-app-cross-nav {
+	background: #f6f7f7;
+	border-left: 4px solid #2271b1;
+	padding: 10px 14px;
+	margin-bottom: 16px;
+	font-size: 13px;
+}
+
 @media (max-width: 782px) {
 	.limpeed-app-sidebar {
 		width: 64px;

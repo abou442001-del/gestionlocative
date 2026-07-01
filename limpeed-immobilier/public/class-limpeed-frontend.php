@@ -68,9 +68,157 @@ class Limpeed_Frontend {
 	}
 
 	/**
-	 * Empêche l'accès au tableau de bord frontend aux visiteurs non connectés,
-	 * aux comptes en attente d'approbation, et aux comptes sans capacité Limpeed.
-	 * Exécuté sur template_redirect, avant tout affichage.
+	 * Déclare les sections de l'application frontend : libellé, capacité
+	 * requise, icône dashicons et fichier de contenu associé (dans public/views/).
+	 * Toute nouvelle section migrée depuis wp-admin doit être ajoutée ici.
+	 *
+	 * @return array
+	 */
+	public static function get_sections() {
+		return array(
+			'dashboard'    => array(
+				'label' => __( 'Tableau de bord', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_properties',
+				'icon'  => 'dashicons-chart-bar',
+			),
+			'owners'       => array(
+				'label' => __( 'Propriétaires', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_owners',
+				'icon'  => 'dashicons-groups',
+			),
+			'buildings'    => array(
+				'label' => __( 'Édifices', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_properties',
+				'icon'  => 'dashicons-admin-multisite',
+			),
+			'properties'   => array(
+				'label' => __( 'Biens', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_properties',
+				'icon'  => 'dashicons-building',
+			),
+			'tenants'      => array(
+				'label' => __( 'Locataires', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_tenants',
+				'icon'  => 'dashicons-admin-users',
+			),
+			'payments'     => array(
+				'label' => __( 'Paiements', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_payments',
+				'icon'  => 'dashicons-money-alt',
+			),
+			'statements'   => array(
+				'label' => __( 'Bordereaux', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_statements',
+				'icon'  => 'dashicons-media-document',
+			),
+			'agents'       => array(
+				'label' => __( 'Agents', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_agents',
+				'icon'  => 'dashicons-id',
+			),
+			'activity-log' => array(
+				'label' => __( 'Journal d\'activité', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_agents',
+				'icon'  => 'dashicons-list-view',
+			),
+			'settings'     => array(
+				'label' => __( 'Réglages', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_agents',
+				'icon'  => 'dashicons-admin-generic',
+			),
+		);
+	}
+
+	/**
+	 * Détermine la section demandée (paramètre limpeed_view), repliée sur
+	 * "dashboard" si absente ou inconnue.
+	 *
+	 * @return string
+	 */
+	public static function current_view() {
+		$view     = isset( $_GET['limpeed_view'] ) ? sanitize_key( wp_unslash( $_GET['limpeed_view'] ) ) : 'dashboard'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$sections = self::get_sections();
+		return isset( $sections[ $view ] ) ? $view : 'dashboard';
+	}
+
+	/**
+	 * Construit l'URL d'une section de l'application frontend.
+	 *
+	 * @param string $view
+	 * @param array  $args Paramètres de requête additionnels.
+	 * @return string
+	 */
+	public static function app_url( $view = 'dashboard', $args = array() ) {
+		$dashboard_page_id = self::dashboard_page_id();
+		$base              = $dashboard_page_id ? get_permalink( $dashboard_page_id ) : home_url( '/' );
+		return add_query_arg( array_merge( array( 'limpeed_view' => $view ), $args ), $base );
+	}
+
+	/**
+	 * Redirige vers une section de l'application frontend et termine la requête.
+	 *
+	 * @param string $view
+	 * @param array  $args
+	 */
+	public static function redirect_to( $view, $args = array() ) {
+		wp_safe_redirect( self::app_url( $view, $args ) );
+		exit;
+	}
+
+	/**
+	 * Affiche la pagination d'une liste de section frontend.
+	 *
+	 * @param int   $total_items
+	 * @param int   $per_page
+	 * @param int   $paged
+	 * @param array $base_args Paramètres de requête à conserver (filtres, recherche...).
+	 */
+	public static function render_pagination( $total_items, $per_page, $paged, $base_args = array() ) {
+		$total_pages = max( 1, (int) ceil( $total_items / $per_page ) );
+		if ( $total_pages <= 1 ) {
+			return;
+		}
+
+		echo '<div class="limpeed-app-pagination">';
+		for ( $i = 1; $i <= $total_pages; $i++ ) {
+			$url   = self::app_url( self::current_view(), array_merge( $base_args, array( 'paged' => $i ) ) );
+			$class = $i === (int) $paged ? 'is-active' : '';
+			printf( '<a class="%s" href="%s">%s</a>', esc_attr( $class ), esc_url( $url ), esc_html( $i ) );
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * Affiche un message de succès/erreur en haut d'une section frontend.
+	 *
+	 * @param string $message Valeur du paramètre limpeed_message.
+	 * @param array  $texts   Tableau message => texte affiché.
+	 */
+	public static function render_notice( $message, $texts = array() ) {
+		if ( ! $message ) {
+			return;
+		}
+
+		if ( 'error' === $message ) {
+			$text = isset( $_GET['error_text'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				? sanitize_text_field( wp_unslash( $_GET['error_text'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				: ( $texts['error'] ?? __( 'Une erreur est survenue.', 'limpeed-immobilier' ) );
+			printf( '<div class="limpeed-app-notice limpeed-app-notice-error">%s</div>', esc_html( $text ) );
+			return;
+		}
+
+		if ( empty( $texts[ $message ] ) ) {
+			return;
+		}
+
+		printf( '<div class="limpeed-app-notice limpeed-app-notice-success">%s</div>', esc_html( $texts[ $message ] ) );
+	}
+
+	/**
+	 * Empêche l'accès à l'application frontend aux visiteurs non connectés,
+	 * aux comptes en attente d'approbation, et aux comptes sans la capacité
+	 * requise par la section demandée. Exécuté sur template_redirect, avant
+	 * tout affichage.
 	 */
 	public function restrict_dashboard_access() {
 		$dashboard_page_id = self::dashboard_page_id();
@@ -79,7 +227,7 @@ class Limpeed_Frontend {
 		}
 
 		if ( ! is_user_logged_in() ) {
-			$redirect = add_query_arg( 'redirect_to', rawurlencode( get_permalink( $dashboard_page_id ) ), self::login_url() );
+			$redirect = add_query_arg( 'redirect_to', rawurlencode( home_url( add_query_arg( array() ) ) ), self::login_url() );
 			wp_safe_redirect( $redirect );
 			exit;
 		}
@@ -89,9 +237,12 @@ class Limpeed_Frontend {
 			exit;
 		}
 
-		if ( ! current_user_can( 'manage_limpeed_properties' ) ) {
+		$sections = self::get_sections();
+		$view     = self::current_view();
+
+		if ( ! current_user_can( $sections[ $view ]['cap'] ) ) {
 			wp_die(
-				esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder au tableau de bord.', 'limpeed-immobilier' ),
+				esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette section.', 'limpeed-immobilier' ),
 				esc_html__( 'Accès refusé', 'limpeed-immobilier' ),
 				array( 'response' => 403 )
 			);
@@ -99,8 +250,8 @@ class Limpeed_Frontend {
 	}
 
 	/**
-	 * Remplace le template du thème par notre page "application" autonome
-	 * pour la page Tableau de bord (aucun header/footer/style du thème actif).
+	 * Remplace le template du thème par notre application autonome pour la
+	 * page Tableau de bord (aucun header/footer/style du thème actif).
 	 *
 	 * @param string $template
 	 * @return string
@@ -108,7 +259,7 @@ class Limpeed_Frontend {
 	public function maybe_load_dashboard_template( $template ) {
 		$dashboard_page_id = self::dashboard_page_id();
 		if ( $dashboard_page_id && is_page( $dashboard_page_id ) ) {
-			return LIMPEED_PLUGIN_DIR . 'public/views/dashboard-app.php';
+			return LIMPEED_PLUGIN_DIR . 'public/views/app.php';
 		}
 		return $template;
 	}
@@ -189,7 +340,7 @@ class Limpeed_Frontend {
 			exit;
 		}
 
-		wp_safe_redirect( $redirect_to ? $redirect_to : admin_url( 'admin.php?page=limpeed-immobilier' ) );
+		wp_safe_redirect( $redirect_to ? $redirect_to : self::app_url( 'dashboard' ) );
 		exit;
 	}
 

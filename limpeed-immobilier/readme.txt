@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.6.0 =
+* Migration complète de l'administration vers l'application frontend : Propriétaires, Édifices, Biens, Locataires, Paiements, Bordereaux, Agents, Journal d'activité et Réglages sont désormais gérables depuis `[limpeed_dashboard]`, sans jamais passer par wp-admin.
+* Routeur frontend unique (`?limpeed_view=...`) partagé par toutes les sections, avec navigation latérale filtrée selon les droits de l'agent connecté.
+* wp-admin reste entièrement fonctionnel en secours ; rien n'a été supprimé côté administration.
+* Téléchargement sécurisé des bordereaux PDF directement depuis le frontend (mêmes vérifications de droits et de nonce que côté admin).
 
 = 1.5.0 =
 * Nouvelle page frontend "Tableau de bord" (`[limpeed_dashboard]`), créée automatiquement à l'activation, en application autonome indépendante du thème actif (`template_include`).
