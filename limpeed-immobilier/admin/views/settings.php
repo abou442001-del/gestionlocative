@@ -3,6 +3,7 @@
  * Vue : réglages du plugin.
  *
  * @var bool   $confirm
+ * @var int    $advance_months
  * @var string $message
  */
 
@@ -22,6 +23,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<table class="form-table" role="presentation">
 			<tbody>
+				<tr>
+					<th scope="row"><label for="limpeed_advance_months"><?php esc_html_e( 'Mois d\'avance par défaut', 'limpeed-immobilier' ); ?></label></th>
+					<td>
+						<select name="limpeed_advance_months" id="limpeed_advance_months">
+							<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
+								<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $advance_months, $i ); ?>>
+									<?php echo esc_html( sprintf( _n( '%d mois', '%d mois', $i, 'limpeed-immobilier' ), $i ) ); ?>
+								</option>
+							<?php endfor; ?>
+						</select>
+						<p class="description"><?php esc_html_e( 'Nombre de mois de loyer d\'avance attendu de chaque locataire. Utilisé pour calculer automatiquement le montant d\'avance et le statut (à jour / en avance / en retard) affichés sur chaque fiche locataire.', 'limpeed-immobilier' ); ?></p>
+					</td>
+				</tr>
 				<tr>
 					<th scope="row"><?php esc_html_e( 'Suppression des données', 'limpeed-immobilier' ); ?></th>
 					<td>

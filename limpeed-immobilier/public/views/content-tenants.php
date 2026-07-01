@@ -109,6 +109,89 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				&nbsp;|&nbsp;
 				<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'payments', array( 'tenant_id' => $tenant->id ) ) ); ?>"><?php esc_html_e( 'Voir l\'historique des paiements', 'limpeed-immobilier' ); ?></a>
 			</div>
+
+			<?php
+			$advance_status   = Limpeed_Tenants::get_advance_status( $tenant );
+			$calendar_year    = isset( $_GET['calendar_year'] ) ? (int) $_GET['calendar_year'] : (int) current_time( 'Y' );
+			$payment_calendar = Limpeed_Tenants::get_payment_calendar( $tenant, $calendar_year );
+
+			$advance_labels = array(
+				'aucun_paiement' => __( 'Aucun paiement enregistré', 'limpeed-immobilier' ),
+				'en_retard'      => __( 'En retard', 'limpeed-immobilier' ),
+				'a_jour'         => __( 'À jour', 'limpeed-immobilier' ),
+				'en_avance'      => __( 'En avance', 'limpeed-immobilier' ),
+			);
+			?>
+			<h3><?php esc_html_e( 'Suivi des paiements', 'limpeed-immobilier' ); ?></h3>
+
+			<div class="limpeed-app-advance-panel">
+				<div class="limpeed-app-advance-stat">
+					<span class="limpeed-app-advance-label"><?php esc_html_e( 'Avance requise', 'limpeed-immobilier' ); ?></span>
+					<span class="limpeed-app-advance-value"><?php echo esc_html( number_format_i18n( $advance_status['advance_amount'], 2 ) ); ?> <small>(<?php echo esc_html( $advance_status['advance_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small></span>
+				</div>
+				<div class="limpeed-app-advance-stat">
+					<span class="limpeed-app-advance-label"><?php esc_html_e( 'Payé jusqu\'à', 'limpeed-immobilier' ); ?></span>
+					<span class="limpeed-app-advance-value"><?php echo $advance_status['paid_until'] ? esc_html( $advance_status['paid_until'] ) : '&mdash;'; ?></span>
+				</div>
+				<div class="limpeed-app-advance-stat">
+					<span class="limpeed-app-advance-label"><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></span>
+					<span class="limpeed-app-advance-value">
+						<span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $advance_status['status'] ); ?>"><?php echo esc_html( $advance_labels[ $advance_status['status'] ] ); ?></span>
+						<?php if ( null !== $advance_status['months_ahead'] ) : ?>
+							<?php if ( $advance_status['months_ahead'] >= 0 ) : ?>
+								<?php
+								/* translators: %d: nombre de mois d'avance */
+								printf( ' ' . esc_html__( '(%d mois d\'avance)', 'limpeed-immobilier' ), (int) $advance_status['months_ahead'] );
+								?>
+							<?php else : ?>
+								<?php
+								/* translators: %d: nombre de mois de retard */
+								printf( ' ' . esc_html__( '(%d mois de retard)', 'limpeed-immobilier' ), abs( (int) $advance_status['months_ahead'] ) );
+								?>
+							<?php endif; ?>
+						<?php endif; ?>
+					</span>
+				</div>
+			</div>
+
+			<div class="limpeed-app-calendar-nav">
+				<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $tenant->id, 'calendar_year' => $calendar_year - 1 ) ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary">&laquo; <?php echo esc_html( $calendar_year - 1 ); ?></a>
+				<strong><?php echo esc_html( $calendar_year ); ?></strong>
+				<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $tenant->id, 'calendar_year' => $calendar_year + 1 ) ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php echo esc_html( $calendar_year + 1 ); ?> &raquo;</a>
+			</div>
+
+			<div class="limpeed-app-payment-calendar">
+				<?php foreach ( $payment_calendar as $month => $entry ) : ?>
+					<?php
+					$month_label = date_i18n( 'M', mktime( 0, 0, 0, $month, 1, $calendar_year ) );
+					$css_class   = 'limpeed-app-calendar-month limpeed-app-calendar-month-' . $entry['status'];
+
+					if ( 'hors_bail' === $entry['status'] ) {
+						?>
+						<span class="<?php echo esc_attr( $css_class ); ?>">
+							<span class="limpeed-app-calendar-month-label"><?php echo esc_html( $month_label ); ?></span>
+						</span>
+						<?php
+					} elseif ( $entry['payment'] ) {
+						$payment_url = Limpeed_Frontend::app_url( 'payments', array( 'action' => 'edit', 'id' => $entry['payment']->id ) );
+						?>
+						<a href="<?php echo esc_url( $payment_url ); ?>" class="<?php echo esc_attr( $css_class ); ?>">
+							<span class="limpeed-app-calendar-month-label"><?php echo esc_html( $month_label ); ?></span>
+							<span class="limpeed-app-calendar-month-amount"><?php echo esc_html( number_format_i18n( (float) $entry['payment']->amount, 0 ) ); ?></span>
+						</a>
+						<?php
+					} else {
+						$payment_url = Limpeed_Frontend::app_url( 'payments', array( 'action' => 'add', 'tenant_id' => $tenant->id, 'period' => $entry['period'] ) );
+						?>
+						<a href="<?php echo esc_url( $payment_url ); ?>" class="<?php echo esc_attr( $css_class ); ?>">
+							<span class="limpeed-app-calendar-month-label"><?php echo esc_html( $month_label ); ?></span>
+							<span class="limpeed-app-calendar-month-amount"><?php esc_html_e( 'Enregistrer', 'limpeed-immobilier' ); ?></span>
+						</a>
+						<?php
+					}
+					?>
+				<?php endforeach; ?>
+			</div>
 		<?php endif; ?>
 
 		<form method="post" action="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', $is_edit ? array( 'action' => 'edit', 'id' => $tenant->id ) : array( 'action' => 'add' ) ) ); ?>" class="limpeed-app-form">

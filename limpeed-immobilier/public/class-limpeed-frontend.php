@@ -68,6 +68,37 @@ class Limpeed_Frontend {
 	}
 
 	/**
+	 * Rendu du logo Limpeed Immobilier (icône + libellé), réutilisé sur
+	 * l'application frontend et les pages de connexion/inscription.
+	 *
+	 * @param bool $with_text Affiche le libellé texte à côté de l'icône.
+	 * @return string Balisage HTML (déjà échappé), à afficher directement.
+	 */
+	public static function render_logo( $with_text = true ) {
+		$icon = '<svg class="limpeed-brand-mark" viewBox="0 0 48 48" width="34" height="34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
+			. '<rect x="4" y="26" width="9" height="18" rx="2" fill="#79c98f"/>'
+			. '<rect x="17" y="16" width="9" height="28" rx="2" fill="#3aa655"/>'
+			. '<rect x="30" y="6" width="9" height="38" rx="2" fill="#1f7a41"/>'
+			. '<rect x="6.5" y="30" width="4" height="4" rx="1" fill="#ffffff"/>'
+			. '<rect x="19.5" y="20" width="4" height="4" rx="1" fill="#ffffff"/>'
+			. '<rect x="32.5" y="10" width="4" height="4" rx="1" fill="#ffffff"/>'
+			. '<rect x="19.5" y="27" width="4" height="4" rx="1" fill="#ffffff"/>'
+			. '<rect x="32.5" y="17" width="4" height="4" rx="1" fill="#ffffff"/>'
+			. '<rect x="32.5" y="24" width="4" height="4" rx="1" fill="#ffffff"/>'
+			. '</svg>';
+
+		$text = '';
+		if ( $with_text ) {
+			$text = '<span class="limpeed-brand-text">'
+				. '<span class="limpeed-brand-name">' . esc_html__( 'Limpeed', 'limpeed-immobilier' ) . '</span>'
+				. '<span class="limpeed-brand-sub">' . esc_html__( 'Immobilier', 'limpeed-immobilier' ) . '</span>'
+				. '</span>';
+		}
+
+		return '<span class="limpeed-brand">' . $icon . $text . '</span>';
+	}
+
+	/**
 	 * Déclare les sections de l'application frontend : libellé, capacité
 	 * requise, icône dashicons et fichier de contenu associé (dans public/views/).
 	 * Toute nouvelle section migrée depuis wp-admin doit être ajoutée ici.

@@ -34,6 +34,10 @@ class Limpeed_Settings_Page {
 		$confirm = isset( $_POST['limpeed_confirm_data_deletion'] ) && '1' === $_POST['limpeed_confirm_data_deletion'];
 		update_option( 'limpeed_confirm_data_deletion', $confirm ? '1' : '0' );
 
+		$advance_months = isset( $_POST['limpeed_advance_months'] ) ? (int) $_POST['limpeed_advance_months'] : 1;
+		$advance_months = min( 12, max( 1, $advance_months ) );
+		update_option( 'limpeed_advance_months', $advance_months );
+
 		$url = add_query_arg(
 			array(
 				'page'    => self::SLUG,
@@ -53,8 +57,9 @@ class Limpeed_Settings_Page {
 			wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette page.', 'limpeed-immobilier' ) );
 		}
 
-		$confirm = '1' === get_option( 'limpeed_confirm_data_deletion', '0' );
-		$message = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '';
+		$confirm        = '1' === get_option( 'limpeed_confirm_data_deletion', '0' );
+		$advance_months = (int) get_option( 'limpeed_advance_months', 1 );
+		$message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '';
 
 		include LIMPEED_PLUGIN_DIR . 'admin/views/settings.php';
 	}

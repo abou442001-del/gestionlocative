@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $is_edit = ! empty( $payment );
 $preselected_tenant = $preselected_tenant ?? 0;
+$preselected_period = $preselected_period ?? '';
 
 $field = function ( $name, $default = '' ) use ( $payment, $posted, $is_edit ) {
 	if ( null !== $posted && isset( $posted[ $name ] ) ) {
@@ -82,7 +83,7 @@ $form_action = add_query_arg(
 				</tr>
 				<tr>
 					<th scope="row"><label for="period"><?php esc_html_e( 'Mois concerné', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
-					<td><input name="period" type="month" id="period" required value="<?php echo esc_attr( $field( 'period', Limpeed_Payments::get_current_period() ) ); ?>"></td>
+					<td><input name="period" type="month" id="period" required value="<?php echo esc_attr( $field( 'period', $preselected_period ? $preselected_period : Limpeed_Payments::get_current_period() ) ); ?>"></td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="amount"><?php esc_html_e( 'Montant payé', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>

@@ -16,6 +16,7 @@ $register_id  = (int) get_option( 'limpeed_register_page_id' );
 $register_url = $register_id ? get_permalink( $register_id ) : '';
 ?>
 <div class="limpeed-auth-wrap">
+	<div class="limpeed-auth-brand"><?php echo Limpeed_Frontend::render_logo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- balisage statique généré et échappé dans render_logo(). ?></div>
 	<h2><?php esc_html_e( 'Connexion Agent', 'limpeed-immobilier' ); ?></h2>
 
 	<?php if ( 'pending' === $message ) : ?>

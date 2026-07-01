@@ -27,7 +27,7 @@ $current_label = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active
 <body class="limpeed-app">
 	<div class="limpeed-app-shell">
 		<aside class="limpeed-app-sidebar">
-			<div class="limpeed-app-logo">Limpeed<span>Immobilier</span></div>
+			<div class="limpeed-app-logo"><?php echo Limpeed_Frontend::render_logo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- balisage statique généré et échappé dans render_logo(). ?></div>
 			<nav class="limpeed-app-nav">
 				<?php foreach ( $all_sections as $key => $item ) : ?>
 					<?php if ( ! current_user_can( $item['cap'] ) ) : ?>

@@ -1,36 +1,85 @@
 .limpeed-auth-wrap {
 	max-width: 420px;
-	margin: 2em auto;
-	padding: 2em;
+	margin: 3em auto;
+	padding: 2.4em;
 	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 6px;
+	border: 1px solid #e3e8ee;
+	border-radius: 12px;
+	box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 2px 8px rgba(16, 24, 40, .05);
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	color: #1d2939;
+}
+
+.limpeed-auth-brand {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 1.2em;
+}
+
+.limpeed-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.limpeed-brand-mark {
+	flex-shrink: 0;
+}
+
+.limpeed-brand-text {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.15;
+}
+
+.limpeed-brand-name {
+	font-size: 18px;
+	font-weight: 800;
+	color: #1d4e89;
+	letter-spacing: .01em;
+}
+
+.limpeed-brand-sub {
+	font-size: 11px;
+	font-weight: 600;
+	color: #2f9451;
+	letter-spacing: .08em;
+	text-transform: uppercase;
 }
 
 .limpeed-auth-wrap h2 {
 	margin-top: 0;
-	color: #2271b1;
+	text-align: center;
+	font-size: 19px;
+	color: #1d2939;
 }
 
 .limpeed-auth-form p {
-	margin-bottom: 1em;
+	margin-bottom: 1.1em;
 }
 
 .limpeed-auth-form label {
 	display: block;
-	margin-bottom: 0.3em;
+	margin-bottom: 0.4em;
 	font-weight: 600;
+	font-size: 13px;
 }
 
 .limpeed-auth-form input[type="text"],
 .limpeed-auth-form input[type="email"],
 .limpeed-auth-form input[type="password"] {
 	width: 100%;
-	padding: 0.5em;
-	border: 1px solid #8c8f94;
-	border-radius: 4px;
+	padding: 0.65em 0.8em;
+	border: 1px solid #e3e8ee;
+	border-radius: 7px;
 	box-sizing: border-box;
+	font-size: 14px;
+}
+
+.limpeed-auth-form input:focus {
+	outline: none;
+	border-color: #1d4e89;
+	box-shadow: 0 0 0 3px rgba(29, 78, 137, .12);
 }
 
 .limpeed-auth-remember label {
@@ -42,31 +91,45 @@
 
 .limpeed-auth-submit {
 	display: inline-block;
-	background: #2271b1;
+	width: 100%;
+	background: #1d4e89;
 	color: #fff;
 	border: none;
-	padding: 0.7em 1.5em;
-	border-radius: 4px;
+	padding: 0.8em 1.5em;
+	border-radius: 7px;
 	cursor: pointer;
 	font-size: 1em;
+	font-weight: 600;
 	text-decoration: none;
+	text-align: center;
 }
 
 .limpeed-auth-submit:hover {
-	background: #135e96;
+	background: #143a68;
 	color: #fff;
 }
 
 .limpeed-auth-links {
 	text-align: center;
-	margin-top: 1em;
+	margin-top: 1.2em;
 	font-size: 0.9em;
+}
+
+.limpeed-auth-links a {
+	color: #1d4e89;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.limpeed-auth-links a:hover {
+	text-decoration: underline;
 }
 
 .limpeed-notice {
 	padding: 0.8em 1em;
-	border-radius: 4px;
-	margin-bottom: 1em;
+	border-radius: 7px;
+	margin-bottom: 1.2em;
+	font-size: 13px;
 }
 
 .limpeed-notice ul {
@@ -80,8 +143,8 @@
 }
 
 .limpeed-notice-success {
-	background: #d4f4dd;
-	color: #1a7a3e;
+	background: #e9f7ee;
+	color: #1f7a41;
 }
 
 .limpeed-notice-info {

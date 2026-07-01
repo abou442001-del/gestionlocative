@@ -23,6 +23,7 @@ $login_id    = (int) get_option( 'limpeed_login_page_id' );
 $login_url   = $login_id ? get_permalink( $login_id ) : wp_login_url();
 ?>
 <div class="limpeed-auth-wrap">
+	<div class="limpeed-auth-brand"><?php echo Limpeed_Frontend::render_logo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- balisage statique généré et échappé dans render_logo(). ?></div>
 	<h2><?php esc_html_e( 'Inscription Agent', 'limpeed-immobilier' ); ?></h2>
 
 	<?php if ( 'registered' === $message ) : ?>

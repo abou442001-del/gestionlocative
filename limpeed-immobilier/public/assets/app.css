@@ -1,3 +1,23 @@
+:root {
+	--limpeed-blue: #1d4e89;
+	--limpeed-blue-dark: #143a68;
+	--limpeed-green: #2f9451;
+	--limpeed-green-dark: #1f7a41;
+	--limpeed-green-light: #e9f7ee;
+	--limpeed-bg: #f5f7fa;
+	--limpeed-surface: #ffffff;
+	--limpeed-border: #e3e8ee;
+	--limpeed-text: #1d2939;
+	--limpeed-text-muted: #667085;
+	--limpeed-danger: #d9534f;
+	--limpeed-danger-light: #fbe1e1;
+	--limpeed-warning: #b98900;
+	--limpeed-warning-light: #fff3cd;
+	--limpeed-radius: 10px;
+	--limpeed-radius-sm: 7px;
+	--limpeed-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 2px 8px rgba(16, 24, 40, .05);
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -5,8 +25,9 @@
 body.limpeed-app {
 	margin: 0;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-	background: #f1f3f6;
-	color: #1d2327;
+	background: var(--limpeed-bg);
+	color: var(--limpeed-text);
+	-webkit-font-smoothing: antialiased;
 }
 
 .limpeed-app-shell {
@@ -14,56 +35,90 @@ body.limpeed-app {
 	min-height: 100vh;
 }
 
+/* Brand / logo */
+.limpeed-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.limpeed-brand-mark {
+	flex-shrink: 0;
+}
+
+.limpeed-brand-text {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.15;
+}
+
+.limpeed-brand-name {
+	font-size: 17px;
+	font-weight: 800;
+	color: var(--limpeed-blue);
+	letter-spacing: .01em;
+}
+
+.limpeed-brand-sub {
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--limpeed-green);
+	letter-spacing: .08em;
+	text-transform: uppercase;
+}
+
 /* Sidebar */
 .limpeed-app-sidebar {
-	width: 240px;
+	width: 250px;
 	flex-shrink: 0;
-	background: #1c2b39;
-	color: #fff;
+	background: var(--limpeed-surface);
+	border-right: 1px solid var(--limpeed-border);
 	display: flex;
 	flex-direction: column;
 }
 
 .limpeed-app-logo {
-	padding: 20px;
-	font-size: 20px;
-	font-weight: 700;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.limpeed-app-logo span {
-	display: block;
-	font-size: 12px;
-	font-weight: 400;
-	opacity: 0.7;
+	padding: 22px 20px;
+	border-bottom: 1px solid var(--limpeed-border);
 }
 
 .limpeed-app-nav {
 	display: flex;
 	flex-direction: column;
-	padding: 10px 0;
+	padding: 12px;
+	gap: 2px;
 }
 
 .limpeed-app-nav-item {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 12px 20px;
-	color: #c3d0dc;
+	gap: 12px;
+	padding: 10px 14px;
+	color: var(--limpeed-text-muted);
 	text-decoration: none;
 	font-size: 14px;
+	font-weight: 500;
+	border-radius: var(--limpeed-radius-sm);
 	border-left: 3px solid transparent;
+	transition: background .12s ease, color .12s ease;
+}
+
+.limpeed-app-nav-item .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
 }
 
 .limpeed-app-nav-item:hover {
-	background: rgba(255, 255, 255, 0.05);
-	color: #fff;
+	background: var(--limpeed-bg);
+	color: var(--limpeed-text);
 }
 
 .limpeed-app-nav-item.is-active {
-	background: rgba(255, 255, 255, 0.08);
-	color: #fff;
-	border-left-color: #2271b1;
+	background: var(--limpeed-green-light);
+	color: var(--limpeed-green-dark);
+	border-left-color: var(--limpeed-green);
+	font-weight: 600;
 }
 
 /* Main area */
@@ -75,17 +130,18 @@ body.limpeed-app {
 }
 
 .limpeed-app-topbar {
-	background: #2271b1;
-	color: #fff;
-	padding: 14px 24px;
+	background: var(--limpeed-surface);
+	border-bottom: 1px solid var(--limpeed-border);
+	color: var(--limpeed-text);
+	padding: 16px 28px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 }
 
 .limpeed-app-topbar-title {
-	font-size: 18px;
-	font-weight: 600;
+	font-size: 19px;
+	font-weight: 700;
 }
 
 .limpeed-app-topbar-user {
@@ -93,6 +149,7 @@ body.limpeed-app {
 	align-items: center;
 	gap: 10px;
 	font-size: 14px;
+	color: var(--limpeed-text-muted);
 }
 
 .limpeed-app-topbar-user img {
@@ -100,67 +157,95 @@ body.limpeed-app {
 }
 
 .limpeed-app-logout {
-	color: #fff;
+	color: var(--limpeed-blue);
+	text-decoration: none;
+	margin-left: 6px;
+	font-weight: 600;
+}
+
+.limpeed-app-logout:hover {
 	text-decoration: underline;
-	margin-left: 10px;
 }
 
 .limpeed-app-content {
-	padding: 24px;
+	padding: 28px;
 }
 
 /* KPI cards */
 .limpeed-cards-row {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: 16px;
-	margin-bottom: 24px;
+	gap: 18px;
+	margin-bottom: 28px;
 }
 
 .limpeed-app-card {
-	background: #fff;
-	border-radius: 6px;
+	background: var(--limpeed-surface);
+	border-radius: var(--limpeed-radius);
 	overflow: hidden;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	box-shadow: var(--limpeed-shadow);
 }
 
 .limpeed-app-card-number {
-	font-size: 30px;
+	font-size: 28px;
 	font-weight: 700;
-	padding: 16px 16px 0;
+	padding: 18px 18px 0;
+	letter-spacing: -.01em;
 }
 
 .limpeed-app-card-label {
-	padding: 0 16px 16px;
-	color: #50575e;
+	padding: 4px 18px 18px;
+	color: var(--limpeed-text-muted);
 	font-size: 13px;
 }
 
 .limpeed-app-card-bar {
-	padding: 6px 16px;
-	color: #fff;
-	font-size: 11px;
-	min-height: 22px;
+	padding: 8px 18px;
+	font-size: 12px;
+	font-weight: 600;
+	min-height: 1px;
 }
 
+.limpeed-app-card-bar:empty {
+	padding: 0;
+}
+
+/* Couleur pleine par défaut (utilisée telle quelle par les pastilles de légende du graphique). */
 .limpeed-bar-orange { background: #e8973a; }
-.limpeed-bar-red { background: #d9534f; }
-.limpeed-bar-green { background: #4caf7d; }
-.limpeed-bar-blue { background: #2271b1; }
+.limpeed-bar-red { background: var(--limpeed-danger); }
+.limpeed-bar-green { background: var(--limpeed-green); }
+.limpeed-bar-blue { background: var(--limpeed-blue); }
+
+/* Sur la bande d'info des cartes KPI : couleur pleine remplacée par une teinte
+   douce, plus lisible pour du texte que l'aplat utilisé pour les pastilles. */
+.limpeed-app-card-bar.limpeed-bar-orange { background: #fdf3e7; color: #a5650f; }
+.limpeed-app-card-bar.limpeed-bar-red { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
+.limpeed-app-card-bar.limpeed-bar-green { background: var(--limpeed-green-light); color: var(--limpeed-green-dark); }
+.limpeed-app-card-bar.limpeed-bar-blue { background: #e8eef7; color: var(--limpeed-blue); }
 
 /* Panels */
 .limpeed-app-panel {
-	background: #fff;
-	border-radius: 6px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-	padding: 20px;
+	background: var(--limpeed-surface);
+	border-radius: var(--limpeed-radius);
+	box-shadow: var(--limpeed-shadow);
+	padding: 24px;
 	margin-bottom: 24px;
 }
 
 .limpeed-app-panel h2 {
-	font-size: 15px;
-	margin: 0 0 16px;
-	color: #1d2327;
+	font-size: 16px;
+	margin: 0 0 18px;
+	color: var(--limpeed-text);
+	font-weight: 700;
+}
+
+.limpeed-app-panel h3 {
+	font-size: 14px;
+	margin: 28px 0 14px;
+	color: var(--limpeed-text);
+	font-weight: 700;
+	padding-top: 20px;
+	border-top: 1px solid var(--limpeed-border);
 }
 
 .limpeed-panel-title-green,
@@ -168,12 +253,12 @@ body.limpeed-app {
 .limpeed-panel-title-blue {
 	padding: 8px 12px;
 	color: #fff;
-	border-radius: 4px;
+	border-radius: var(--limpeed-radius-sm);
 }
 
-.limpeed-panel-title-green { background: #4caf7d; }
+.limpeed-panel-title-green { background: var(--limpeed-green); }
 .limpeed-panel-title-orange { background: #e8973a; }
-.limpeed-panel-title-blue { background: #2271b1; }
+.limpeed-panel-title-blue { background: var(--limpeed-blue); }
 
 /* Chart */
 .limpeed-chart {
@@ -202,13 +287,13 @@ body.limpeed-app {
 
 .limpeed-chart-bar {
 	width: 16px;
-	border-radius: 2px 2px 0 0;
+	border-radius: 3px 3px 0 0;
 	min-height: 2px;
 }
 
 .limpeed-chart-label {
 	font-size: 11px;
-	color: #50575e;
+	color: var(--limpeed-text-muted);
 	white-space: nowrap;
 }
 
@@ -218,6 +303,7 @@ body.limpeed-app {
 	justify-content: center;
 	margin-top: 10px;
 	font-size: 12px;
+	color: var(--limpeed-text-muted);
 }
 
 .limpeed-legend-item {
@@ -230,7 +316,7 @@ body.limpeed-app {
 	display: inline-block;
 	width: 12px;
 	height: 12px;
-	border-radius: 2px;
+	border-radius: 3px;
 }
 
 /* Tables */
@@ -248,44 +334,62 @@ body.limpeed-app {
 
 .limpeed-app-table th {
 	text-align: left;
-	border-bottom: 2px solid #eee;
-	padding: 8px;
-	color: #50575e;
+	border-bottom: 1px solid var(--limpeed-border);
+	padding: 10px 8px;
+	color: var(--limpeed-text-muted);
+	font-weight: 600;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: .02em;
 }
 
 .limpeed-app-table td {
-	padding: 8px;
-	border-bottom: 1px solid #f0f0f1;
+	padding: 10px 8px;
+	border-bottom: 1px solid var(--limpeed-border);
+}
+
+.limpeed-app-table tbody tr:hover {
+	background: var(--limpeed-bg);
 }
 
 .limpeed-app-badge {
 	display: inline-block;
-	padding: 2px 8px;
-	border-radius: 3px;
+	padding: 3px 10px;
+	border-radius: 999px;
 	font-size: 11px;
 	font-weight: 600;
 	text-transform: uppercase;
-	background: #f0f0f1;
-	color: #50575e;
+	letter-spacing: .02em;
+	background: var(--limpeed-bg);
+	color: var(--limpeed-text-muted);
 }
 
-.limpeed-app-badge-actif { background: #d4f4dd; color: #1a7a3e; }
-.limpeed-app-badge-termine { background: #f0f0f1; color: #50575e; }
+.limpeed-app-badge-actif,
+.limpeed-app-badge-paye,
+.limpeed-app-badge-a_jour { background: var(--limpeed-green-light); color: var(--limpeed-green-dark); }
+
+.limpeed-app-badge-termine,
+.limpeed-app-badge-aucun_paiement { background: var(--limpeed-bg); color: var(--limpeed-text-muted); }
+
+.limpeed-app-badge-partiel { background: var(--limpeed-warning-light); color: var(--limpeed-warning); }
+.limpeed-app-badge-en_retard { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
+.limpeed-app-badge-en_avance { background: #dbeafe; color: var(--limpeed-blue); }
 
 .limpeed-text-danger {
-	color: #d9534f;
+	color: var(--limpeed-danger);
 	font-weight: 600;
 }
 
 /* Notices */
 .limpeed-app-notice {
-	padding: 10px 16px;
-	border-radius: 4px;
-	margin-bottom: 16px;
+	padding: 12px 16px;
+	border-radius: var(--limpeed-radius-sm);
+	margin-bottom: 18px;
+	font-size: 13px;
 }
 
-.limpeed-app-notice-success { background: #d4f4dd; color: #1a7a3e; }
-.limpeed-app-notice-error { background: #fbe1e1; color: #a52424; }
+.limpeed-app-notice-success { background: var(--limpeed-green-light); color: var(--limpeed-green-dark); }
+.limpeed-app-notice-error { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
 
 .limpeed-app-notice ul { margin: 0; padding-left: 1.2em; }
 
@@ -294,70 +398,82 @@ body.limpeed-app {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 16px;
+	margin-bottom: 18px;
 	flex-wrap: wrap;
 	gap: 10px;
 }
 
 .limpeed-app-btn {
 	display: inline-block;
-	background: #2271b1;
+	background: var(--limpeed-blue);
 	color: #fff;
-	padding: 8px 16px;
-	border-radius: 4px;
+	padding: 9px 18px;
+	border-radius: var(--limpeed-radius-sm);
 	text-decoration: none;
 	border: none;
 	cursor: pointer;
 	font-size: 14px;
+	font-weight: 600;
+	transition: background .12s ease;
 }
 
-.limpeed-app-btn:hover { background: #135e96; color: #fff; }
-.limpeed-app-btn-secondary { background: #f0f0f1; color: #1d2327; }
-.limpeed-app-btn-danger { background: #d9534f; color: #fff; }
+.limpeed-app-btn:hover { background: var(--limpeed-blue-dark); color: #fff; }
+.limpeed-app-btn-secondary { background: var(--limpeed-bg); color: var(--limpeed-text); }
+.limpeed-app-btn-secondary:hover { background: var(--limpeed-border); color: var(--limpeed-text); }
+.limpeed-app-btn-danger { background: var(--limpeed-danger); color: #fff; }
+.limpeed-app-btn-danger:hover { background: #b83c39; color: #fff; }
 
 .limpeed-app-search { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .limpeed-app-search input[type="text"],
 .limpeed-app-search select {
-	padding: 6px 10px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	padding: 8px 12px;
+	border: 1px solid var(--limpeed-border);
+	border-radius: var(--limpeed-radius-sm);
+	font-size: 13px;
 }
 
 .limpeed-app-table .limpeed-app-actions a {
-	margin-right: 10px;
+	margin-right: 12px;
 	font-size: 12px;
+	color: var(--limpeed-blue);
+	text-decoration: none;
+	font-weight: 600;
 }
+
+.limpeed-app-table .limpeed-app-actions a:hover { text-decoration: underline; }
 
 /* Pagination */
 .limpeed-app-pagination {
-	margin-top: 16px;
+	margin-top: 18px;
 	display: flex;
 	gap: 6px;
 }
 
 .limpeed-app-pagination a {
-	padding: 6px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	padding: 7px 13px;
+	border: 1px solid var(--limpeed-border);
+	border-radius: var(--limpeed-radius-sm);
 	text-decoration: none;
-	color: #1d2327;
+	color: var(--limpeed-text);
+	font-size: 13px;
 }
 
 .limpeed-app-pagination a.is-active {
-	background: #2271b1;
+	background: var(--limpeed-blue);
 	color: #fff;
-	border-color: #2271b1;
+	border-color: var(--limpeed-blue);
 }
 
 /* Forms */
 .limpeed-app-form .limpeed-form-row {
-	margin-bottom: 16px;
+	margin-bottom: 18px;
 }
 
 .limpeed-app-form label {
 	display: block;
 	font-weight: 600;
-	margin-bottom: 4px;
+	margin-bottom: 6px;
+	font-size: 13px;
 }
 
 .limpeed-app-form input[type="text"],
@@ -370,25 +486,131 @@ body.limpeed-app {
 .limpeed-app-form textarea {
 	width: 100%;
 	max-width: 480px;
-	padding: 8px 10px;
-	border: 1px solid #ccd0d4;
-	border-radius: 4px;
+	padding: 9px 12px;
+	border: 1px solid var(--limpeed-border);
+	border-radius: var(--limpeed-radius-sm);
+	font-size: 14px;
+	color: var(--limpeed-text);
 }
 
-.limpeed-app-required { color: #d9534f; }
+.limpeed-app-form input:focus,
+.limpeed-app-form select:focus,
+.limpeed-app-form textarea:focus {
+	outline: none;
+	border-color: var(--limpeed-blue);
+	box-shadow: 0 0 0 3px rgba(29, 78, 137, .12);
+}
+
+.limpeed-app-required { color: var(--limpeed-danger); }
 
 .limpeed-app-description {
-	color: #50575e;
+	color: var(--limpeed-text-muted);
 	font-size: 12px;
-	margin-top: 4px;
+	margin-top: 6px;
 }
 
 .limpeed-app-cross-nav {
-	background: #f6f7f7;
-	border-left: 4px solid #2271b1;
-	padding: 10px 14px;
-	margin-bottom: 16px;
+	background: var(--limpeed-bg);
+	border-left: 3px solid var(--limpeed-blue);
+	border-radius: 0 var(--limpeed-radius-sm) var(--limpeed-radius-sm) 0;
+	padding: 12px 16px;
+	margin-bottom: 20px;
 	font-size: 13px;
+	color: var(--limpeed-text-muted);
+}
+
+.limpeed-app-cross-nav a { color: var(--limpeed-blue); font-weight: 600; text-decoration: none; }
+.limpeed-app-cross-nav a:hover { text-decoration: underline; }
+
+/* Suivi des paiements (fiche locataire) */
+.limpeed-app-advance-panel {
+	display: flex;
+	gap: 28px;
+	flex-wrap: wrap;
+	margin: 0 0 20px;
+	padding: 18px;
+	background: var(--limpeed-bg);
+	border-radius: var(--limpeed-radius-sm);
+}
+
+.limpeed-app-advance-stat {
+	min-width: 150px;
+}
+
+.limpeed-app-advance-label {
+	display: block;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--limpeed-text-muted);
+	margin-bottom: 4px;
+}
+
+.limpeed-app-advance-value {
+	display: block;
+	font-size: 18px;
+	font-weight: 700;
+}
+
+.limpeed-app-advance-value small {
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--limpeed-text-muted);
+}
+
+.limpeed-app-calendar-nav {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin-bottom: 12px;
+}
+
+.limpeed-app-payment-calendar {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 10px;
+	margin: 0 0 8px;
+}
+
+.limpeed-app-calendar-month {
+	display: block;
+	text-align: center;
+	padding: 12px 6px;
+	border-radius: var(--limpeed-radius-sm);
+	text-decoration: none;
+	font-size: 12px;
+	border: 1px solid transparent;
+	transition: border-color .12s ease;
+}
+
+.limpeed-app-calendar-month-label {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 4px;
+	text-transform: uppercase;
+	font-size: 11px;
+}
+
+.limpeed-app-calendar-month-amount {
+	display: block;
+	font-size: 11px;
+}
+
+.limpeed-app-calendar-month-paye { background: var(--limpeed-green-light); color: var(--limpeed-green-dark); }
+.limpeed-app-calendar-month-partiel { background: var(--limpeed-warning-light); color: var(--limpeed-warning); }
+.limpeed-app-calendar-month-retard { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
+.limpeed-app-calendar-month-a_venir { background: var(--limpeed-bg); color: var(--limpeed-text-muted); }
+.limpeed-app-calendar-month-hors_bail { background: #fafbfc; color: #c3c9d1; }
+
+a.limpeed-app-calendar-month-a_venir:hover,
+a.limpeed-app-calendar-month-retard:hover {
+	border-color: var(--limpeed-blue);
+}
+
+@media (max-width: 900px) {
+	.limpeed-app-payment-calendar {
+		grid-template-columns: repeat(3, 1fr);
+	}
 }
 
 @media (max-width: 782px) {
@@ -396,7 +618,7 @@ body.limpeed-app {
 		width: 64px;
 	}
 
-	.limpeed-app-logo,
+	.limpeed-app-logo .limpeed-brand-text,
 	.limpeed-app-nav-label,
 	.limpeed-app-topbar-user span {
 		display: none;

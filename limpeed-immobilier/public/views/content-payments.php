@@ -28,6 +28,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	$posted              = Limpeed_Frontend_Payments::$posted;
 	$tenants             = Limpeed_Tenants::get_all( array( 'per_page' => 9999 ) );
 	$preselected_tenant  = isset( $_GET['tenant_id'] ) ? (int) $_GET['tenant_id'] : 0;
+	$preselected_period  = isset( $_GET['period'] ) && preg_match( '/^\d{4}-\d{2}$/', $_GET['period'] ) ? sanitize_text_field( wp_unslash( $_GET['period'] ) ) : '';
 
 	$field = function ( $name, $default = '' ) use ( $payment, $posted, $is_edit ) {
 		if ( null !== $posted && isset( $posted[ $name ] ) ) {
@@ -73,7 +74,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			</div>
 			<div class="limpeed-form-row">
 				<label for="period"><?php esc_html_e( 'Mois concerné', 'limpeed-immobilier' ); ?> <span class="limpeed-app-required">*</span></label>
-				<input type="month" name="period" id="period" required value="<?php echo esc_attr( $field( 'period', Limpeed_Payments::get_current_period() ) ); ?>">
+				<input type="month" name="period" id="period" required value="<?php echo esc_attr( $field( 'period', $preselected_period ? $preselected_period : Limpeed_Payments::get_current_period() ) ); ?>">
 			</div>
 			<div class="limpeed-form-row">
 				<label for="amount"><?php esc_html_e( 'Montant payé', 'limpeed-immobilier' ); ?> <span class="limpeed-app-required">*</span></label>

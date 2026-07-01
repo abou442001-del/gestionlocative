@@ -95,3 +95,117 @@
 #limpeed-agent-icon {
 	color: #2271b1;
 }
+
+/* Suivi des paiements (fiche locataire) */
+.limpeed-advance-panel {
+	display: flex;
+	gap: 24px;
+	flex-wrap: wrap;
+	margin: 16px 0;
+	padding: 16px;
+	background: #f6f7f7;
+	border-radius: 6px;
+}
+
+.limpeed-advance-stat {
+	min-width: 150px;
+}
+
+.limpeed-advance-stat-label {
+	display: block;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: .02em;
+	color: #757575;
+	margin-bottom: 2px;
+}
+
+.limpeed-advance-stat-value {
+	display: block;
+	font-size: 18px;
+	font-weight: 700;
+}
+
+.limpeed-calendar-nav {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 10px;
+}
+
+.limpeed-calendar-nav strong {
+	font-size: 14px;
+}
+
+.limpeed-payment-calendar {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 10px;
+	margin: 0 0 20px;
+}
+
+.limpeed-calendar-month {
+	display: block;
+	text-align: center;
+	padding: 10px 6px;
+	border-radius: 6px;
+	text-decoration: none;
+	font-size: 12px;
+	border: 1px solid transparent;
+}
+
+.limpeed-calendar-month-label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.limpeed-calendar-month-amount {
+	display: block;
+	font-size: 11px;
+}
+
+.limpeed-calendar-month-paye {
+	background: #d4f4dd;
+	color: #1a7a3e;
+}
+
+.limpeed-calendar-month-partiel {
+	background: #fff3cd;
+	color: #8a6500;
+}
+
+.limpeed-calendar-month-retard {
+	background: #fbe1e1;
+	color: #a52424;
+}
+
+.limpeed-calendar-month-a_venir {
+	background: #f0f0f1;
+	color: #50575e;
+}
+
+a.limpeed-calendar-month-a_venir:hover,
+a.limpeed-calendar-month-retard:hover {
+	border-color: #2271b1;
+}
+
+.limpeed-calendar-month-hors_bail {
+	background: #fafafa;
+	color: #c3c4c7;
+}
+
+.limpeed-badge-a_jour {
+	background: #d4f4dd;
+	color: #1a7a3e;
+}
+
+.limpeed-badge-en_avance {
+	background: #d7e9fb;
+	color: #135e96;
+}
+
+.limpeed-badge-aucun_paiement {
+	background: #f0f0f1;
+	color: #50575e;
+}

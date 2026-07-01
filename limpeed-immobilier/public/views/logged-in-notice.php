@@ -14,6 +14,7 @@ $is_agent = (bool) array_intersect( $user->roles, array_keys( Limpeed_Agents::ge
 $pending  = get_user_meta( $user->ID, Limpeed_Agents::PENDING_META_KEY, true );
 ?>
 <div class="limpeed-auth-wrap">
+	<div class="limpeed-auth-brand"><?php echo Limpeed_Frontend::render_logo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- balisage statique généré et échappé dans render_logo(). ?></div>
 	<?php if ( $pending ) : ?>
 		<div class="limpeed-notice limpeed-notice-info">
 			<p>
@@ -36,7 +37,7 @@ $pending  = get_user_meta( $user->ID, Limpeed_Agents::PENDING_META_KEY, true );
 			);
 			?>
 		</p>
-		<p><a class="limpeed-auth-submit" href="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-immobilier' ) ); ?>"><?php esc_html_e( 'Accéder au tableau de bord', 'limpeed-immobilier' ); ?></a></p>
+		<p><a class="limpeed-auth-submit" href="<?php echo esc_url( Limpeed_Frontend::app_url( 'dashboard' ) ); ?>"><?php esc_html_e( 'Accéder au tableau de bord', 'limpeed-immobilier' ); ?></a></p>
 	<?php else : ?>
 		<p>
 			<?php

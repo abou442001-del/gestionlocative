@@ -160,6 +160,7 @@ class Limpeed_Payments_Page {
 			$posted             = self::$posted;
 			$tenants            = Limpeed_Tenants::get_all( array( 'per_page' => 9999 ) );
 			$preselected_tenant = isset( $_GET['tenant_id'] ) ? (int) $_GET['tenant_id'] : 0;
+			$preselected_period = isset( $_GET['period'] ) && preg_match( '/^\d{4}-\d{2}$/', $_GET['period'] ) ? sanitize_text_field( wp_unslash( $_GET['period'] ) ) : '';
 
 			include LIMPEED_PLUGIN_DIR . 'admin/views/payments-form.php';
 			return;

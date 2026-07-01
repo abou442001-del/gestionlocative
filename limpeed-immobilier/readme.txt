@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.8.0 =
+* Mois d'avance par locataire : nouveau réglage "Mois d'avance par défaut" (1 à 12), utilisé pour calculer automatiquement le montant d'avance attendu et le statut (à jour / en avance / en retard) de chaque locataire, sur la base du dernier mois marqué "payé".
+* Calendrier de suivi des paiements sur la fiche de chaque locataire : grille des 12 mois de l'année (navigable), payé/partiel/en retard/à venir/hors bail, avec accès direct à l'enregistrement d'un paiement pour un mois donné.
+* Nouvelle identité visuelle : logo Limpeed Immobilier (icône + wordmark) sur l'application frontend et les pages de connexion/inscription, et rafraîchissement complet du design (palette, espacements, ombres, cartes, formulaires) pour un rendu plus épuré.
+* Correction : le lien "Accéder au tableau de bord" affiché à un agent déjà connecté pointait encore vers l'ancien tableau de bord wp-admin ; il pointe maintenant vers le tableau de bord frontend.
 
 = 1.7.0 =
 * Ajout d'un champ "Identifiant" (ex : A1, RDC Gauche) sur les biens (sous-édifices), affiché comme colonne principale dans la liste des Biens et pris en compte dans la recherche.

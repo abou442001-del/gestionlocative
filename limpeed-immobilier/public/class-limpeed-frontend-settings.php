@@ -32,6 +32,10 @@ class Limpeed_Frontend_Settings {
 		$confirm = isset( $_POST['limpeed_confirm_data_deletion'] ) && '1' === $_POST['limpeed_confirm_data_deletion'];
 		update_option( 'limpeed_confirm_data_deletion', $confirm ? '1' : '0' );
 
+		$advance_months = isset( $_POST['limpeed_advance_months'] ) ? (int) $_POST['limpeed_advance_months'] : 1;
+		$advance_months = min( 12, max( 1, $advance_months ) );
+		update_option( 'limpeed_advance_months', $advance_months );
+
 		Limpeed_Frontend::redirect_to( 'settings', array( 'message' => 'saved' ) );
 	}
 }
