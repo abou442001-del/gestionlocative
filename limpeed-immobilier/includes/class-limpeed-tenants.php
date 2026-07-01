@@ -168,8 +168,10 @@ class Limpeed_Tenants {
 		$result = $wpdb->insert( $table, $record, $formats );
 
 		if ( $result ) {
+			$id = (int) $wpdb->insert_id;
 			self::sync_property_status( $record['property_id'] );
-			return (int) $wpdb->insert_id;
+			Limpeed_Activity_Log::log( 'created', 'tenant', $id, sprintf( 'Locataire créé : %s', $record['full_name'] ) );
+			return $id;
 		}
 
 		return false;
@@ -212,6 +214,7 @@ class Limpeed_Tenants {
 			if ( $existing && (int) $existing->property_id !== $record['property_id'] ) {
 				self::sync_property_status( (int) $existing->property_id );
 			}
+			Limpeed_Activity_Log::log( 'updated', 'tenant', $id, sprintf( 'Locataire modifié : %s', $record['full_name'] ) );
 		}
 
 		return $result;
@@ -232,6 +235,7 @@ class Limpeed_Tenants {
 
 		if ( $result && $tenant ) {
 			self::sync_property_status( (int) $tenant->property_id );
+			Limpeed_Activity_Log::log( 'deleted', 'tenant', $id );
 		}
 
 		return $result;

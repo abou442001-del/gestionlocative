@@ -252,7 +252,13 @@ class Limpeed_Payments {
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
-		return $result ? (int) $wpdb->insert_id : false;
+		if ( $result ) {
+			$id = (int) $wpdb->insert_id;
+			Limpeed_Activity_Log::log( 'created', 'payment', $id, sprintf( 'Paiement enregistré : %s (%s)', number_format( $record['amount'], 2 ), $record['period'] ) );
+			return $id;
+		}
+
+		return false;
 	}
 
 	/**
@@ -284,7 +290,13 @@ class Limpeed_Payments {
 
 		$formats = array( '%d', '%d', '%f', '%s', '%s', '%s', '%s', '%f', '%d', '%s' );
 
-		return false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
+		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
+
+		if ( $result ) {
+			Limpeed_Activity_Log::log( 'updated', 'payment', $id, sprintf( 'Paiement modifié : %s (%s)', number_format( $record['amount'], 2 ), $record['period'] ) );
+		}
+
+		return $result;
 	}
 
 	/**
@@ -295,7 +307,13 @@ class Limpeed_Payments {
 	 */
 	public static function delete( $id ) {
 		global $wpdb;
-		$table = self::table();
-		return false !== $wpdb->delete( $table, array( 'id' => (int) $id ), array( '%d' ) );
+		$table  = self::table();
+		$result = false !== $wpdb->delete( $table, array( 'id' => (int) $id ), array( '%d' ) );
+
+		if ( $result ) {
+			Limpeed_Activity_Log::log( 'deleted', 'payment', $id );
+		}
+
+		return $result;
 	}
 }

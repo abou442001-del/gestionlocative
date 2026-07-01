@@ -143,9 +143,44 @@ class Limpeed_Activator {
 			KEY status (status)
 		) {$charset_collate};";
 
+		$statements_table = $wpdb->prefix . 'limpeed_statements';
+
+		$sql_statements = "CREATE TABLE {$statements_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			owner_id BIGINT UNSIGNED NOT NULL,
+			period_start VARCHAR(7) NOT NULL,
+			period_end VARCHAR(7) NOT NULL,
+			total_collected DECIMAL(12,2) NOT NULL DEFAULT 0,
+			total_commission DECIMAL(12,2) NOT NULL DEFAULT 0,
+			net_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+			file_path VARCHAR(255) NOT NULL,
+			generated_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY owner_id (owner_id)
+		) {$charset_collate};";
+
+		$activity_log_table = $wpdb->prefix . 'limpeed_activity_log';
+
+		$sql_activity_log = "CREATE TABLE {$activity_log_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id BIGINT UNSIGNED NULL,
+			action VARCHAR(20) NOT NULL,
+			object_type VARCHAR(50) NOT NULL,
+			object_id BIGINT UNSIGNED NULL,
+			description TEXT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY user_id (user_id),
+			KEY object_type (object_type),
+			KEY created_at (created_at)
+		) {$charset_collate};";
+
 		dbDelta( $sql_owners );
 		dbDelta( $sql_properties );
 		dbDelta( $sql_tenants );
 		dbDelta( $sql_payments );
+		dbDelta( $sql_statements );
+		dbDelta( $sql_activity_log );
 	}
 }

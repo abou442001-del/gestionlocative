@@ -199,7 +199,13 @@ class Limpeed_Properties {
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
-		return $result ? (int) $wpdb->insert_id : false;
+		if ( $result ) {
+			$id = (int) $wpdb->insert_id;
+			Limpeed_Activity_Log::log( 'created', 'property', $id, sprintf( 'Bien créé : %s', $record['address'] ) );
+			return $id;
+		}
+
+		return false;
 	}
 
 	/**
@@ -230,7 +236,13 @@ class Limpeed_Properties {
 
 		$formats = array( '%d', '%s', '%s', '%f', '%f', '%f', '%s', '%d', '%s' );
 
-		return false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
+		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
+
+		if ( $result ) {
+			Limpeed_Activity_Log::log( 'updated', 'property', $id, sprintf( 'Bien modifié : %s', $record['address'] ) );
+		}
+
+		return $result;
 	}
 
 	/**
@@ -255,7 +267,13 @@ class Limpeed_Properties {
 			);
 		}
 
-		$table = self::table();
-		return false !== $wpdb->delete( $table, array( 'id' => (int) $id ), array( '%d' ) );
+		$table  = self::table();
+		$result = false !== $wpdb->delete( $table, array( 'id' => (int) $id ), array( '%d' ) );
+
+		if ( $result ) {
+			Limpeed_Activity_Log::log( 'deleted', 'property', $id );
+		}
+
+		return $result;
 	}
 }

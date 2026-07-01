@@ -11,6 +11,9 @@ require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-owners-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-properties-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-tenants-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-payments-page.php';
+require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-statements-page.php';
+require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-agents-page.php';
+require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-activity-log-page.php';
 require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-settings-page.php';
 
 class Limpeed_Admin {
@@ -80,6 +83,33 @@ class Limpeed_Admin {
 			'manage_limpeed_payments',
 			'limpeed-payments',
 			array( $this, 'render_payments' )
+		);
+
+		add_submenu_page(
+			'limpeed-immobilier',
+			__( 'Bordereaux', 'limpeed-immobilier' ),
+			__( 'Bordereaux', 'limpeed-immobilier' ),
+			'manage_limpeed_statements',
+			'limpeed-statements',
+			array( $this, 'render_statements' )
+		);
+
+		add_submenu_page(
+			'limpeed-immobilier',
+			__( 'Agents', 'limpeed-immobilier' ),
+			__( 'Agents', 'limpeed-immobilier' ),
+			'manage_limpeed_agents',
+			'limpeed-agents',
+			array( $this, 'render_agents' )
+		);
+
+		add_submenu_page(
+			'limpeed-immobilier',
+			__( 'Journal d\'activité', 'limpeed-immobilier' ),
+			__( 'Journal d\'activité', 'limpeed-immobilier' ),
+			'manage_limpeed_agents',
+			'limpeed-activity-log',
+			array( $this, 'render_activity_log' )
 		);
 
 		add_submenu_page(
@@ -166,6 +196,30 @@ class Limpeed_Admin {
 	 */
 	public function render_payments() {
 		$page = new Limpeed_Payments_Page();
+		$page->render();
+	}
+
+	/**
+	 * Page Bordereaux.
+	 */
+	public function render_statements() {
+		$page = new Limpeed_Statements_Page();
+		$page->render();
+	}
+
+	/**
+	 * Page Agents.
+	 */
+	public function render_agents() {
+		$page = new Limpeed_Agents_Page();
+		$page->render();
+	}
+
+	/**
+	 * Page Journal d'activité.
+	 */
+	public function render_activity_log() {
+		$page = new Limpeed_Activity_Log_Page();
 		$page->render();
 	}
 

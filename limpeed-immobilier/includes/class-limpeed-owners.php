@@ -133,7 +133,13 @@ class Limpeed_Owners {
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
-		return $result ? (int) $wpdb->insert_id : false;
+		if ( $result ) {
+			$id = (int) $wpdb->insert_id;
+			Limpeed_Activity_Log::log( 'created', 'owner', $id, sprintf( 'Propriétaire créé : %s', $record['full_name'] ) );
+			return $id;
+		}
+
+		return false;
 	}
 
 	/**
@@ -159,7 +165,13 @@ class Limpeed_Owners {
 
 		$formats = array( '%s', '%s', '%s', '%s', '%s', '%d', '%s' );
 
-		return false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
+		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
+
+		if ( $result ) {
+			Limpeed_Activity_Log::log( 'updated', 'owner', $id, sprintf( 'Propriétaire modifié : %s', $record['full_name'] ) );
+		}
+
+		return $result;
 	}
 
 	/**
@@ -184,7 +196,13 @@ class Limpeed_Owners {
 			);
 		}
 
-		$table = self::table();
-		return false !== $wpdb->delete( $table, array( 'id' => (int) $id ), array( '%d' ) );
+		$table  = self::table();
+		$result = false !== $wpdb->delete( $table, array( 'id' => (int) $id ), array( '%d' ) );
+
+		if ( $result ) {
+			Limpeed_Activity_Log::log( 'deleted', 'owner', $id );
+		}
+
+		return $result;
 	}
 }

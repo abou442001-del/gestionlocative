@@ -21,6 +21,7 @@ if ( ! $confirmed ) {
 global $wpdb;
 
 $tables = array(
+	$wpdb->prefix . 'limpeed_activity_log',
 	$wpdb->prefix . 'limpeed_statements',
 	$wpdb->prefix . 'limpeed_payments',
 	$wpdb->prefix . 'limpeed_tenants',
@@ -35,6 +36,17 @@ foreach ( $tables as $table ) {
 delete_option( 'limpeed_db_version' );
 delete_option( 'limpeed_version' );
 delete_option( 'limpeed_confirm_data_deletion' );
+
+$upload_dir      = wp_upload_dir();
+$statements_dir  = trailingslashit( $upload_dir['basedir'] ) . 'limpeed-statements';
+if ( is_dir( $statements_dir ) ) {
+	require_once ABSPATH . 'wp-admin/includes/file.php';
+	WP_Filesystem();
+	global $wp_filesystem;
+	if ( $wp_filesystem ) {
+		$wp_filesystem->delete( $statements_dir, true );
+	}
+}
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-limpeed-roles.php';
 Limpeed_Roles::remove_roles();
