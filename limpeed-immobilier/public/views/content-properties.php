@@ -125,6 +125,10 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<?php endif; ?>
 			</div>
 			<div class="limpeed-form-row">
+				<label for="reference"><?php esc_html_e( 'Identifiant', 'limpeed-immobilier' ); ?></label>
+				<input type="text" name="reference" id="reference" value="<?php echo esc_attr( $field( 'reference' ) ); ?>" placeholder="<?php esc_attr_e( 'Ex : A1, RDC Gauche...', 'limpeed-immobilier' ); ?>">
+			</div>
+			<div class="limpeed-form-row">
 				<label for="address"><?php esc_html_e( 'Adresse / repère', 'limpeed-immobilier' ); ?> <span class="limpeed-app-required">*</span></label>
 				<textarea name="address" id="address" rows="3" required><?php echo esc_textarea( $field( 'address' ) ); ?></textarea>
 			</div>
@@ -242,6 +246,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		<table class="limpeed-app-table">
 			<thead>
 				<tr>
+					<th><?php esc_html_e( 'Identifiant', 'limpeed-immobilier' ); ?></th>
 					<th><?php esc_html_e( 'Adresse (sous-édifice)', 'limpeed-immobilier' ); ?></th>
 					<th><?php esc_html_e( 'Édifice', 'limpeed-immobilier' ); ?></th>
 					<th><?php esc_html_e( 'Propriétaire', 'limpeed-immobilier' ); ?></th>
@@ -254,7 +259,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			</thead>
 			<tbody>
 				<?php if ( empty( $properties ) ) : ?>
-					<tr><td colspan="8"><?php esc_html_e( 'Aucun bien pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
+					<tr><td colspan="9"><?php esc_html_e( 'Aucun bien pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
 				<?php endif; ?>
 				<?php
 				$statuses = Limpeed_Properties::get_statuses();
@@ -267,6 +272,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					$tenant     = Limpeed_Properties::get_current_tenant( $property_row->id );
 					?>
 					<tr>
+						<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo $property_row->reference ? esc_html( $property_row->reference ) : '&mdash;'; ?></a></td>
 						<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( $property_row->address ); ?></a></td>
 						<td><?php echo $building ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'buildings', array( 'action' => 'edit', 'id' => $building->id ) ) ) . '">' . esc_html( $building->name ) . '</a>' : '&mdash;'; ?></td>
 						<td><?php echo $owner ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'owners', array( 'action' => 'edit', 'id' => $owner->id ) ) ) . '">' . esc_html( $owner->full_name ) . '</a>' : '&mdash;'; ?></td>

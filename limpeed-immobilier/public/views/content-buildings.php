@@ -26,6 +26,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	$is_edit           = ! empty( $building );
 	$errors            = Limpeed_Frontend_Buildings::$errors;
 	$posted            = Limpeed_Frontend_Buildings::$posted;
+	$posted_sub_units  = Limpeed_Frontend_Buildings::$posted_sub_units;
 	$owners            = Limpeed_Owners::get_all( array( 'per_page' => 9999 ) );
 	$preselected_owner = isset( $_GET['owner_id'] ) ? (int) $_GET['owner_id'] : 0;
 
@@ -37,6 +38,14 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			return $building->$name;
 		}
 		return $default;
+	};
+
+	$sub_unit_rows      = ! empty( $posted_sub_units ) ? $posted_sub_units : array( array() );
+	$property_types     = Limpeed_Properties::get_types();
+	$property_statuses  = Limpeed_Properties::get_statuses();
+
+	$sub_unit_field = function ( $row, $name, $default = '' ) {
+		return isset( $row[ $name ] ) && '' !== $row[ $name ] ? $row[ $name ] : $default;
 	};
 	?>
 
@@ -96,10 +105,113 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<textarea name="description" id="description" rows="3"><?php echo esc_textarea( $field( 'description' ) ); ?></textarea>
 			</div>
 
+			<h3><?php esc_html_e( 'Sous-édifices (biens)', 'limpeed-immobilier' ); ?></h3>
+			<p class="limpeed-app-description"><?php esc_html_e( 'Ajoutez ici directement les sous-édifices (biens) composant cet édifice. Vous pourrez toujours en ajouter ou en modifier plus tard depuis la section Biens.', 'limpeed-immobilier' ); ?></p>
+
+			<table class="limpeed-app-table" id="limpeed-sub-units-table">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Identifiant', 'limpeed-immobilier' ); ?></th>
+						<th><?php esc_html_e( 'Adresse / repère', 'limpeed-immobilier' ); ?></th>
+						<th><?php esc_html_e( 'Type', 'limpeed-immobilier' ); ?></th>
+						<th><?php esc_html_e( 'Loyer', 'limpeed-immobilier' ); ?></th>
+						<th><?php esc_html_e( 'Charges', 'limpeed-immobilier' ); ?></th>
+						<th><?php esc_html_e( 'Dépôt', 'limpeed-immobilier' ); ?></th>
+						<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody id="limpeed-sub-units-rows">
+					<?php foreach ( $sub_unit_rows as $index => $row ) : ?>
+						<tr class="limpeed-sub-unit-row">
+							<td><input type="text" name="sub_units[<?php echo esc_attr( $index ); ?>][reference]" value="<?php echo esc_attr( $sub_unit_field( $row, 'reference' ) ); ?>" placeholder="<?php esc_attr_e( 'Ex : A1', 'limpeed-immobilier' ); ?>"></td>
+							<td><input type="text" name="sub_units[<?php echo esc_attr( $index ); ?>][address]" value="<?php echo esc_attr( $sub_unit_field( $row, 'address' ) ); ?>" placeholder="<?php esc_attr_e( 'Ex : RDC Gauche', 'limpeed-immobilier' ); ?>"></td>
+							<td>
+								<select name="sub_units[<?php echo esc_attr( $index ); ?>][type]">
+									<?php foreach ( $property_types as $key => $label ) : ?>
+										<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $sub_unit_field( $row, 'type', 'appartement' ), $key ); ?>><?php echo esc_html( $label ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</td>
+							<td><input type="number" step="0.01" min="0" name="sub_units[<?php echo esc_attr( $index ); ?>][monthly_rent]" value="<?php echo esc_attr( $sub_unit_field( $row, 'monthly_rent', 0 ) ); ?>"></td>
+							<td><input type="number" step="0.01" min="0" name="sub_units[<?php echo esc_attr( $index ); ?>][charges]" value="<?php echo esc_attr( $sub_unit_field( $row, 'charges', 0 ) ); ?>"></td>
+							<td><input type="number" step="0.01" min="0" name="sub_units[<?php echo esc_attr( $index ); ?>][deposit_amount]" value="<?php echo esc_attr( $sub_unit_field( $row, 'deposit_amount', 0 ) ); ?>"></td>
+							<td>
+								<select name="sub_units[<?php echo esc_attr( $index ); ?>][status]">
+									<?php foreach ( $property_statuses as $key => $label ) : ?>
+										<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $sub_unit_field( $row, 'status', 'vacant' ), $key ); ?>><?php echo esc_html( $label ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</td>
+							<td><button type="button" class="limpeed-app-btn limpeed-app-btn-secondary limpeed-remove-sub-unit-row"><?php esc_html_e( 'Retirer', 'limpeed-immobilier' ); ?></button></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+			<p><button type="button" class="limpeed-app-btn limpeed-app-btn-secondary" id="limpeed-add-sub-unit-row"><?php esc_html_e( '+ Ajouter un sous-édifice', 'limpeed-immobilier' ); ?></button></p>
+
 			<button type="submit" class="limpeed-app-btn"><?php echo $is_edit ? esc_html__( 'Mettre à jour', 'limpeed-immobilier' ) : esc_html__( 'Ajouter', 'limpeed-immobilier' ); ?></button>
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'buildings' ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Annuler', 'limpeed-immobilier' ); ?></a>
 		</form>
 	</div>
+
+	<template id="limpeed-sub-unit-row-template">
+		<tr class="limpeed-sub-unit-row">
+			<td><input type="text" name="sub_units[__INDEX__][reference]" value="" placeholder="<?php esc_attr_e( 'Ex : A1', 'limpeed-immobilier' ); ?>"></td>
+			<td><input type="text" name="sub_units[__INDEX__][address]" value="" placeholder="<?php esc_attr_e( 'Ex : RDC Gauche', 'limpeed-immobilier' ); ?>"></td>
+			<td>
+				<select name="sub_units[__INDEX__][type]">
+					<?php foreach ( $property_types as $key => $label ) : ?>
+						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( 'appartement', $key ); ?>><?php echo esc_html( $label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td>
+			<td><input type="number" step="0.01" min="0" name="sub_units[__INDEX__][monthly_rent]" value="0"></td>
+			<td><input type="number" step="0.01" min="0" name="sub_units[__INDEX__][charges]" value="0"></td>
+			<td><input type="number" step="0.01" min="0" name="sub_units[__INDEX__][deposit_amount]" value="0"></td>
+			<td>
+				<select name="sub_units[__INDEX__][status]">
+					<?php foreach ( $property_statuses as $key => $label ) : ?>
+						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( 'vacant', $key ); ?>><?php echo esc_html( $label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td>
+			<td><button type="button" class="limpeed-app-btn limpeed-app-btn-secondary limpeed-remove-sub-unit-row"><?php esc_html_e( 'Retirer', 'limpeed-immobilier' ); ?></button></td>
+		</tr>
+	</template>
+	<script>
+	( function () {
+		var rowsBody  = document.getElementById( 'limpeed-sub-units-rows' );
+		var addButton = document.getElementById( 'limpeed-add-sub-unit-row' );
+		var template  = document.getElementById( 'limpeed-sub-unit-row-template' );
+		var nextIndex = <?php echo (int) count( $sub_unit_rows ); ?>;
+
+		if ( ! rowsBody || ! addButton || ! template ) {
+			return;
+		}
+
+		function bindRemove( row ) {
+			var btn = row.querySelector( '.limpeed-remove-sub-unit-row' );
+			if ( btn ) {
+				btn.addEventListener( 'click', function () {
+					row.parentNode.removeChild( row );
+				} );
+			}
+		}
+
+		Array.prototype.forEach.call( rowsBody.querySelectorAll( '.limpeed-sub-unit-row' ), bindRemove );
+
+		addButton.addEventListener( 'click', function () {
+			var html = template.innerHTML.split( '__INDEX__' ).join( String( nextIndex ) );
+			nextIndex++;
+			var wrapper = document.createElement( 'tbody' );
+			wrapper.innerHTML = html.trim();
+			var row = wrapper.firstElementChild;
+			rowsBody.appendChild( row );
+			bindRemove( row );
+		} );
+	} )();
+	</script>
 
 <?php else : ?>
 	<?php

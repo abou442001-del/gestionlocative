@@ -223,6 +223,7 @@ class Limpeed_Activator {
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			owner_id BIGINT UNSIGNED NOT NULL,
 			building_id BIGINT UNSIGNED NULL,
+			reference VARCHAR(100) NULL,
 			address TEXT NOT NULL,
 			type VARCHAR(50) NOT NULL DEFAULT 'appartement',
 			monthly_rent DECIMAL(12,2) NOT NULL DEFAULT 0,
@@ -236,7 +237,8 @@ class Limpeed_Activator {
 			PRIMARY KEY  (id),
 			KEY owner_id (owner_id),
 			KEY building_id (building_id),
-			KEY status (status)
+			KEY status (status),
+			KEY reference (reference)
 		) {$charset_collate};";
 
 		$sql_tenants = "CREATE TABLE {$tenants_table} (

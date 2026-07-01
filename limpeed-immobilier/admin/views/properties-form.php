@@ -170,6 +170,10 @@ $current_tenant = $is_edit ? Limpeed_Properties::get_current_tenant( $property->
 					</td>
 				</tr>
 				<tr>
+					<th scope="row"><label for="reference"><?php esc_html_e( 'Identifiant', 'limpeed-immobilier' ); ?></label></th>
+					<td><input name="reference" type="text" id="reference" class="regular-text" value="<?php echo esc_attr( $field( 'reference' ) ); ?>" placeholder="<?php esc_attr_e( 'Ex : A1, RDC Gauche...', 'limpeed-immobilier' ); ?>"></td>
+				</tr>
+				<tr>
 					<th scope="row"><label for="address"><?php esc_html_e( 'Adresse / repère', 'limpeed-immobilier' ); ?> <span class="required">*</span></label></th>
 					<td><textarea name="address" id="address" class="large-text" rows="3" required><?php echo esc_textarea( $field( 'address' ) ); ?></textarea></td>
 				</tr>

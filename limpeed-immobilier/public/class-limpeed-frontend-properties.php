@@ -58,6 +58,7 @@ class Limpeed_Frontend_Properties {
 
 			$data = array(
 				'building_id'    => isset( $_POST['building_id'] ) ? (int) $_POST['building_id'] : 0,
+				'reference'      => isset( $_POST['reference'] ) ? wp_unslash( $_POST['reference'] ) : '',
 				'address'        => isset( $_POST['address'] ) ? wp_unslash( $_POST['address'] ) : '',
 				'type'           => isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '',
 				'monthly_rent'   => isset( $_POST['monthly_rent'] ) ? wp_unslash( $_POST['monthly_rent'] ) : '',

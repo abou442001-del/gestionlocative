@@ -37,6 +37,7 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		return array(
+			'reference'       => __( 'Identifiant', 'limpeed-immobilier' ),
 			'address'         => __( 'Adresse (sous-édifice)', 'limpeed-immobilier' ),
 			'building'        => __( 'Édifice', 'limpeed-immobilier' ),
 			'owner'           => __( 'Propriétaire', 'limpeed-immobilier' ),
@@ -56,6 +57,7 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		return array(
+			'reference'    => array( 'reference', false ),
 			'address'      => array( 'address', false ),
 			'type'         => array( 'type', false ),
 			'monthly_rent' => array( 'monthly_rent', false ),
@@ -69,7 +71,7 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 	 * @param object $item
 	 * @return string
 	 */
-	public function column_address( $item ) {
+	public function column_reference( $item ) {
 		$edit_url = add_query_arg(
 			array(
 				'page'   => 'limpeed-properties',
@@ -91,6 +93,8 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 			'limpeed_delete_property_' . $item->id
 		);
 
+		$label = $item->reference ? $item->reference : $item->address;
+
 		$actions = array(
 			'edit'   => sprintf( '<a href="%s">%s</a>', esc_url( $edit_url ), esc_html__( 'Modifier', 'limpeed-immobilier' ) ),
 			'delete' => sprintf(
@@ -103,7 +107,7 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 		return sprintf(
 			'<strong><a class="row-title" href="%s">%s</a></strong>%s',
 			esc_url( $edit_url ),
-			esc_html( $item->address ),
+			esc_html( $label ),
 			$this->row_actions( $actions )
 		);
 	}
@@ -117,6 +121,9 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
+			case 'address':
+				return esc_html( $item->address );
+
 			case 'building':
 				$building = Limpeed_Buildings::get( $item->building_id );
 				if ( ! $building ) {

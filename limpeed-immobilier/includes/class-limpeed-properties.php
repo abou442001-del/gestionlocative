@@ -82,7 +82,7 @@ class Limpeed_Properties {
 		);
 		$args = wp_parse_args( $args, $defaults );
 
-		$allowed_orderby = array( 'id', 'address', 'type', 'monthly_rent', 'status', 'created_at' );
+		$allowed_orderby = array( 'id', 'reference', 'address', 'type', 'monthly_rent', 'status', 'created_at' );
 		$orderby         = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'address';
 		$order           = strtoupper( $args['order'] ) === 'DESC' ? 'DESC' : 'ASC';
 
@@ -90,8 +90,9 @@ class Limpeed_Properties {
 		$params = array();
 
 		if ( ! empty( $args['search'] ) ) {
-			$like   = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-			$where .= ' AND address LIKE %s';
+			$like     = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+			$where   .= ' AND (address LIKE %s OR reference LIKE %s)';
+			$params[] = $like;
 			$params[] = $like;
 		}
 
@@ -136,7 +137,8 @@ class Limpeed_Properties {
 
 		if ( ! empty( $args['search'] ) ) {
 			$like     = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-			$where   .= ' AND address LIKE %s';
+			$where   .= ' AND (address LIKE %s OR reference LIKE %s)';
+			$params[] = $like;
 			$params[] = $like;
 		}
 
@@ -182,6 +184,87 @@ class Limpeed_Properties {
 	}
 
 	/**
+	 * Indique si une ligne de sous-édifice postée en même temps qu'un édifice
+	 * est vide (l'utilisateur a ajouté une ligne sans la remplir). Seuls
+	 * l'identifiant et l'adresse sont pris en compte : les champs numériques
+	 * ont toujours une valeur par défaut ("0") et ne doivent donc jamais,
+	 * à eux seuls, transformer une ligne inutilisée en ligne "remplie".
+	 *
+	 * @param array $row
+	 * @return bool
+	 */
+	private static function is_sub_unit_row_empty( $row ) {
+		foreach ( array( 'reference', 'address' ) as $field ) {
+			if ( '' !== trim( (string) ( $row[ $field ] ?? '' ) ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Valide une liste de sous-édifices postés en même temps qu'un édifice
+	 * (ajout groupé depuis le formulaire Édifices). Les lignes entièrement
+	 * vides sont ignorées silencieusement.
+	 *
+	 * @param array $rows
+	 * @return array Messages d'erreur (vide si tout est valide).
+	 */
+	public static function validate_sub_units( $rows ) {
+		$errors = array();
+		$index  = 0;
+
+		foreach ( $rows as $row ) {
+			$index++;
+
+			if ( self::is_sub_unit_row_empty( $row ) ) {
+				continue;
+			}
+
+			if ( '' === trim( $row['address'] ?? '' ) ) {
+				/* translators: %d: numéro de la ligne de sous-édifice */
+				$errors[] = sprintf( __( 'Sous-édifice #%d : l\'adresse est obligatoire.', 'limpeed-immobilier' ), $index );
+			}
+
+			foreach ( array( 'monthly_rent', 'charges', 'deposit_amount' ) as $field ) {
+				if ( isset( $row[ $field ] ) && '' !== $row[ $field ] && ! is_numeric( $row[ $field ] ) ) {
+					/* translators: %d: numéro de la ligne de sous-édifice */
+					$errors[] = sprintf( __( 'Sous-édifice #%d : les montants (loyer, charges, dépôt) doivent être des nombres.', 'limpeed-immobilier' ), $index );
+					break;
+				}
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Crée en une fois tous les biens (sous-édifices) non vides rattachés à
+	 * l'édifice donné. Ne doit être appelée qu'après validate_sub_units().
+	 *
+	 * @param int   $building_id
+	 * @param array $rows
+	 * @return int Nombre de biens créés.
+	 */
+	public static function insert_sub_units( $building_id, $rows ) {
+		$created = 0;
+
+		foreach ( $rows as $row ) {
+			if ( self::is_sub_unit_row_empty( $row ) ) {
+				continue;
+			}
+
+			$row['building_id'] = $building_id;
+
+			if ( self::insert( $row ) ) {
+				$created++;
+			}
+		}
+
+		return $created;
+	}
+
+	/**
 	 * Insère un nouveau bien.
 	 *
 	 * @param array $data
@@ -202,6 +285,7 @@ class Limpeed_Properties {
 		$record = array(
 			'owner_id'       => (int) $building->owner_id,
 			'building_id'    => (int) $building->id,
+			'reference'      => sanitize_text_field( $data['reference'] ?? '' ),
 			'address'        => sanitize_textarea_field( $data['address'] ),
 			'type'           => in_array( $data['type'] ?? '', $types, true ) ? $data['type'] : 'appartement',
 			'monthly_rent'   => (float) ( $data['monthly_rent'] ?? 0 ),
@@ -212,7 +296,7 @@ class Limpeed_Properties {
 			'created_at'     => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%d', '%s', '%s', '%f', '%f', '%f', '%s', '%d', '%s' );
+		$formats = array( '%d', '%d', '%s', '%s', '%s', '%f', '%f', '%f', '%s', '%d', '%s' );
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
@@ -247,6 +331,7 @@ class Limpeed_Properties {
 		$record = array(
 			'owner_id'       => (int) $building->owner_id,
 			'building_id'    => (int) $building->id,
+			'reference'      => sanitize_text_field( $data['reference'] ?? '' ),
 			'address'        => sanitize_textarea_field( $data['address'] ),
 			'type'           => in_array( $data['type'] ?? '', $types, true ) ? $data['type'] : 'appartement',
 			'monthly_rent'   => (float) ( $data['monthly_rent'] ?? 0 ),
@@ -257,7 +342,7 @@ class Limpeed_Properties {
 			'updated_at'     => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%d', '%s', '%s', '%f', '%f', '%f', '%s', '%d', '%s' );
+		$formats = array( '%d', '%d', '%s', '%s', '%s', '%f', '%f', '%f', '%s', '%d', '%s' );
 
 		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
 
