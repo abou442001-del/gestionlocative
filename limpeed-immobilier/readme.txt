@@ -34,6 +34,15 @@ Ce plugin permet à plusieurs agents connectés (comptes WordPress) de gérer :
 
 Générés via la librairie [Dompdf](https://github.com/dompdf/dompdf) (incluse dans `vendor/`, installée via Composer). Les PDF sont stockés dans `wp-content/uploads/limpeed-statements/`, un dossier protégé contre l'accès web direct (`.htaccess`) ; ils ne sont téléchargeables que depuis l'administration, après vérification des capacités et d'un nonce.
 
+**Hébergement Nginx :** Nginx ignore les fichiers `.htaccess`. Si votre site tourne sous Nginx, ajoutez ce bloc à la configuration du serveur pour obtenir la même protection :
+
+`
+location ^~ /wp-content/uploads/limpeed-statements/ {
+    deny all;
+    return 404;
+}
+`
+
 == État d'avancement ==
 
 * Phase 1 : base de données biens/locataires/propriétaires, CRUD complet avec navigation croisée, recherche et filtres.
