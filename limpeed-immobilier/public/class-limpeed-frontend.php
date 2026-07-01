@@ -75,16 +75,15 @@ class Limpeed_Frontend {
 	 * @return string Balisage HTML (déjà échappé), à afficher directement.
 	 */
 	public static function render_logo( $with_text = true ) {
+		// Reproduction du logo Limpeed Immobilier : ligne diagonale traversant
+		// un empilement de carrés verts en escalier (motif "bâtiment/graphique").
 		$icon = '<svg class="limpeed-brand-mark" viewBox="0 0 48 48" width="34" height="34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
-			. '<rect x="4" y="26" width="9" height="18" rx="2" fill="#79c98f"/>'
-			. '<rect x="17" y="16" width="9" height="28" rx="2" fill="#3aa655"/>'
-			. '<rect x="30" y="6" width="9" height="38" rx="2" fill="#1f7a41"/>'
-			. '<rect x="6.5" y="30" width="4" height="4" rx="1" fill="#ffffff"/>'
-			. '<rect x="19.5" y="20" width="4" height="4" rx="1" fill="#ffffff"/>'
-			. '<rect x="32.5" y="10" width="4" height="4" rx="1" fill="#ffffff"/>'
-			. '<rect x="19.5" y="27" width="4" height="4" rx="1" fill="#ffffff"/>'
-			. '<rect x="32.5" y="17" width="4" height="4" rx="1" fill="#ffffff"/>'
-			. '<rect x="32.5" y="24" width="4" height="4" rx="1" fill="#ffffff"/>'
+			. '<line x1="3" y1="45" x2="31" y2="7" stroke="#2c3e50" stroke-width="2" stroke-linecap="round"/>'
+			. '<rect x="21" y="27" width="10" height="10" rx="1.5" fill="#8fd6a4"/>'
+			. '<rect x="32" y="27" width="10" height="10" rx="1.5" fill="#4caf7d"/>'
+			. '<rect x="21" y="16" width="10" height="10" rx="1.5" fill="#3aa655"/>'
+			. '<rect x="32" y="16" width="10" height="10" rx="1.5" fill="#1f7a41"/>'
+			. '<rect x="32" y="5" width="10" height="10" rx="1.5" fill="#175c31"/>'
 			. '</svg>';
 
 		$text = '';
