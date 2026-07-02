@@ -10,9 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$current_user = wp_get_current_user();
-$logout_url   = wp_logout_url( Limpeed_Frontend::login_url() );
-$all_sections = Limpeed_Frontend::get_sections();
+$current_user  = wp_get_current_user();
+$logout_url    = wp_logout_url( Limpeed_Frontend::login_url() );
+$all_sections  = Limpeed_Frontend::get_sections();
 $current_label = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active_page ]['label'] : '';
 ?>
 <!DOCTYPE html>
@@ -40,9 +40,36 @@ $current_label = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active
 	<link rel="stylesheet" href="<?php echo esc_url( includes_url( 'css/dashicons.min.css' ) ); ?>">
 </head>
 <body class="limpeed-app">
+	<header class="limpeed-app-topbar">
+		<div class="limpeed-app-topbar-left">
+			<button type="button" id="limpeed-sidebar-toggle" class="limpeed-app-hamburger" aria-label="<?php esc_attr_e( 'Réduire/agrandir le menu', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Réduire/agrandir le menu', 'limpeed-immobilier' ); ?>">
+				<svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="13" y2="18"/></g></svg>
+			</button>
+			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'dashboard' ) ); ?>" class="limpeed-app-logo-box"><?php echo Limpeed_Frontend::render_logo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- balisage statique généré et échappé dans render_logo(). ?></a>
+		</div>
+		<div class="limpeed-app-topbar-right">
+			<button type="button" id="limpeed-theme-toggle" class="limpeed-app-theme-toggle" aria-label="<?php esc_attr_e( 'Changer de thème (clair/sombre)', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Changer de thème (clair/sombre)', 'limpeed-immobilier' ); ?>">
+				<svg class="limpeed-theme-icon limpeed-theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4.5" y1="4.5" x2="6.2" y2="6.2"/><line x1="17.8" y1="17.8" x2="19.5" y2="19.5"/><line x1="4.5" y1="19.5" x2="6.2" y2="17.8"/><line x1="17.8" y1="6.2" x2="19.5" y2="4.5"/></g></svg>
+				<svg class="limpeed-theme-icon limpeed-theme-icon-moon" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z"/></svg>
+			</button>
+			<div class="limpeed-app-user-menu">
+				<button type="button" id="limpeed-user-menu-toggle" class="limpeed-app-user-menu-toggle">
+					<?php echo get_avatar( $current_user->ID, 32 ); ?>
+					<span class="limpeed-app-user-menu-name"><?php echo esc_html( $current_user->display_name ); ?></span>
+					<svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+				</button>
+				<div class="limpeed-app-user-menu-panel" id="limpeed-user-menu-panel">
+					<div class="limpeed-app-user-menu-header"><?php echo esc_html( $current_user->display_name ); ?></div>
+					<?php if ( current_user_can( 'manage_limpeed_agents' ) ) : ?>
+						<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'settings' ) ); ?>"><span class="dashicons dashicons-admin-generic"></span> <?php esc_html_e( 'Réglages', 'limpeed-immobilier' ); ?></a>
+					<?php endif; ?>
+					<a href="<?php echo esc_url( $logout_url ); ?>"><span class="dashicons dashicons-migrate"></span> <?php esc_html_e( 'Déconnexion', 'limpeed-immobilier' ); ?></a>
+				</div>
+			</div>
+		</div>
+	</header>
 	<div class="limpeed-app-shell">
 		<aside class="limpeed-app-sidebar">
-			<div class="limpeed-app-logo"><?php echo Limpeed_Frontend::render_logo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- balisage statique généré et échappé dans render_logo(). ?></div>
 			<nav class="limpeed-app-nav">
 				<?php $current_group = null; ?>
 				<?php foreach ( $all_sections as $key => $item ) : ?>
@@ -59,21 +86,7 @@ $current_label = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active
 					</a>
 				<?php endforeach; ?>
 			</nav>
-			<button type="button" id="limpeed-sidebar-toggle" class="limpeed-app-sidebar-toggle" aria-label="<?php esc_attr_e( 'Réduire/agrandir le menu', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Réduire/agrandir le menu', 'limpeed-immobilier' ); ?>">
-				<svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7"/></svg>
-			</button>
 		</aside>
 		<div class="limpeed-app-main">
-			<header class="limpeed-app-topbar">
-				<div class="limpeed-app-topbar-title"><?php echo esc_html( $current_label ); ?></div>
-				<div class="limpeed-app-topbar-user">
-					<button type="button" id="limpeed-theme-toggle" class="limpeed-app-theme-toggle" aria-label="<?php esc_attr_e( 'Changer de thème (clair/sombre)', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Changer de thème (clair/sombre)', 'limpeed-immobilier' ); ?>">
-						<svg class="limpeed-theme-icon limpeed-theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4.5" y1="4.5" x2="6.2" y2="6.2"/><line x1="17.8" y1="17.8" x2="19.5" y2="19.5"/><line x1="4.5" y1="19.5" x2="6.2" y2="17.8"/><line x1="17.8" y1="6.2" x2="19.5" y2="4.5"/></g></svg>
-						<svg class="limpeed-theme-icon limpeed-theme-icon-moon" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z"/></svg>
-					</button>
-					<?php echo get_avatar( $current_user->ID, 32 ); ?>
-					<span><?php echo esc_html( $current_user->display_name ); ?></span>
-					<a href="<?php echo esc_url( $logout_url ); ?>" class="limpeed-app-logout"><?php esc_html_e( 'Déconnexion', 'limpeed-immobilier' ); ?></a>
-				</div>
-			</header>
 			<main class="limpeed-app-content">
+				<h1 class="limpeed-app-page-title"><?php echo esc_html( $current_label ); ?></h1>

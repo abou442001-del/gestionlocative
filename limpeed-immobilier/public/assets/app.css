@@ -20,6 +20,8 @@
 	--limpeed-radius: 10px;
 	--limpeed-radius-sm: 7px;
 	--limpeed-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 2px 8px rgba(16, 24, 40, .05);
+	--limpeed-header-height: 64px;
+	--limpeed-header-bg: #3b6fd6;
 	color-scheme: light;
 }
 
@@ -43,6 +45,7 @@
 	--limpeed-warning: #e0b23d;
 	--limpeed-warning-light: #3a331a;
 	--limpeed-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 2px 8px rgba(0, 0, 0, .35);
+	--limpeed-header-bg: #2c4f99;
 	color-scheme: dark;
 }
 
@@ -60,19 +63,7 @@ body.limpeed-app {
 
 .limpeed-app-shell {
 	display: flex;
-	min-height: 100vh;
-	position: relative;
-}
-
-.limpeed-app-shell::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 3px;
-	background: linear-gradient(90deg, var(--limpeed-blue), var(--limpeed-green));
-	z-index: 100;
+	min-height: calc(100vh - var(--limpeed-header-height));
 }
 
 /* Brand / logo */
@@ -88,8 +79,8 @@ body.limpeed-app {
 
 .limpeed-brand-mark-custom {
 	display: block;
-	max-width: 200px;
-	max-height: 56px;
+	max-width: 190px;
+	max-height: 44px;
 	width: auto;
 	height: auto;
 	object-fit: contain;
@@ -124,14 +115,11 @@ body.limpeed-app {
 	border-right: 1px solid var(--limpeed-border);
 	display: flex;
 	flex-direction: column;
-	position: relative;
+	position: sticky;
+	top: var(--limpeed-header-height);
+	height: calc(100vh - var(--limpeed-header-height));
+	overflow-y: auto;
 	transition: width .18s ease;
-}
-
-.limpeed-app-logo {
-	padding: 22px 20px;
-	border-bottom: 1px solid var(--limpeed-border);
-	overflow: hidden;
 }
 
 .limpeed-app-nav {
@@ -189,34 +177,10 @@ body.limpeed-app {
 	font-weight: 600;
 }
 
-.limpeed-app-sidebar-toggle {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 30px;
-	height: 30px;
-	margin: 10px auto 14px;
-	padding: 0;
-	border: 1px solid var(--limpeed-border);
-	border-radius: 50%;
-	background: var(--limpeed-bg);
-	color: var(--limpeed-text-muted);
-	cursor: pointer;
-	flex-shrink: 0;
-	transition: background .15s ease, color .15s ease, border-color .15s ease, transform .18s ease;
-}
-
-.limpeed-app-sidebar-toggle:hover {
-	background: var(--limpeed-blue-light);
-	color: var(--limpeed-blue);
-	border-color: var(--limpeed-blue);
-}
-
 html[data-sidebar="collapsed"] .limpeed-app-sidebar {
 	width: 76px;
 }
 
-html[data-sidebar="collapsed"] .limpeed-app-logo .limpeed-brand-text,
 html[data-sidebar="collapsed"] .limpeed-app-nav-group-label,
 html[data-sidebar="collapsed"] .limpeed-app-nav-label {
 	display: none;
@@ -224,15 +188,6 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-label {
 
 html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	justify-content: center;
-}
-
-html[data-sidebar="collapsed"] .limpeed-brand-mark-custom {
-	max-width: 36px;
-	max-height: 36px;
-}
-
-html[data-sidebar="collapsed"] .limpeed-app-sidebar-toggle svg {
-	transform: rotate(180deg);
 }
 
 /* Main area */
@@ -244,30 +199,61 @@ html[data-sidebar="collapsed"] .limpeed-app-sidebar-toggle svg {
 }
 
 .limpeed-app-topbar {
-	background: var(--limpeed-surface);
-	border-bottom: 1px solid var(--limpeed-border);
-	color: var(--limpeed-text);
-	padding: 16px 28px;
+	position: sticky;
+	top: 0;
+	z-index: 60;
+	height: var(--limpeed-header-height);
+	background: var(--limpeed-header-bg);
+	color: #fff;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	padding: 0 20px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
 }
 
-.limpeed-app-topbar-title {
-	font-size: 19px;
-	font-weight: 700;
-}
-
-.limpeed-app-topbar-user {
+.limpeed-app-topbar-left,
+.limpeed-app-topbar-right {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	font-size: 14px;
-	color: var(--limpeed-text-muted);
+	gap: 14px;
 }
 
-.limpeed-app-topbar-user img {
-	border-radius: 50%;
+.limpeed-app-hamburger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: none;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, .14);
+	color: #fff;
+	cursor: pointer;
+	flex-shrink: 0;
+	transition: background .15s ease;
+}
+
+.limpeed-app-hamburger:hover {
+	background: rgba(255, 255, 255, .24);
+}
+
+.limpeed-app-logo-box {
+	display: inline-flex;
+	align-items: center;
+	background: #fff;
+	border-radius: 8px;
+	padding: 6px 14px;
+	text-decoration: none;
+	line-height: 0;
+}
+
+.limpeed-app-page-title {
+	font-size: 20px;
+	font-weight: 700;
+	margin: 0 0 20px;
+	color: var(--limpeed-text);
 }
 
 .limpeed-app-theme-toggle {
@@ -277,18 +263,16 @@ html[data-sidebar="collapsed"] .limpeed-app-sidebar-toggle svg {
 	width: 34px;
 	height: 34px;
 	padding: 0;
-	border: 1px solid var(--limpeed-border);
+	border: none;
 	border-radius: 50%;
-	background: var(--limpeed-bg);
-	color: var(--limpeed-text-muted);
+	background: rgba(255, 255, 255, .14);
+	color: #fff;
 	cursor: pointer;
-	transition: background .15s ease, color .15s ease, border-color .15s ease;
+	transition: background .15s ease;
 }
 
 .limpeed-app-theme-toggle:hover {
-	background: var(--limpeed-blue-light);
-	color: var(--limpeed-blue);
-	border-color: var(--limpeed-blue);
+	background: rgba(255, 255, 255, .26);
 }
 
 .limpeed-theme-icon-moon {
@@ -303,15 +287,83 @@ html[data-sidebar="collapsed"] .limpeed-app-sidebar-toggle svg {
 	display: block;
 }
 
-.limpeed-app-logout {
-	color: var(--limpeed-blue);
-	text-decoration: none;
-	margin-left: 6px;
+.limpeed-app-user-menu {
+	position: relative;
+}
+
+.limpeed-app-user-menu-toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: transparent;
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	padding: 5px 10px;
+	border-radius: 8px;
+	transition: background .15s ease;
+}
+
+.limpeed-app-user-menu-toggle:hover {
+	background: rgba(255, 255, 255, .14);
+}
+
+.limpeed-app-user-menu-toggle img {
+	border-radius: 50%;
+	display: block;
+}
+
+.limpeed-app-user-menu-name {
+	font-size: 14px;
 	font-weight: 600;
 }
 
-.limpeed-app-logout:hover {
-	text-decoration: underline;
+.limpeed-app-user-menu-panel {
+	display: none;
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	min-width: 200px;
+	background: var(--limpeed-surface);
+	color: var(--limpeed-text);
+	border: 1px solid var(--limpeed-border);
+	border-radius: var(--limpeed-radius-sm);
+	box-shadow: var(--limpeed-shadow);
+	padding: 6px;
+	z-index: 70;
+}
+
+.limpeed-app-user-menu-panel.is-open {
+	display: block;
+}
+
+.limpeed-app-user-menu-header {
+	padding: 8px 10px;
+	font-weight: 700;
+	font-size: 13px;
+	border-bottom: 1px solid var(--limpeed-border);
+	margin-bottom: 4px;
+}
+
+.limpeed-app-user-menu-panel a {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-radius: 6px;
+	color: var(--limpeed-text);
+	text-decoration: none;
+	font-size: 13px;
+}
+
+.limpeed-app-user-menu-panel a:hover {
+	background: var(--limpeed-bg);
+}
+
+.limpeed-app-user-menu-panel .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
 }
 
 .limpeed-app-content {
@@ -339,17 +391,59 @@ html[data-sidebar="collapsed"] .limpeed-app-sidebar-toggle svg {
 	box-shadow: 0 4px 16px rgba(16, 24, 40, .08), 0 2px 8px rgba(16, 24, 40, .06);
 }
 
+.limpeed-app-card-top {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	padding: 18px 18px 6px;
+	gap: 10px;
+}
+
 .limpeed-app-card-number {
 	font-size: 28px;
 	font-weight: 700;
-	padding: 18px 18px 0;
 	letter-spacing: -.01em;
 }
 
 .limpeed-app-card-label {
-	padding: 4px 18px 18px;
+	margin-top: 4px;
 	color: var(--limpeed-text-muted);
 	font-size: 13px;
+}
+
+.limpeed-app-card-icon {
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.limpeed-app-card-icon .dashicons {
+	font-size: 22px;
+	width: 22px;
+	height: 22px;
+}
+
+.limpeed-icon-orange { background: var(--limpeed-orange-light); color: var(--limpeed-orange-text); }
+.limpeed-icon-red { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
+.limpeed-icon-blue { background: var(--limpeed-blue-light); color: var(--limpeed-blue); }
+.limpeed-icon-green { background: var(--limpeed-green-light); color: var(--limpeed-green-dark); }
+
+.limpeed-app-card-ratio {
+	height: 5px;
+	margin: 2px 18px 0;
+	background: var(--limpeed-border);
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.limpeed-app-card-ratio span {
+	display: block;
+	height: 100%;
+	border-radius: 999px;
 }
 
 .limpeed-app-card-bar {
@@ -777,17 +871,15 @@ a.limpeed-app-calendar-month-retard:hover {
 		width: 64px;
 	}
 
-	.limpeed-app-logo .limpeed-brand-text,
 	.limpeed-app-nav-label,
 	.limpeed-app-nav-group-label,
-	.limpeed-app-sidebar-toggle,
-	.limpeed-app-topbar-user span {
+	.limpeed-app-user-menu-name {
 		display: none;
 	}
 
 	.limpeed-brand-mark-custom {
-		max-width: 32px;
-		max-height: 32px;
+		max-width: 120px;
+		max-height: 34px;
 	}
 
 	.limpeed-app-nav-item {

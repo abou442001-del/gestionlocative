@@ -35,4 +35,18 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			} catch ( e ) {}
 		} );
 	}
+
+	var userMenuToggle = document.getElementById( 'limpeed-user-menu-toggle' );
+	var userMenuPanel  = document.getElementById( 'limpeed-user-menu-panel' );
+	if ( userMenuToggle && userMenuPanel ) {
+		userMenuToggle.addEventListener( 'click', function ( event ) {
+			event.stopPropagation();
+			userMenuPanel.classList.toggle( 'is-open' );
+		} );
+		document.addEventListener( 'click', function ( event ) {
+			if ( userMenuPanel.classList.contains( 'is-open' ) && ! userMenuPanel.contains( event.target ) ) {
+				userMenuPanel.classList.remove( 'is-open' );
+			}
+		} );
+	}
 } );

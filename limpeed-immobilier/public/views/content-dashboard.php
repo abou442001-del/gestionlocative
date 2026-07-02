@@ -50,27 +50,53 @@ foreach ( $recent_tenants as $recent_tenant ) {
 }
 ?>
 
+<?php
+$tenants_active_ratio    = $tenants_count > 0 ? round( ( $tenants_active / $tenants_count ) * 100 ) : 0;
+$properties_occupied_ratio = $properties_count > 0 ? round( ( $properties_occupied / $properties_count ) * 100 ) : 0;
+?>
 <div class="limpeed-cards-row">
 	<div class="limpeed-app-card">
-		<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $owners_count ) ); ?></div>
-		<div class="limpeed-app-card-label"><?php esc_html_e( 'Propriétaires', 'limpeed-immobilier' ); ?></div>
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $owners_count ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Propriétaires', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-groups"></span></span>
+		</div>
 		<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
 	</div>
 	<div class="limpeed-app-card">
-		<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $tenants_count ) ); ?></div>
-		<div class="limpeed-app-card-label"><?php esc_html_e( 'Locataires', 'limpeed-immobilier' ); ?></div>
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $tenants_count ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Locataires', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-red"><span class="dashicons dashicons-admin-users"></span></span>
+		</div>
+		<div class="limpeed-app-card-ratio"><span style="width: <?php echo esc_attr( $tenants_active_ratio ); ?>%; background: var(--limpeed-green);"></span></div>
 		<div class="limpeed-app-card-bar limpeed-bar-red">
 			<span><?php printf( esc_html__( '%1$d actifs / %2$d inactifs', 'limpeed-immobilier' ), (int) $tenants_active, (int) $tenants_inactive ); ?></span>
 		</div>
 	</div>
 	<div class="limpeed-app-card">
-		<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $buildings_count ) ); ?></div>
-		<div class="limpeed-app-card-label"><?php esc_html_e( 'Édifices', 'limpeed-immobilier' ); ?></div>
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $buildings_count ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Édifices', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-admin-multisite"></span></span>
+		</div>
 		<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
 	</div>
 	<div class="limpeed-app-card">
-		<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $properties_count ) ); ?></div>
-		<div class="limpeed-app-card-label"><?php esc_html_e( 'Biens (sous-édifices)', 'limpeed-immobilier' ); ?></div>
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $properties_count ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Biens (sous-édifices)', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-building"></span></span>
+		</div>
+		<div class="limpeed-app-card-ratio"><span style="width: <?php echo esc_attr( $properties_occupied_ratio ); ?>%; background: var(--limpeed-blue);"></span></div>
 		<div class="limpeed-app-card-bar limpeed-bar-green">
 			<span><?php printf( esc_html__( '%1$d disponibles / %2$d occupés', 'limpeed-immobilier' ), (int) $properties_vacant, (int) $properties_occupied ); ?></span>
 		</div>

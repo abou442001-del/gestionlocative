@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.10.0
+Stable tag: 1.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,11 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.11.0 =
+* Nouvelle en-tête d'application : bandeau bleu pleine largeur avec le logo dans un encart blanc, bouton menu (hamburger) et menu utilisateur déroulant (Réglages, Déconnexion) au survol de l'avatar.
+* Tableau de bord : chaque carte d'indicateur affiche désormais une icône dédiée, et une barre de progression colorée illustre le ratio actifs/inactifs ou disponibles/occupés.
+* Le menu latéral et l'en-tête restent visibles au défilement de la page (barre du haut et menu "collants").
 
 = 1.10.0 =
 * Refonte visuelle de l'application frontend : menu latéral organisé en sections (Gestion, Finances, Administration), bouton de réduction/agrandissement du menu (préférence mémorisée), fine bande dégradée bleu/vert en haut de l'écran, cartes et boutons avec un effet de survol plus soigné.
