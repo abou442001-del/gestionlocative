@@ -22,14 +22,17 @@ $current_label = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title><?php echo esc_html( $current_label ); ?> — <?php esc_html_e( 'Limpeed Immobilier', 'limpeed-immobilier' ); ?></title>
 	<script>
-	// Applique le thème mémorisé avant le rendu de la page pour éviter un
-	// flash de thème clair au chargement (l'attribut doit être posé avant
-	// que app.css ne soit interprété).
+	// Applique le thème et l'état de la sidebar mémorisés avant le rendu de
+	// la page pour éviter un flash au chargement (les attributs doivent être
+	// posés avant que app.css ne soit interprété).
 	( function () {
 		try {
 			var stored = localStorage.getItem( 'limpeedTheme' );
 			var theme  = stored || ( window.matchMedia && window.matchMedia( '(prefers-color-scheme: dark)' ).matches ? 'dark' : 'light' );
 			document.documentElement.setAttribute( 'data-theme', theme );
+			if ( 'true' === localStorage.getItem( 'limpeedSidebarCollapsed' ) ) {
+				document.documentElement.setAttribute( 'data-sidebar', 'collapsed' );
+			}
 		} catch ( e ) {}
 	} )();
 	</script>
@@ -41,16 +44,24 @@ $current_label = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active
 		<aside class="limpeed-app-sidebar">
 			<div class="limpeed-app-logo"><?php echo Limpeed_Frontend::render_logo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- balisage statique généré et échappé dans render_logo(). ?></div>
 			<nav class="limpeed-app-nav">
+				<?php $current_group = null; ?>
 				<?php foreach ( $all_sections as $key => $item ) : ?>
 					<?php if ( ! current_user_can( $item['cap'] ) ) : ?>
 						<?php continue; ?>
 					<?php endif; ?>
-					<a href="<?php echo esc_url( Limpeed_Frontend::app_url( $key ) ); ?>" class="limpeed-app-nav-item<?php echo $active_page === $key ? ' is-active' : ''; ?>">
+					<?php if ( ! empty( $item['group'] ) && $item['group'] !== $current_group ) : ?>
+						<?php $current_group = $item['group']; ?>
+						<div class="limpeed-app-nav-group-label"><?php echo esc_html( $current_group ); ?></div>
+					<?php endif; ?>
+					<a href="<?php echo esc_url( Limpeed_Frontend::app_url( $key ) ); ?>" class="limpeed-app-nav-item<?php echo $active_page === $key ? ' is-active' : ''; ?>" title="<?php echo esc_attr( $item['label'] ); ?>">
 						<span class="dashicons <?php echo esc_attr( $item['icon'] ); ?>"></span>
 						<span class="limpeed-app-nav-label"><?php echo esc_html( $item['label'] ); ?></span>
 					</a>
 				<?php endforeach; ?>
 			</nav>
+			<button type="button" id="limpeed-sidebar-toggle" class="limpeed-app-sidebar-toggle" aria-label="<?php esc_attr_e( 'Réduire/agrandir le menu', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Réduire/agrandir le menu', 'limpeed-immobilier' ); ?>">
+				<svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7"/></svg>
+			</button>
 		</aside>
 		<div class="limpeed-app-main">
 			<header class="limpeed-app-topbar">

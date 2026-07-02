@@ -118,51 +118,61 @@ class Limpeed_Frontend {
 				'label' => __( 'Tableau de bord', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_properties',
 				'icon'  => 'dashicons-chart-bar',
+				'group' => '',
 			),
 			'owners'       => array(
 				'label' => __( 'Propriétaires', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_owners',
 				'icon'  => 'dashicons-groups',
+				'group' => __( 'Gestion', 'limpeed-immobilier' ),
 			),
 			'buildings'    => array(
 				'label' => __( 'Édifices', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_properties',
 				'icon'  => 'dashicons-admin-multisite',
+				'group' => __( 'Gestion', 'limpeed-immobilier' ),
 			),
 			'properties'   => array(
 				'label' => __( 'Biens', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_properties',
 				'icon'  => 'dashicons-building',
+				'group' => __( 'Gestion', 'limpeed-immobilier' ),
 			),
 			'tenants'      => array(
 				'label' => __( 'Locataires', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_tenants',
 				'icon'  => 'dashicons-admin-users',
+				'group' => __( 'Gestion', 'limpeed-immobilier' ),
 			),
 			'payments'     => array(
 				'label' => __( 'Paiements', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_payments',
 				'icon'  => 'dashicons-money-alt',
+				'group' => __( 'Finances', 'limpeed-immobilier' ),
 			),
 			'statements'   => array(
 				'label' => __( 'Bordereaux', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_statements',
 				'icon'  => 'dashicons-media-document',
+				'group' => __( 'Finances', 'limpeed-immobilier' ),
 			),
 			'agents'       => array(
 				'label' => __( 'Agents', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_agents',
 				'icon'  => 'dashicons-id',
+				'group' => __( 'Administration', 'limpeed-immobilier' ),
 			),
 			'activity-log' => array(
 				'label' => __( 'Journal d\'activité', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_agents',
 				'icon'  => 'dashicons-list-view',
+				'group' => __( 'Administration', 'limpeed-immobilier' ),
 			),
 			'settings'     => array(
 				'label' => __( 'Réglages', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_agents',
 				'icon'  => 'dashicons-admin-generic',
+				'group' => __( 'Administration', 'limpeed-immobilier' ),
 			),
 		);
 	}

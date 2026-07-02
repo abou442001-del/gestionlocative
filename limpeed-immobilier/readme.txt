@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.9.0
+Stable tag: 1.10.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,10 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.10.0 =
+* Refonte visuelle de l'application frontend : menu latéral organisé en sections (Gestion, Finances, Administration), bouton de réduction/agrandissement du menu (préférence mémorisée), fine bande dégradée bleu/vert en haut de l'écran, cartes et boutons avec un effet de survol plus soigné.
+* Correction : le logo personnalisé était affiché un peu trop petit dans le menu latéral et les pages de connexion/inscription ; sa taille maximale a été augmentée pour mieux correspondre à l'espace disponible.
 
 = 1.9.0 =
 * Logo personnalisé : possibilité d'uploader son propre logo (PNG, JPEG, GIF, WEBP — max 2 Mo) depuis Réglages, affiché à la place du logo par défaut sur l'application frontend et les pages de connexion/inscription, avec option de suppression pour revenir au logo par défaut.

@@ -19,4 +19,20 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			} catch ( e ) {}
 		} );
 	}
+
+	var sidebarToggle = document.getElementById( 'limpeed-sidebar-toggle' );
+	if ( sidebarToggle ) {
+		sidebarToggle.addEventListener( 'click', function () {
+			var collapsed = 'collapsed' === document.documentElement.getAttribute( 'data-sidebar' );
+			var next      = ! collapsed;
+			if ( next ) {
+				document.documentElement.setAttribute( 'data-sidebar', 'collapsed' );
+			} else {
+				document.documentElement.removeAttribute( 'data-sidebar' );
+			}
+			try {
+				localStorage.setItem( 'limpeedSidebarCollapsed', next ? 'true' : 'false' );
+			} catch ( e ) {}
+		} );
+	}
 } );
