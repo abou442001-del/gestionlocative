@@ -221,11 +221,6 @@ class Limpeed_Properties {
 				continue;
 			}
 
-			if ( '' === trim( $row['address'] ?? '' ) ) {
-				/* translators: %d: numéro de la ligne de sous-édifice */
-				$errors[] = sprintf( __( 'Sous-édifice #%d : l\'adresse est obligatoire.', 'limpeed-immobilier' ), $index );
-			}
-
 			foreach ( array( 'monthly_rent', 'charges', 'deposit_amount' ) as $field ) {
 				if ( isset( $row[ $field ] ) && '' !== $row[ $field ] && ! is_numeric( $row[ $field ] ) ) {
 					/* translators: %d: numéro de la ligne de sous-édifice */

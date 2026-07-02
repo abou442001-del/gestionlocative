@@ -101,8 +101,8 @@ class Limpeed_Properties_Page {
 			$errors[] = __( 'Veuillez sélectionner un édifice valide.', 'limpeed-immobilier' );
 		}
 
-		if ( empty( trim( $data['address'] ) ) ) {
-			$errors[] = __( 'L\'adresse du bien est obligatoire.', 'limpeed-immobilier' );
+		if ( '' === trim( $data['reference'] ) && '' === trim( $data['address'] ) ) {
+			$errors[] = __( 'Indiquez au moins un identifiant ou une adresse pour ce bien.', 'limpeed-immobilier' );
 		}
 
 		if ( ! array_key_exists( $data['type'], Limpeed_Properties::get_types() ) ) {
