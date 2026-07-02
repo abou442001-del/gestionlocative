@@ -224,6 +224,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	<div class="limpeed-app-panel">
 		<div class="limpeed-app-toolbar">
 			<form method="get" class="limpeed-app-search">
+				<input type="hidden" name="page_id" value="<?php echo (int) Limpeed_Frontend::dashboard_page_id(); ?>">
 				<input type="hidden" name="limpeed_view" value="owners">
 				<input type="text" name="q" placeholder="<?php esc_attr_e( 'Rechercher un propriétaire...', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $search ); ?>">
 				<button type="submit" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Rechercher', 'limpeed-immobilier' ); ?></button>

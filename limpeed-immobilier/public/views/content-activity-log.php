@@ -27,6 +27,7 @@ $entries     = Limpeed_Activity_Log::get_all( $args );
 	<p class="limpeed-app-description"><?php esc_html_e( 'Historique des créations, modifications et suppressions effectuées par les agents.', 'limpeed-immobilier' ); ?></p>
 
 	<form method="get" class="limpeed-app-search">
+		<input type="hidden" name="page_id" value="<?php echo (int) Limpeed_Frontend::dashboard_page_id(); ?>">
 		<input type="hidden" name="limpeed_view" value="activity-log">
 		<select name="object_type">
 			<option value=""><?php esc_html_e( 'Tous les éléments', 'limpeed-immobilier' ); ?></option>

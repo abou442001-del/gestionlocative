@@ -207,6 +207,7 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'agents', array( 'action' => 'add' ) ) ); ?>" class="limpeed-app-btn"><?php esc_html_e( 'Ajouter un agent', 'limpeed-immobilier' ); ?></a>
 		</div>
 		<form method="get" class="limpeed-app-search" style="margin-bottom:16px;">
+			<input type="hidden" name="page_id" value="<?php echo (int) Limpeed_Frontend::dashboard_page_id(); ?>">
 			<input type="hidden" name="limpeed_view" value="agents">
 			<input type="text" name="q" placeholder="<?php esc_attr_e( 'Rechercher un agent...', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $search ); ?>">
 			<button type="submit" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Rechercher', 'limpeed-immobilier' ); ?></button>

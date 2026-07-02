@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.14.0
+Stable tag: 1.15.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,10 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.15.0 =
+* Les sections Édifices, Biens et Locataires sont désormais rangées par propriétaire : chaque propriétaire apparaît comme un groupe distinct (avec un lien direct vers sa fiche), au lieu d'une liste plate mélangeant tout le monde. Les filtres de recherche existants continuent de fonctionner normalement au sein de cette nouvelle présentation.
+* Correction : les formulaires de recherche/filtre (Propriétaires, Édifices, Biens, Locataires, Paiements, Bordereaux, Agents, Journal d'activité) perdaient le contexte de la page sur les sites utilisant la structure de permaliens "Simple", ce qui pouvait renvoyer vers une page vide après une recherche.
 
 = 1.14.0 =
 * Fiche propriétaire : la section Propriétaires affiche désormais une vue d'ensemble par propriétaire (clic sur "Voir") listant tous ses édifices, les biens de chaque édifice avec leur statut et leur locataire actuel, pour une navigation rangée par propriétaire au lieu de listes séparées.

@@ -89,6 +89,7 @@ if ( 'add' === $action ) :
 	<div class="limpeed-app-panel">
 		<div class="limpeed-app-toolbar">
 			<form method="get" class="limpeed-app-search">
+				<input type="hidden" name="page_id" value="<?php echo (int) Limpeed_Frontend::dashboard_page_id(); ?>">
 				<input type="hidden" name="limpeed_view" value="statements">
 				<select name="owner_id">
 					<option value=""><?php esc_html_e( 'Tous les propriétaires', 'limpeed-immobilier' ); ?></option>

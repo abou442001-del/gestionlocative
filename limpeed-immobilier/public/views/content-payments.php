@@ -143,6 +143,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	<div class="limpeed-app-panel">
 		<div class="limpeed-app-toolbar">
 			<form method="get" class="limpeed-app-search">
+				<input type="hidden" name="page_id" value="<?php echo (int) Limpeed_Frontend::dashboard_page_id(); ?>">
 				<input type="hidden" name="limpeed_view" value="payments">
 				<?php if ( $tenant_id ) : ?><input type="hidden" name="tenant_id" value="<?php echo esc_attr( $tenant_id ); ?>"><?php endif; ?>
 				<select name="property_id">
