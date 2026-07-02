@@ -133,6 +133,7 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 
 		<?php
 		$advance_status  = Limpeed_Tenants::get_advance_status( $tenant );
+		$deposit_status  = Limpeed_Tenants::get_deposit_status( $tenant );
 		$calendar_year   = isset( $_GET['calendar_year'] ) ? (int) $_GET['calendar_year'] : (int) current_time( 'Y' );
 		$payment_calendar = Limpeed_Tenants::get_payment_calendar( $tenant, $calendar_year );
 
@@ -141,6 +142,11 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 			'en_retard'      => __( 'En retard', 'limpeed-immobilier' ),
 			'a_jour'         => __( 'À jour', 'limpeed-immobilier' ),
 			'en_avance'      => __( 'En avance', 'limpeed-immobilier' ),
+		);
+		$deposit_labels = array(
+			'aucun'       => __( 'Aucun dépôt versé', 'limpeed-immobilier' ),
+			'insuffisant' => __( 'Insuffisant', 'limpeed-immobilier' ),
+			'suffisant'   => __( 'Suffisant', 'limpeed-immobilier' ),
 		);
 		?>
 		<h2><?php esc_html_e( 'Suivi des paiements', 'limpeed-immobilier' ); ?></h2>
@@ -171,6 +177,14 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 							?>
 						<?php endif; ?>
 					<?php endif; ?>
+				</span>
+			</div>
+			<div class="limpeed-advance-stat">
+				<span class="limpeed-advance-stat-label"><?php esc_html_e( 'Caution', 'limpeed-immobilier' ); ?></span>
+				<span class="limpeed-advance-stat-value">
+					<?php echo esc_html( number_format_i18n( $deposit_status['paid'], 2 ) ); ?> / <?php echo esc_html( number_format_i18n( $deposit_status['required'], 2 ) ); ?>
+					<small>(<?php echo esc_html( $deposit_status['deposit_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small>
+					<span class="limpeed-badge limpeed-badge-<?php echo esc_attr( $deposit_status['status'] ); ?>"><?php echo esc_html( $deposit_labels[ $deposit_status['status'] ] ); ?></span>
 				</span>
 			</div>
 		</div>

@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $confirm        = '1' === get_option( 'limpeed_confirm_data_deletion', '0' );
 $advance_months = (int) get_option( 'limpeed_advance_months', 1 );
+$deposit_months = (int) get_option( 'limpeed_deposit_months', 1 );
 $logo_url       = Limpeed_Branding::get_logo_url();
 $message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '';
 ?>
@@ -52,6 +53,18 @@ $message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $
 				<?php endfor; ?>
 			</select>
 			<p class="limpeed-app-description"><?php esc_html_e( 'Nombre de mois de loyer d\'avance attendu de chaque locataire. Utilisé pour calculer automatiquement le montant d\'avance et le statut (à jour / en avance / en retard) affichés sur chaque fiche locataire.', 'limpeed-immobilier' ); ?></p>
+		</div>
+
+		<div class="limpeed-form-row">
+			<label for="limpeed_deposit_months"><?php esc_html_e( 'Mois de caution par défaut', 'limpeed-immobilier' ); ?></label>
+			<select name="limpeed_deposit_months" id="limpeed_deposit_months">
+				<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
+					<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $deposit_months, $i ); ?>>
+						<?php echo esc_html( sprintf( _n( '%d mois', '%d mois', $i, 'limpeed-immobilier' ), $i ) ); ?>
+					</option>
+				<?php endfor; ?>
+			</select>
+			<p class="limpeed-app-description"><?php esc_html_e( 'Nombre de mois de loyer attendu au titre de la caution (dépôt de garantie). Utilisé pour calculer automatiquement le dépôt requis et comparer au dépôt réellement versé sur chaque fiche locataire.', 'limpeed-immobilier' ); ?></p>
 		</div>
 
 		<div class="limpeed-form-row">

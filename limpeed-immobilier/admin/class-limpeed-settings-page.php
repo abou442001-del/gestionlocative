@@ -38,6 +38,10 @@ class Limpeed_Settings_Page {
 		$advance_months = min( 12, max( 1, $advance_months ) );
 		update_option( 'limpeed_advance_months', $advance_months );
 
+		$deposit_months = isset( $_POST['limpeed_deposit_months'] ) ? (int) $_POST['limpeed_deposit_months'] : 1;
+		$deposit_months = min( 12, max( 1, $deposit_months ) );
+		update_option( 'limpeed_deposit_months', $deposit_months );
+
 		if ( isset( $_POST['limpeed_remove_logo'] ) && '1' === $_POST['limpeed_remove_logo'] ) {
 			Limpeed_Branding::remove_logo();
 		} elseif ( ! empty( $_FILES['limpeed_logo']['name'] ) ) {
@@ -74,6 +78,7 @@ class Limpeed_Settings_Page {
 
 		$confirm        = '1' === get_option( 'limpeed_confirm_data_deletion', '0' );
 		$advance_months = (int) get_option( 'limpeed_advance_months', 1 );
+		$deposit_months = (int) get_option( 'limpeed_deposit_months', 1 );
 		$logo_url       = Limpeed_Branding::get_logo_url();
 		$message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '';
 

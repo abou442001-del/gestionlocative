@@ -55,6 +55,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 					</td>
 				</tr>
 				<tr>
+					<th scope="row"><label for="limpeed_deposit_months"><?php esc_html_e( 'Mois de caution par défaut', 'limpeed-immobilier' ); ?></label></th>
+					<td>
+						<select name="limpeed_deposit_months" id="limpeed_deposit_months">
+							<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
+								<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $deposit_months, $i ); ?>>
+									<?php echo esc_html( sprintf( _n( '%d mois', '%d mois', $i, 'limpeed-immobilier' ), $i ) ); ?>
+								</option>
+							<?php endfor; ?>
+						</select>
+						<p class="description"><?php esc_html_e( 'Nombre de mois de loyer attendu au titre de la caution (dépôt de garantie). Utilisé pour calculer automatiquement le dépôt requis et comparer au dépôt réellement versé sur chaque fiche locataire.', 'limpeed-immobilier' ); ?></p>
+					</td>
+				</tr>
+				<tr>
 					<th scope="row"><?php esc_html_e( 'Suppression des données', 'limpeed-immobilier' ); ?></th>
 					<td>
 						<label>

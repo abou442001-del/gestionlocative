@@ -263,3 +263,18 @@ a.limpeed-calendar-month-retard:hover {
 	background: #f0f0f1;
 	color: #50575e;
 }
+
+.limpeed-badge-suffisant {
+	background: #d4edda;
+	color: #1f7a41;
+}
+
+.limpeed-badge-insuffisant {
+	background: #fbe1e1;
+	color: #d9534f;
+}
+
+.limpeed-badge-aucun {
+	background: #f0f0f1;
+	color: #50575e;
+}

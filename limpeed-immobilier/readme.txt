@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.13.0
+Stable tag: 1.14.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,10 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.14.0 =
+* Fiche propriétaire : la section Propriétaires affiche désormais une vue d'ensemble par propriétaire (clic sur "Voir") listant tous ses édifices, les biens de chaque édifice avec leur statut et leur locataire actuel, pour une navigation rangée par propriétaire au lieu de listes séparées.
+* Réglages : nouveau champ "Mois de caution par défaut", utilisé pour calculer automatiquement le dépôt de garantie requis et le comparer au dépôt réellement versé (indicateur Suffisant/Insuffisant) sur chaque fiche locataire, à côté du suivi de l'avance de loyer.
 
 = 1.13.0 =
 * Correction : les biens n'ayant qu'un identifiant (sans adresse) s'affichaient avec un libellé vide dans les listes déroulantes (sélection du bien loué, filtres, bordereaux...), rendant l'option invisible/vide. Un libellé d'affichage centralisé (identifiant, sinon adresse, sinon repli générique) est désormais utilisé partout où un bien est référencé.

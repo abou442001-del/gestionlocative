@@ -128,6 +128,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 
 			<?php
 			$advance_status   = Limpeed_Tenants::get_advance_status( $tenant );
+			$deposit_status   = Limpeed_Tenants::get_deposit_status( $tenant );
 			$calendar_year    = isset( $_GET['calendar_year'] ) ? (int) $_GET['calendar_year'] : (int) current_time( 'Y' );
 			$payment_calendar = Limpeed_Tenants::get_payment_calendar( $tenant, $calendar_year );
 
@@ -136,6 +137,11 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				'en_retard'      => __( 'En retard', 'limpeed-immobilier' ),
 				'a_jour'         => __( 'À jour', 'limpeed-immobilier' ),
 				'en_avance'      => __( 'En avance', 'limpeed-immobilier' ),
+			);
+			$deposit_labels = array(
+				'aucun'       => __( 'Aucun dépôt versé', 'limpeed-immobilier' ),
+				'insuffisant' => __( 'Insuffisant', 'limpeed-immobilier' ),
+				'suffisant'   => __( 'Suffisant', 'limpeed-immobilier' ),
 			);
 			?>
 			<h3><?php esc_html_e( 'Suivi des paiements', 'limpeed-immobilier' ); ?></h3>
@@ -166,6 +172,14 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 								?>
 							<?php endif; ?>
 						<?php endif; ?>
+					</span>
+				</div>
+				<div class="limpeed-app-advance-stat">
+					<span class="limpeed-app-advance-label"><?php esc_html_e( 'Caution', 'limpeed-immobilier' ); ?></span>
+					<span class="limpeed-app-advance-value">
+						<?php echo esc_html( number_format_i18n( $deposit_status['paid'], 2 ) ); ?> / <?php echo esc_html( number_format_i18n( $deposit_status['required'], 2 ) ); ?>
+						<small>(<?php echo esc_html( $deposit_status['deposit_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small>
+						<span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $deposit_status['status'] ); ?>"><?php echo esc_html( $deposit_labels[ $deposit_status['status'] ] ); ?></span>
 					</span>
 				</div>
 			</div>

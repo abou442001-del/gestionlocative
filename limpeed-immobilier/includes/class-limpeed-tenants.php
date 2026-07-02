@@ -348,6 +348,40 @@ class Limpeed_Tenants {
 	}
 
 	/**
+	 * Calcule le statut de la caution (dépôt de garantie) d'un locataire :
+	 * montant requis (loyer × nombre de mois de caution réglé dans les
+	 * Réglages) comparé au dépôt réellement versé.
+	 *
+	 * @param object $tenant
+	 * @return array {
+	 *     @type int    $deposit_months Nombre de mois de caution réglé dans les paramètres.
+	 *     @type float  $required       Loyer × nombre de mois de caution.
+	 *     @type float  $paid           Dépôt réellement versé (deposit_paid).
+	 *     @type string $status         'aucun' | 'insuffisant' | 'suffisant'.
+	 * }
+	 */
+	public static function get_deposit_status( $tenant ) {
+		$deposit_months = max( 1, (int) get_option( 'limpeed_deposit_months', 1 ) );
+		$required       = (float) $tenant->rent_amount * $deposit_months;
+		$paid           = (float) $tenant->deposit_paid;
+
+		if ( $paid <= 0 ) {
+			$status = 'aucun';
+		} elseif ( $paid < $required ) {
+			$status = 'insuffisant';
+		} else {
+			$status = 'suffisant';
+		}
+
+		return array(
+			'deposit_months' => $deposit_months,
+			'required'       => $required,
+			'paid'           => $paid,
+			'status'         => $status,
+		);
+	}
+
+	/**
 	 * Construit le calendrier annuel de suivi des paiements d'un locataire :
 	 * pour chacun des 12 mois de l'année donnée, indique s'il est payé,
 	 * partiellement payé, en retard, à venir, ou hors période de bail.

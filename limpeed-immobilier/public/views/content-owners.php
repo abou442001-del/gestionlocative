@@ -93,6 +93,115 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		</form>
 	</div>
 
+<?php elseif ( 'view' === $action && isset( $_GET['id'] ) ) : ?>
+	<?php
+	// -----------------------------------------------------------------
+	// Fiche propriétaire : vue d'ensemble par édifice/bien/locataire.
+	// -----------------------------------------------------------------
+	$owner = Limpeed_Owners::get( (int) $_GET['id'] );
+	if ( ! $owner ) {
+		echo '<div class="limpeed-app-panel">' . esc_html__( 'Propriétaire introuvable.', 'limpeed-immobilier' ) . '</div>';
+		return;
+	}
+
+	$owner_buildings  = Limpeed_Buildings::get_all( array( 'owner_id' => $owner->id, 'per_page' => 9999 ) );
+	$owner_properties = Limpeed_Properties::get_all( array( 'owner_id' => $owner->id, 'per_page' => 9999 ) );
+
+	$properties_by_building = array();
+	foreach ( $owner_properties as $owner_property ) {
+		$properties_by_building[ (int) $owner_property->building_id ][] = $owner_property;
+	}
+
+	$property_types    = Limpeed_Properties::get_types();
+	$property_statuses = Limpeed_Properties::get_statuses();
+	$tenant_statuses   = Limpeed_Tenants::get_statuses();
+	?>
+
+	<div class="limpeed-app-panel">
+		<div class="limpeed-app-toolbar">
+			<h2><?php echo esc_html( $owner->full_name ); ?></h2>
+			<div>
+				<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'owners', array( 'action' => 'edit', 'id' => $owner->id ) ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></a>
+				<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'buildings', array( 'action' => 'add', 'owner_id' => $owner->id ) ) ); ?>" class="limpeed-app-btn"><?php esc_html_e( 'Ajouter un édifice', 'limpeed-immobilier' ); ?></a>
+			</div>
+		</div>
+		<p>
+			<strong><?php esc_html_e( 'Téléphone :', 'limpeed-immobilier' ); ?></strong> <?php echo $owner->phone ? esc_html( $owner->phone ) : '&mdash;'; ?>
+			&nbsp;|&nbsp;
+			<strong><?php esc_html_e( 'Email :', 'limpeed-immobilier' ); ?></strong> <?php echo $owner->email ? esc_html( $owner->email ) : '&mdash;'; ?>
+		</p>
+		<?php if ( $owner->address ) : ?>
+			<p><strong><?php esc_html_e( 'Adresse :', 'limpeed-immobilier' ); ?></strong> <?php echo esc_html( $owner->address ); ?></p>
+		<?php endif; ?>
+		<?php if ( current_user_can( 'manage_limpeed_statements' ) ) : ?>
+			<p><a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'statements', array( 'owner_id' => $owner->id ) ) ); ?>"><?php esc_html_e( 'Voir les bordereaux', 'limpeed-immobilier' ); ?></a></p>
+		<?php endif; ?>
+	</div>
+
+	<?php if ( empty( $owner_buildings ) ) : ?>
+		<div class="limpeed-app-panel">
+			<p><?php esc_html_e( 'Ce propriétaire n\'a pas encore d\'édifice.', 'limpeed-immobilier' ); ?></p>
+		</div>
+	<?php endif; ?>
+
+	<?php foreach ( $owner_buildings as $owner_building ) : ?>
+		<?php $building_properties = $properties_by_building[ (int) $owner_building->id ] ?? array(); ?>
+		<div class="limpeed-app-panel">
+			<div class="limpeed-app-toolbar">
+				<h3>
+					<?php echo esc_html( $owner_building->name ); ?>
+					<?php if ( $owner_building->address ) : ?><small class="limpeed-app-description"><?php echo esc_html( $owner_building->address ); ?></small><?php endif; ?>
+				</h3>
+				<div>
+					<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'buildings', array( 'action' => 'edit', 'id' => $owner_building->id ) ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Modifier l\'édifice', 'limpeed-immobilier' ); ?></a>
+					<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'add', 'building_id' => $owner_building->id ) ) ); ?>" class="limpeed-app-btn"><?php esc_html_e( 'Ajouter un sous-édifice', 'limpeed-immobilier' ); ?></a>
+				</div>
+			</div>
+
+			<?php if ( empty( $building_properties ) ) : ?>
+				<p><?php esc_html_e( 'Aucun sous-édifice pour cet édifice.', 'limpeed-immobilier' ); ?></p>
+			<?php else : ?>
+				<table class="limpeed-app-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Bien', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Type', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Loyer', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Locataire actuel', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $building_properties as $building_property ) : ?>
+							<?php $current_tenant = Limpeed_Properties::get_current_tenant( $building_property->id ); ?>
+							<tr>
+								<td><?php echo esc_html( Limpeed_Properties::get_display_label( $building_property ) ); ?></td>
+								<td><?php echo isset( $property_types[ $building_property->type ] ) ? esc_html( $property_types[ $building_property->type ] ) : esc_html( $building_property->type ); ?></td>
+								<td><?php echo esc_html( number_format_i18n( (float) $building_property->monthly_rent, 2 ) ); ?></td>
+								<td><span class="limpeed-app-badge"><?php echo isset( $property_statuses[ $building_property->status ] ) ? esc_html( $property_statuses[ $building_property->status ] ) : esc_html( $building_property->status ); ?></span></td>
+								<td>
+									<?php if ( $current_tenant ) : ?>
+										<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $current_tenant->id ) ) ); ?>"><?php echo esc_html( $current_tenant->full_name ); ?></a>
+										<span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $current_tenant->status ); ?>"><?php echo isset( $tenant_statuses[ $current_tenant->status ] ) ? esc_html( $tenant_statuses[ $current_tenant->status ] ) : esc_html( $current_tenant->status ); ?></span>
+									<?php else : ?>
+										&mdash;
+									<?php endif; ?>
+								</td>
+								<td class="limpeed-app-actions">
+									<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $building_property->id ) ) ); ?>"><?php esc_html_e( 'Modifier le bien', 'limpeed-immobilier' ); ?></a>
+									<?php if ( ! $current_tenant ) : ?>
+										<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'add', 'property_id' => $building_property->id ) ) ); ?>"><?php esc_html_e( 'Ajouter un locataire', 'limpeed-immobilier' ); ?></a>
+									<?php endif; ?>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
+		</div>
+	<?php endforeach; ?>
+
 <?php else : ?>
 	<?php
 	// -----------------------------------------------------------------
@@ -149,16 +258,18 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<?php endif; ?>
 				<?php foreach ( $owners as $owner_row ) : ?>
 					<?php
+					$view_url    = Limpeed_Frontend::app_url( 'owners', array( 'action' => 'view', 'id' => $owner_row->id ) );
 					$edit_url    = Limpeed_Frontend::app_url( 'owners', array( 'action' => 'edit', 'id' => $owner_row->id ) );
 					$delete_url  = wp_nonce_url( Limpeed_Frontend::app_url( 'owners', array( 'action' => 'delete', 'id' => $owner_row->id ) ), 'limpeed_delete_owner_' . $owner_row->id );
 					$buildings_n = Limpeed_Buildings::count( array( 'owner_id' => $owner_row->id ) );
 					?>
 					<tr>
-						<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( $owner_row->full_name ); ?></a></td>
+						<td><a href="<?php echo esc_url( $view_url ); ?>"><?php echo esc_html( $owner_row->full_name ); ?></a></td>
 						<td><?php echo $owner_row->phone ? esc_html( $owner_row->phone ) : '&mdash;'; ?></td>
 						<td><?php echo $owner_row->email ? esc_html( $owner_row->email ) : '&mdash;'; ?></td>
 						<td><?php echo esc_html( $buildings_n ); ?></td>
 						<td class="limpeed-app-actions">
+							<a href="<?php echo esc_url( $view_url ); ?>"><?php esc_html_e( 'Voir', 'limpeed-immobilier' ); ?></a>
 							<a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></a>
 							<a href="<?php echo esc_url( $delete_url ); ?>" class="limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous la suppression de ce propriétaire ?', 'limpeed-immobilier' ); ?>"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></a>
 						</td>

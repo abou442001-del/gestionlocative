@@ -36,6 +36,10 @@ class Limpeed_Frontend_Settings {
 		$advance_months = min( 12, max( 1, $advance_months ) );
 		update_option( 'limpeed_advance_months', $advance_months );
 
+		$deposit_months = isset( $_POST['limpeed_deposit_months'] ) ? (int) $_POST['limpeed_deposit_months'] : 1;
+		$deposit_months = min( 12, max( 1, $deposit_months ) );
+		update_option( 'limpeed_deposit_months', $deposit_months );
+
 		if ( isset( $_POST['limpeed_remove_logo'] ) && '1' === $_POST['limpeed_remove_logo'] ) {
 			Limpeed_Branding::remove_logo();
 		} elseif ( ! empty( $_FILES['limpeed_logo']['name'] ) ) {
