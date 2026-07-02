@@ -22,6 +22,20 @@ class Limpeed_Tenants {
 	}
 
 	/**
+	 * Types de pièce d'identité proposés pour un locataire.
+	 *
+	 * @return array
+	 */
+	public static function get_id_document_types() {
+		return array(
+			'cni'       => __( 'Carte d\'identité', 'limpeed-immobilier' ),
+			'passeport' => __( 'Passeport', 'limpeed-immobilier' ),
+			'permis'    => __( 'Permis de conduire', 'limpeed-immobilier' ),
+			'autre'     => __( 'Autre', 'limpeed-immobilier' ),
+		);
+	}
+
+	/**
 	 * Nom de la table (avec préfixe WordPress).
 	 *
 	 * @return string
@@ -149,21 +163,30 @@ class Limpeed_Tenants {
 
 		$statuses = array_keys( self::get_statuses() );
 
+		$id_document_types = array_keys( self::get_id_document_types() );
+
 		$record = array(
-			'property_id'  => (int) $data['property_id'],
-			'full_name'    => sanitize_text_field( $data['full_name'] ),
-			'phone'        => sanitize_text_field( $data['phone'] ?? '' ),
-			'email'        => sanitize_email( $data['email'] ?? '' ),
-			'lease_start'  => ! empty( $data['lease_start'] ) ? sanitize_text_field( $data['lease_start'] ) : null,
-			'lease_end'    => ! empty( $data['lease_end'] ) ? sanitize_text_field( $data['lease_end'] ) : null,
-			'rent_amount'  => (float) ( $data['rent_amount'] ?? 0 ),
-			'deposit_paid' => (float) ( $data['deposit_paid'] ?? 0 ),
-			'status'       => in_array( $data['status'] ?? '', $statuses, true ) ? $data['status'] : 'actif',
-			'created_by'   => get_current_user_id(),
-			'created_at'   => current_time( 'mysql' ),
+			'property_id'         => (int) $data['property_id'],
+			'full_name'           => sanitize_text_field( $data['full_name'] ),
+			'phone'               => sanitize_text_field( $data['phone'] ?? '' ),
+			'email'               => sanitize_email( $data['email'] ?? '' ),
+			'lease_start'         => ! empty( $data['lease_start'] ) ? sanitize_text_field( $data['lease_start'] ) : null,
+			'lease_end'           => ! empty( $data['lease_end'] ) ? sanitize_text_field( $data['lease_end'] ) : null,
+			'rent_amount'         => (float) ( $data['rent_amount'] ?? 0 ),
+			'deposit_paid'        => (float) ( $data['deposit_paid'] ?? 0 ),
+			'status'              => in_array( $data['status'] ?? '', $statuses, true ) ? $data['status'] : 'actif',
+			'id_document_type'    => in_array( $data['id_document_type'] ?? '', $id_document_types, true ) ? $data['id_document_type'] : null,
+			'id_document_number'  => sanitize_text_field( $data['id_document_number'] ?? '' ),
+			'date_of_birth'       => ! empty( $data['date_of_birth'] ) ? sanitize_text_field( $data['date_of_birth'] ) : null,
+			'profession'          => sanitize_text_field( $data['profession'] ?? '' ),
+			'dependents_count'    => max( 0, (int) ( $data['dependents_count'] ?? 0 ) ),
+			'guarantor_name'      => sanitize_text_field( $data['guarantor_name'] ?? '' ),
+			'guarantor_phone'     => sanitize_text_field( $data['guarantor_phone'] ?? '' ),
+			'created_by'          => get_current_user_id(),
+			'created_at'          => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%d', '%s' );
+		$formats = array( '%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s' );
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
@@ -188,24 +211,32 @@ class Limpeed_Tenants {
 		global $wpdb;
 		$table = self::table();
 
-		$existing = self::get( $id );
-		$statuses = array_keys( self::get_statuses() );
+		$existing          = self::get( $id );
+		$statuses          = array_keys( self::get_statuses() );
+		$id_document_types = array_keys( self::get_id_document_types() );
 
 		$record = array(
-			'property_id'  => (int) $data['property_id'],
-			'full_name'    => sanitize_text_field( $data['full_name'] ),
-			'phone'        => sanitize_text_field( $data['phone'] ?? '' ),
-			'email'        => sanitize_email( $data['email'] ?? '' ),
-			'lease_start'  => ! empty( $data['lease_start'] ) ? sanitize_text_field( $data['lease_start'] ) : null,
-			'lease_end'    => ! empty( $data['lease_end'] ) ? sanitize_text_field( $data['lease_end'] ) : null,
-			'rent_amount'  => (float) ( $data['rent_amount'] ?? 0 ),
-			'deposit_paid' => (float) ( $data['deposit_paid'] ?? 0 ),
-			'status'       => in_array( $data['status'] ?? '', $statuses, true ) ? $data['status'] : 'actif',
-			'updated_by'   => get_current_user_id(),
-			'updated_at'   => current_time( 'mysql' ),
+			'property_id'         => (int) $data['property_id'],
+			'full_name'           => sanitize_text_field( $data['full_name'] ),
+			'phone'               => sanitize_text_field( $data['phone'] ?? '' ),
+			'email'               => sanitize_email( $data['email'] ?? '' ),
+			'lease_start'         => ! empty( $data['lease_start'] ) ? sanitize_text_field( $data['lease_start'] ) : null,
+			'lease_end'           => ! empty( $data['lease_end'] ) ? sanitize_text_field( $data['lease_end'] ) : null,
+			'rent_amount'         => (float) ( $data['rent_amount'] ?? 0 ),
+			'deposit_paid'        => (float) ( $data['deposit_paid'] ?? 0 ),
+			'status'              => in_array( $data['status'] ?? '', $statuses, true ) ? $data['status'] : 'actif',
+			'id_document_type'    => in_array( $data['id_document_type'] ?? '', $id_document_types, true ) ? $data['id_document_type'] : null,
+			'id_document_number'  => sanitize_text_field( $data['id_document_number'] ?? '' ),
+			'date_of_birth'       => ! empty( $data['date_of_birth'] ) ? sanitize_text_field( $data['date_of_birth'] ) : null,
+			'profession'          => sanitize_text_field( $data['profession'] ?? '' ),
+			'dependents_count'    => max( 0, (int) ( $data['dependents_count'] ?? 0 ) ),
+			'guarantor_name'      => sanitize_text_field( $data['guarantor_name'] ?? '' ),
+			'guarantor_phone'     => sanitize_text_field( $data['guarantor_phone'] ?? '' ),
+			'updated_by'          => get_current_user_id(),
+			'updated_at'          => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%d', '%s' );
+		$formats = array( '%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s' );
 
 		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
 
@@ -375,6 +406,59 @@ class Limpeed_Tenants {
 		}
 
 		return $calendar;
+	}
+
+	/**
+	 * Vérifie quelles informations du dossier locataire sont encore manquantes
+	 * (pièce d'identité, garant, profession...), pour l'aide contextuelle
+	 * affichée sur la fiche du locataire.
+	 *
+	 * @param object $tenant
+	 * @return array {
+	 *     @type array $items    Liste de { 'label' => string, 'complete' => bool }.
+	 *     @type int   $percent  Pourcentage de complétude (0-100).
+	 * }
+	 */
+	public static function get_dossier_completeness( $tenant ) {
+		$items = array(
+			array(
+				'label'    => __( 'Téléphone', 'limpeed-immobilier' ),
+				'complete' => '' !== trim( (string) $tenant->phone ),
+			),
+			array(
+				'label'    => __( 'Email', 'limpeed-immobilier' ),
+				'complete' => '' !== trim( (string) $tenant->email ),
+			),
+			array(
+				'label'    => __( 'Pièce d\'identité', 'limpeed-immobilier' ),
+				'complete' => ! empty( $tenant->id_document_type ) && '' !== trim( (string) $tenant->id_document_number ),
+			),
+			array(
+				'label'    => __( 'Date de naissance', 'limpeed-immobilier' ),
+				'complete' => ! empty( $tenant->date_of_birth ),
+			),
+			array(
+				'label'    => __( 'Profession', 'limpeed-immobilier' ),
+				'complete' => '' !== trim( (string) $tenant->profession ),
+			),
+			array(
+				'label'    => __( 'Garant', 'limpeed-immobilier' ),
+				'complete' => '' !== trim( (string) $tenant->guarantor_name ),
+			),
+			array(
+				'label'    => __( 'Dates de bail', 'limpeed-immobilier' ),
+				'complete' => ! empty( $tenant->lease_start ) && ! empty( $tenant->lease_end ),
+			),
+		);
+
+		$complete_count = count( array_filter( $items, function ( $item ) {
+			return $item['complete'];
+		} ) );
+
+		return array(
+			'items'   => $items,
+			'percent' => round( ( $complete_count / count( $items ) ) * 100 ),
+		);
 	}
 
 	/**

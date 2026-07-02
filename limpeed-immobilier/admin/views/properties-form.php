@@ -191,7 +191,10 @@ $current_tenant = $is_edit ? Limpeed_Properties::get_current_tenant( $property->
 				</tr>
 				<tr>
 					<th scope="row"><label for="monthly_rent"><?php esc_html_e( 'Loyer mensuel', 'limpeed-immobilier' ); ?></label></th>
-					<td><input name="monthly_rent" type="number" step="0.01" min="0" id="monthly_rent" class="regular-text" value="<?php echo esc_attr( $field( 'monthly_rent', 0 ) ); ?>"></td>
+					<td>
+						<input name="monthly_rent" type="number" step="0.01" min="0" id="monthly_rent" class="regular-text" value="<?php echo esc_attr( $field( 'monthly_rent', 0 ) ); ?>">
+						<p class="description" id="limpeed-rent-hint"></p>
+					</td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="charges"><?php esc_html_e( 'Charges', 'limpeed-immobilier' ); ?></label></th>
@@ -221,3 +224,30 @@ $current_tenant = $is_edit ? Limpeed_Properties::get_current_tenant( $property->
 		<a href="<?php echo esc_url( $list_url ); ?>" class="button"><?php esc_html_e( 'Annuler', 'limpeed-immobilier' ); ?></a>
 	</form>
 </div>
+
+<script type="application/json" id="limpeed-average-rent-data">
+<?php echo wp_json_encode( $average_rent_by_type ); ?>
+</script>
+<script>
+( function () {
+	var dataEl = document.getElementById( 'limpeed-average-rent-data' );
+	var typeSelect = document.getElementById( 'type' );
+	var hintEl = document.getElementById( 'limpeed-rent-hint' );
+	if ( ! dataEl || ! typeSelect || ! hintEl ) {
+		return;
+	}
+	var averages = JSON.parse( dataEl.textContent );
+
+	function updateHint() {
+		var avg = averages[ typeSelect.value ];
+		if ( avg ) {
+			hintEl.textContent = '<?php echo esc_js( __( 'Loyer moyen constaté pour ce type de bien : ', 'limpeed-immobilier' ) ); ?>' + Math.round( avg ).toLocaleString();
+		} else {
+			hintEl.textContent = '';
+		}
+	}
+
+	typeSelect.addEventListener( 'change', updateHint );
+	updateHint();
+} )();
+</script>

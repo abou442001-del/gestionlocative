@@ -52,15 +52,22 @@ class Limpeed_Frontend_Tenants {
 			check_admin_referer( 'limpeed_save_tenant', 'limpeed_tenant_nonce' );
 
 			$data = array(
-				'property_id'  => isset( $_POST['property_id'] ) ? (int) $_POST['property_id'] : 0,
-				'full_name'    => isset( $_POST['full_name'] ) ? wp_unslash( $_POST['full_name'] ) : '',
-				'phone'        => isset( $_POST['phone'] ) ? wp_unslash( $_POST['phone'] ) : '',
-				'email'        => isset( $_POST['email'] ) ? wp_unslash( $_POST['email'] ) : '',
-				'lease_start'  => isset( $_POST['lease_start'] ) ? sanitize_text_field( wp_unslash( $_POST['lease_start'] ) ) : '',
-				'lease_end'    => isset( $_POST['lease_end'] ) ? sanitize_text_field( wp_unslash( $_POST['lease_end'] ) ) : '',
-				'rent_amount'  => isset( $_POST['rent_amount'] ) ? wp_unslash( $_POST['rent_amount'] ) : '',
-				'deposit_paid' => isset( $_POST['deposit_paid'] ) ? wp_unslash( $_POST['deposit_paid'] ) : '',
-				'status'       => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
+				'property_id'         => isset( $_POST['property_id'] ) ? (int) $_POST['property_id'] : 0,
+				'full_name'           => isset( $_POST['full_name'] ) ? wp_unslash( $_POST['full_name'] ) : '',
+				'phone'               => isset( $_POST['phone'] ) ? wp_unslash( $_POST['phone'] ) : '',
+				'email'               => isset( $_POST['email'] ) ? wp_unslash( $_POST['email'] ) : '',
+				'lease_start'         => isset( $_POST['lease_start'] ) ? sanitize_text_field( wp_unslash( $_POST['lease_start'] ) ) : '',
+				'lease_end'           => isset( $_POST['lease_end'] ) ? sanitize_text_field( wp_unslash( $_POST['lease_end'] ) ) : '',
+				'rent_amount'         => isset( $_POST['rent_amount'] ) ? wp_unslash( $_POST['rent_amount'] ) : '',
+				'deposit_paid'        => isset( $_POST['deposit_paid'] ) ? wp_unslash( $_POST['deposit_paid'] ) : '',
+				'status'              => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
+				'id_document_type'    => isset( $_POST['id_document_type'] ) ? sanitize_text_field( wp_unslash( $_POST['id_document_type'] ) ) : '',
+				'id_document_number'  => isset( $_POST['id_document_number'] ) ? wp_unslash( $_POST['id_document_number'] ) : '',
+				'date_of_birth'       => isset( $_POST['date_of_birth'] ) ? sanitize_text_field( wp_unslash( $_POST['date_of_birth'] ) ) : '',
+				'profession'          => isset( $_POST['profession'] ) ? wp_unslash( $_POST['profession'] ) : '',
+				'dependents_count'    => isset( $_POST['dependents_count'] ) ? wp_unslash( $_POST['dependents_count'] ) : '',
+				'guarantor_name'      => isset( $_POST['guarantor_name'] ) ? wp_unslash( $_POST['guarantor_name'] ) : '',
+				'guarantor_phone'     => isset( $_POST['guarantor_phone'] ) ? wp_unslash( $_POST['guarantor_phone'] ) : '',
 			);
 
 			$id = isset( $_POST['tenant_id'] ) ? (int) $_POST['tenant_id'] : 0;

@@ -811,6 +811,61 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	color: var(--limpeed-text-muted);
 }
 
+/* Dossier locataire (aide contextuelle) */
+.limpeed-app-dossier-panel {
+	display: flex;
+	gap: 28px;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	margin: 0 0 20px;
+	padding: 18px;
+	background: var(--limpeed-bg);
+	border-radius: var(--limpeed-radius-sm);
+}
+
+.limpeed-app-dossier-progress {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 160px;
+}
+
+.limpeed-app-dossier-progress-bar {
+	width: 120px;
+	height: 8px;
+	background: var(--limpeed-border);
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.limpeed-app-dossier-progress-bar span {
+	display: block;
+	height: 100%;
+	background: var(--limpeed-blue);
+	border-radius: 999px;
+}
+
+.limpeed-app-dossier-checklist {
+	margin: 0;
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 20px;
+	padding: 0;
+}
+
+.limpeed-app-dossier-checklist li {
+	font-size: 13px;
+}
+
+.limpeed-app-dossier-checklist li.is-complete {
+	color: var(--limpeed-green-dark);
+}
+
+.limpeed-app-dossier-checklist li.is-missing {
+	color: var(--limpeed-text-muted);
+}
+
 .limpeed-app-calendar-nav {
 	display: flex;
 	align-items: center;

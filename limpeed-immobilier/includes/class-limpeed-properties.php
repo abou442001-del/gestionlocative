@@ -24,6 +24,29 @@ class Limpeed_Properties {
 	}
 
 	/**
+	 * Loyer mensuel moyen constaté par type de bien, toutes agences confondues
+	 * (biens à loyer renseigné uniquement). Sert d'aide contextuelle en direct
+	 * lors de la saisie du loyer sur le formulaire d'un bien.
+	 *
+	 * @return array Tableau [type => loyer moyen (float)], types sans donnée absents.
+	 */
+	public static function get_average_rent_by_type() {
+		global $wpdb;
+		$table = self::table();
+
+		$rows = $wpdb->get_results(
+			"SELECT type, AVG(monthly_rent) AS avg_rent FROM {$table} WHERE monthly_rent > 0 GROUP BY type"
+		);
+
+		$averages = array();
+		foreach ( $rows as $row ) {
+			$averages[ $row->type ] = (float) $row->avg_rent;
+		}
+
+		return $averages;
+	}
+
+	/**
 	 * Statuts possibles d'un bien.
 	 *
 	 * @return array

@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.11.0
+Stable tag: 1.12.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.12.0 =
+* Correction : l'ajout groupé de sous-édifices depuis le formulaire Édifice n'exige plus une adresse si un identifiant est renseigné (et inversement) ; même règle appliquée au formulaire Biens autonome.
+* Dossier locataire : nouveaux champs (pièce d'identité, date de naissance, profession, personnes à charge, garant) sur la fiche locataire, avec un indicateur de complétude du dossier et la liste des informations manquantes.
+* Aide contextuelle en direct : le formulaire d'un bien affiche désormais le loyer moyen constaté pour le type sélectionné, mis à jour instantanément au changement de type.
+* Migration de schéma non destructive : nouvelles colonnes ajoutées à `wp_limpeed_tenants` via dbDelta, sans jamais toucher aux locataires existants.
 
 = 1.11.0 =
 * Nouvelle en-tête d'application : bandeau bleu pleine largeur avec le logo dans un encart blanc, bouton menu (hamburger) et menu utilisateur déroulant (Réglages, Déconnexion) au survol de l'avatar.

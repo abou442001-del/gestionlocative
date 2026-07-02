@@ -110,6 +110,22 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'payments', array( 'tenant_id' => $tenant->id ) ) ); ?>"><?php esc_html_e( 'Voir l\'historique des paiements', 'limpeed-immobilier' ); ?></a>
 			</div>
 
+			<?php $dossier = Limpeed_Tenants::get_dossier_completeness( $tenant ); ?>
+			<h3><?php esc_html_e( 'Dossier locataire', 'limpeed-immobilier' ); ?></h3>
+			<div class="limpeed-app-dossier-panel">
+				<div class="limpeed-app-dossier-progress">
+					<div class="limpeed-app-dossier-progress-bar"><span style="width: <?php echo esc_attr( $dossier['percent'] ); ?>%"></span></div>
+					<strong><?php echo esc_html( $dossier['percent'] ); ?>%</strong>
+				</div>
+				<ul class="limpeed-app-dossier-checklist">
+					<?php foreach ( $dossier['items'] as $item ) : ?>
+						<li class="<?php echo $item['complete'] ? 'is-complete' : 'is-missing'; ?>">
+							<?php echo $item['complete'] ? '&#10003;' : '&#9675;'; ?> <?php echo esc_html( $item['label'] ); ?>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+
 			<?php
 			$advance_status   = Limpeed_Tenants::get_advance_status( $tenant );
 			$calendar_year    = isset( $_GET['calendar_year'] ) ? (int) $_GET['calendar_year'] : (int) current_time( 'Y' );
@@ -270,6 +286,38 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					<?php endforeach; ?>
 				</select>
 				<p class="limpeed-app-description"><?php esc_html_e( 'Le statut du bien associé (loué/vacant) sera mis à jour automatiquement.', 'limpeed-immobilier' ); ?></p>
+			</div>
+
+			<h3><?php esc_html_e( 'Informations complémentaires', 'limpeed-immobilier' ); ?></h3>
+
+			<div class="limpeed-form-row">
+				<label for="id_document_type"><?php esc_html_e( 'Pièce d\'identité', 'limpeed-immobilier' ); ?></label>
+				<select name="id_document_type" id="id_document_type">
+					<option value=""><?php esc_html_e( '— Non renseigné —', 'limpeed-immobilier' ); ?></option>
+					<?php foreach ( Limpeed_Tenants::get_id_document_types() as $key => $label ) : ?>
+						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $field( 'id_document_type' ), $key ); ?>>
+							<?php echo esc_html( $label ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				<input type="text" name="id_document_number" id="id_document_number" placeholder="<?php esc_attr_e( 'Numéro du document', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $field( 'id_document_number' ) ); ?>">
+			</div>
+			<div class="limpeed-form-row">
+				<label for="date_of_birth"><?php esc_html_e( 'Date de naissance', 'limpeed-immobilier' ); ?></label>
+				<input type="date" name="date_of_birth" id="date_of_birth" value="<?php echo esc_attr( $field( 'date_of_birth' ) ); ?>">
+			</div>
+			<div class="limpeed-form-row">
+				<label for="profession"><?php esc_html_e( 'Profession', 'limpeed-immobilier' ); ?></label>
+				<input type="text" name="profession" id="profession" value="<?php echo esc_attr( $field( 'profession' ) ); ?>">
+			</div>
+			<div class="limpeed-form-row">
+				<label for="dependents_count"><?php esc_html_e( 'Personnes à charge', 'limpeed-immobilier' ); ?></label>
+				<input type="number" min="0" step="1" name="dependents_count" id="dependents_count" value="<?php echo esc_attr( $field( 'dependents_count', 0 ) ); ?>">
+			</div>
+			<div class="limpeed-form-row">
+				<label for="guarantor_name"><?php esc_html_e( 'Garant', 'limpeed-immobilier' ); ?></label>
+				<input type="text" name="guarantor_name" id="guarantor_name" placeholder="<?php esc_attr_e( 'Nom complet du garant', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $field( 'guarantor_name' ) ); ?>">
+				<input type="text" name="guarantor_phone" id="guarantor_phone" placeholder="<?php esc_attr_e( 'Téléphone du garant', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $field( 'guarantor_phone' ) ); ?>">
 			</div>
 
 			<button type="submit" class="limpeed-app-btn"><?php echo $is_edit ? esc_html__( 'Mettre à jour', 'limpeed-immobilier' ) : esc_html__( 'Ajouter', 'limpeed-immobilier' ); ?></button>

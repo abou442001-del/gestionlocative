@@ -126,6 +126,60 @@
 	font-weight: 700;
 }
 
+/* Dossier locataire (aide contextuelle) */
+.limpeed-dossier-panel {
+	display: flex;
+	gap: 24px;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	margin: 12px 0 20px;
+	padding: 16px;
+	background: #f6f7f7;
+	border-radius: 6px;
+}
+
+.limpeed-dossier-progress {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 160px;
+}
+
+.limpeed-dossier-progress-bar {
+	width: 120px;
+	height: 8px;
+	background: #dcdcde;
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.limpeed-dossier-progress-bar span {
+	display: block;
+	height: 100%;
+	background: #2271b1;
+	border-radius: 999px;
+}
+
+.limpeed-dossier-checklist {
+	margin: 0;
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 20px;
+}
+
+.limpeed-dossier-checklist li {
+	font-size: 13px;
+}
+
+.limpeed-dossier-checklist li.is-complete {
+	color: #1f7a41;
+}
+
+.limpeed-dossier-checklist li.is-missing {
+	color: #757575;
+}
+
 .limpeed-calendar-nav {
 	display: flex;
 	align-items: center;

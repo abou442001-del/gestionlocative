@@ -160,6 +160,7 @@ class Limpeed_Properties_Page {
 			$posted              = self::$posted;
 			$buildings           = Limpeed_Buildings::get_all( array( 'per_page' => 9999 ) );
 			$preselected_building = isset( $_GET['building_id'] ) ? (int) $_GET['building_id'] : 0;
+			$average_rent_by_type = Limpeed_Properties::get_average_rent_by_type();
 
 			include LIMPEED_PLUGIN_DIR . 'admin/views/properties-form.php';
 			return;

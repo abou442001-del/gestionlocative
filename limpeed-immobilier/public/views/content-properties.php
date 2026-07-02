@@ -29,6 +29,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	$buildings            = Limpeed_Buildings::get_all( array( 'per_page' => 9999 ) );
 	$preselected_building = isset( $_GET['building_id'] ) ? (int) $_GET['building_id'] : 0;
 	$current_tenant       = $is_edit ? Limpeed_Properties::get_current_tenant( $property->id ) : null;
+	$average_rent_by_type = Limpeed_Properties::get_average_rent_by_type();
 
 	$field = function ( $name, $default = '' ) use ( $property, $posted, $is_edit ) {
 		if ( null !== $posted && isset( $posted[ $name ] ) ) {
@@ -145,6 +146,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<div class="limpeed-form-row">
 				<label for="monthly_rent"><?php esc_html_e( 'Loyer mensuel', 'limpeed-immobilier' ); ?></label>
 				<input type="number" step="0.01" min="0" name="monthly_rent" id="monthly_rent" value="<?php echo esc_attr( $field( 'monthly_rent', 0 ) ); ?>">
+				<p class="limpeed-app-description" id="limpeed-rent-hint"></p>
 			</div>
 			<div class="limpeed-form-row">
 				<label for="charges"><?php esc_html_e( 'Charges', 'limpeed-immobilier' ); ?></label>
@@ -170,6 +172,33 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'properties' ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Annuler', 'limpeed-immobilier' ); ?></a>
 		</form>
 	</div>
+
+	<script type="application/json" id="limpeed-average-rent-data">
+	<?php echo wp_json_encode( $average_rent_by_type ); ?>
+	</script>
+	<script>
+	( function () {
+		var dataEl = document.getElementById( 'limpeed-average-rent-data' );
+		var typeSelect = document.getElementById( 'type' );
+		var hintEl = document.getElementById( 'limpeed-rent-hint' );
+		if ( ! dataEl || ! typeSelect || ! hintEl ) {
+			return;
+		}
+		var averages = JSON.parse( dataEl.textContent );
+
+		function updateHint() {
+			var avg = averages[ typeSelect.value ];
+			if ( avg ) {
+				hintEl.textContent = '<?php echo esc_js( __( 'Loyer moyen constaté pour ce type de bien : ', 'limpeed-immobilier' ) ); ?>' + Math.round( avg ).toLocaleString();
+			} else {
+				hintEl.textContent = '';
+			}
+		}
+
+		typeSelect.addEventListener( 'change', updateHint );
+		updateHint();
+	} )();
+	</script>
 
 <?php else : ?>
 	<?php
