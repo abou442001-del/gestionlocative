@@ -144,7 +144,7 @@ class Limpeed_Payments_List_Table extends WP_List_Table {
 					),
 					admin_url( 'admin.php' )
 				);
-				return sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html( $property->address ) );
+				return sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html( Limpeed_Properties::get_display_label( $property ) ) );
 
 			case 'amount':
 			case 'commission_amount':
@@ -187,7 +187,7 @@ class Limpeed_Payments_List_Table extends WP_List_Table {
 				<option value=""><?php esc_html_e( 'Tous les biens', 'limpeed-immobilier' ); ?></option>
 				<?php foreach ( $properties as $property ) : ?>
 					<option value="<?php echo esc_attr( $property->id ); ?>" <?php selected( $selected_property, $property->id ); ?>>
-						<?php echo esc_html( $property->address ); ?>
+						<?php echo esc_html( Limpeed_Properties::get_display_label( $property ) ); ?>
 					</option>
 				<?php endforeach; ?>
 			</select>

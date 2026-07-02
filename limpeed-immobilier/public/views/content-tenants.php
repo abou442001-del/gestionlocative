@@ -79,7 +79,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	);
 	$properties_json = array_map(
 		function ( $p ) {
-			return array( 'id' => (int) $p->id, 'building_id' => (int) $p->building_id, 'label' => $p->address );
+			return array( 'id' => (int) $p->id, 'building_id' => (int) $p->building_id, 'label' => Limpeed_Properties::get_display_label( $p ) );
 		},
 		$properties
 	);
@@ -102,7 +102,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					printf(
 						/* translators: %s: lien vers le bien loué */
 						esc_html__( 'Bien loué : %s', 'limpeed-immobilier' ),
-						'<a href="' . esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $property->id ) ) ) . '">' . esc_html( $property->address ) . '</a>'
+						'<a href="' . esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $property->id ) ) ) . '">' . esc_html( Limpeed_Properties::get_display_label( $property ) ) . '</a>'
 					);
 				}
 				?>
@@ -242,7 +242,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					<option value=""><?php esc_html_e( '— Choisir un sous-édifice —', 'limpeed-immobilier' ); ?></option>
 					<?php foreach ( $properties_for_building as $property_option ) : ?>
 						<option value="<?php echo esc_attr( $property_option->id ); ?>" <?php selected( $current_property_id, $property_option->id ); ?>>
-							<?php echo esc_html( $property_option->address ); ?>
+							<?php echo esc_html( Limpeed_Properties::get_display_label( $property_option ) ); ?>
 						</option>
 					<?php endforeach; ?>
 				</select>
@@ -434,7 +434,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					<option value=""><?php esc_html_e( 'Tous les biens', 'limpeed-immobilier' ); ?></option>
 					<?php foreach ( $filter_properties as $property_option ) : ?>
 						<option value="<?php echo esc_attr( $property_option->id ); ?>" <?php selected( $property_id, $property_option->id ); ?>>
-							<?php echo esc_html( $property_option->address ); ?>
+							<?php echo esc_html( Limpeed_Properties::get_display_label( $property_option ) ); ?>
 						</option>
 					<?php endforeach; ?>
 				</select>
@@ -488,7 +488,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					?>
 					<tr>
 						<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( $tenant_row->full_name ); ?></a></td>
-						<td><?php echo $property ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $property->id ) ) ) . '">' . esc_html( $property->address ) . '</a>' : '&mdash;'; ?></td>
+						<td><?php echo $property ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $property->id ) ) ) . '">' . esc_html( Limpeed_Properties::get_display_label( $property ) ) . '</a>' : '&mdash;'; ?></td>
 						<td><?php echo $tenant_row->phone ? esc_html( $tenant_row->phone ) : '&mdash;'; ?></td>
 						<td><?php echo $tenant_row->lease_start ? esc_html( mysql2date( get_option( 'date_format' ), $tenant_row->lease_start ) ) : '&mdash;'; ?></td>
 						<td><?php echo $tenant_row->lease_end ? esc_html( mysql2date( get_option( 'date_format' ), $tenant_row->lease_end ) ) : '&mdash;'; ?></td>

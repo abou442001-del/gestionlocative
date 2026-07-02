@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.12.0
+Stable tag: 1.13.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.13.0 =
+* Correction : les biens n'ayant qu'un identifiant (sans adresse) s'affichaient avec un libellé vide dans les listes déroulantes (sélection du bien loué, filtres, bordereaux...), rendant l'option invisible/vide. Un libellé d'affichage centralisé (identifiant, sinon adresse, sinon repli générique) est désormais utilisé partout où un bien est référencé.
 
 = 1.12.0 =
 * Correction : l'ajout groupé de sous-édifices depuis le formulaire Édifice n'exige plus une adresse si un identifiant est renseigné (et inversement) ; même règle appliquée au formulaire Biens autonome.

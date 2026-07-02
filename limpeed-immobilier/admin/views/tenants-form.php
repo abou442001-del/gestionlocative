@@ -60,7 +60,7 @@ $buildings_json = array_map(
 );
 $properties_json = array_map(
 	function ( $p ) {
-		return array( 'id' => (int) $p->id, 'building_id' => (int) $p->building_id, 'label' => $p->address );
+		return array( 'id' => (int) $p->id, 'building_id' => (int) $p->building_id, 'label' => Limpeed_Properties::get_display_label( $p ) );
 	},
 	$properties
 );
@@ -97,7 +97,7 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 					printf(
 						/* translators: %s: lien vers le bien loué */
 						esc_html__( 'Bien loué : %s', 'limpeed-immobilier' ),
-						'<a href="' . esc_url( $property_url ) . '">' . esc_html( $property->address ) . '</a>'
+						'<a href="' . esc_url( $property_url ) . '">' . esc_html( Limpeed_Properties::get_display_label( $property ) ) . '</a>'
 					);
 				}
 				?>
@@ -274,7 +274,7 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 							<option value=""><?php esc_html_e( '— Choisir un sous-édifice —', 'limpeed-immobilier' ); ?></option>
 							<?php foreach ( $properties_for_building as $property_option ) : ?>
 								<option value="<?php echo esc_attr( $property_option->id ); ?>" <?php selected( $current_property_id, $property_option->id ); ?>>
-									<?php echo esc_html( $property_option->address ); ?>
+									<?php echo esc_html( Limpeed_Properties::get_display_label( $property_option ) ); ?>
 								</option>
 							<?php endforeach; ?>
 						</select>

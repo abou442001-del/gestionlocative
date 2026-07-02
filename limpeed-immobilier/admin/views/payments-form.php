@@ -70,7 +70,7 @@ $form_action = add_query_arg(
 								<?php
 								$property_option = Limpeed_Properties::get( $tenant_option->property_id );
 								$label            = $property_option
-									? sprintf( '%s — %s', $tenant_option->full_name, $property_option->address )
+									? sprintf( '%s — %s', $tenant_option->full_name, Limpeed_Properties::get_display_label( $property_option ) )
 									: $tenant_option->full_name;
 								?>
 								<option value="<?php echo esc_attr( $tenant_option->id ); ?>" <?php selected( (int) $field( 'tenant_id', $preselected_tenant ), $tenant_option->id ); ?>>

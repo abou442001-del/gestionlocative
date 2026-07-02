@@ -10,6 +10,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Limpeed_Properties {
 
 	/**
+	 * Libellé d'affichage d'un bien : son identifiant s'il en a un, sinon son
+	 * adresse, sinon un repli générique (un bien peut n'avoir ni l'un ni
+	 * l'autre puisque seul l'un des deux est obligatoire à la création).
+	 *
+	 * @param object $property
+	 * @return string
+	 */
+	public static function get_display_label( $property ) {
+		if ( ! empty( $property->reference ) ) {
+			return $property->reference;
+		}
+		if ( ! empty( $property->address ) ) {
+			return $property->address;
+		}
+		/* translators: %d: identifiant numérique du bien */
+		return sprintf( __( 'Bien #%d', 'limpeed-immobilier' ), (int) $property->id );
+	}
+
+	/**
 	 * Types de biens disponibles.
 	 *
 	 * @return array

@@ -83,7 +83,7 @@ $unpaid_count = count( $period_summary['unpaid_tenants'] );
 					<?php $property = Limpeed_Properties::get( $tenant->property_id ); ?>
 					<tr>
 						<td><?php echo esc_html( $tenant->full_name ); ?></td>
-						<td><?php echo $property ? esc_html( $property->address ) : '&mdash;'; ?></td>
+						<td><?php echo $property ? esc_html( Limpeed_Properties::get_display_label( $property ) ) : '&mdash;'; ?></td>
 						<td><?php echo esc_html( number_format_i18n( (float) $tenant->rent_amount, 2 ) ); ?></td>
 						<td>
 							<a href="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-payments&action=add&tenant_id=' . $tenant->id ) ); ?>">

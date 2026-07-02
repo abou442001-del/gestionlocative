@@ -62,7 +62,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 						<?php
 						$property_option = Limpeed_Properties::get( $tenant_option->property_id );
 						$label            = $property_option
-							? sprintf( '%s — %s', $tenant_option->full_name, $property_option->address )
+							? sprintf( '%s — %s', $tenant_option->full_name, Limpeed_Properties::get_display_label( $property_option ) )
 							: $tenant_option->full_name;
 						?>
 						<option value="<?php echo esc_attr( $tenant_option->id ); ?>" <?php selected( (int) $field( 'tenant_id', $preselected_tenant ), $tenant_option->id ); ?>>
@@ -149,7 +149,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					<option value=""><?php esc_html_e( 'Tous les biens', 'limpeed-immobilier' ); ?></option>
 					<?php foreach ( $filter_properties as $property_option ) : ?>
 						<option value="<?php echo esc_attr( $property_option->id ); ?>" <?php selected( $property_id, $property_option->id ); ?>>
-							<?php echo esc_html( $property_option->address ); ?>
+							<?php echo esc_html( Limpeed_Properties::get_display_label( $property_option ) ); ?>
 						</option>
 					<?php endforeach; ?>
 				</select>
@@ -207,7 +207,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					<tr>
 						<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( $payment_row->period ); ?></a></td>
 						<td><?php echo $tenant ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $tenant->id ) ) ) . '">' . esc_html( $tenant->full_name ) . '</a>' : '&mdash;'; ?></td>
-						<td><?php echo $property ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $property->id ) ) ) . '">' . esc_html( $property->address ) . '</a>' : '&mdash;'; ?></td>
+						<td><?php echo $property ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $property->id ) ) ) . '">' . esc_html( Limpeed_Properties::get_display_label( $property ) ) . '</a>' : '&mdash;'; ?></td>
 						<td><?php echo esc_html( number_format_i18n( (float) $payment_row->amount, 2 ) ); ?></td>
 						<td><?php echo $payment_row->payment_date ? esc_html( mysql2date( get_option( 'date_format' ), $payment_row->payment_date ) ) : '&mdash;'; ?></td>
 						<td><?php echo isset( $methods[ $payment_row->payment_method ] ) ? esc_html( $methods[ $payment_row->payment_method ] ) : esc_html( $payment_row->payment_method ); ?></td>

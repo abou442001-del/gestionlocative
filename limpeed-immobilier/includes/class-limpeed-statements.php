@@ -321,7 +321,7 @@ class Limpeed_Statements {
 				<tbody>
 					<?php foreach ( $data['properties'] as $row ) : ?>
 						<tr>
-							<td><?php echo esc_html( $row['property']->address ); ?></td>
+							<td><?php echo esc_html( Limpeed_Properties::get_display_label( $row['property'] ) ); ?></td>
 							<td class="text-right"><?php echo esc_html( number_format( $row['collected'], 2 ) ); ?></td>
 							<td class="text-right"><?php echo esc_html( number_format( $row['commission'], 2 ) ); ?></td>
 							<td class="text-right"><?php echo esc_html( number_format( $row['net'], 2 ) ); ?></td>
