@@ -147,7 +147,45 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 	$total_items = Limpeed_Agents::count( $args );
 	$agents      = Limpeed_Agents::get_all( $args );
 	$pending     = Limpeed_Agents::get_pending();
+
+	// Cartes de synthèse.
+	$agents_total      = Limpeed_Agents::count();
+	$agents_pending    = count( $pending );
+	$agents_this_month = Limpeed_Agents::count_created_this_month();
 	?>
+
+	<div class="limpeed-cards-row">
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $agents_total ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Agents', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-id"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $agents_pending ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Demandes en attente', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-clock"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $agents_this_month ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Comptes créés ce mois-ci', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-admin-users"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-green"></div>
+		</div>
+	</div>
 
 	<?php
 	Limpeed_Frontend::render_notice(

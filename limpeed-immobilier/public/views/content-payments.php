@@ -161,7 +161,44 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
 		'nonce' => wp_create_nonce( 'wp_rest' ),
 	);
+
+	// Cartes de synthèse (mois en cours).
+	$period_summary = Limpeed_Payments::get_period_summary();
+	$unpaid_count   = count( $period_summary['unpaid_tenants'] );
 	?>
+
+	<div class="limpeed-cards-row">
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( Limpeed_Payments::format_amount( $period_summary['collected'] ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Encaissé (mois en cours)', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-money-alt"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-green"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( Limpeed_Payments::format_amount( $period_summary['commission'] ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Commissions (mois en cours)', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-chart-bar"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $unpaid_count ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Locataires impayés (mois en cours)', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-red"><span class="dashicons dashicons-warning"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-red"></div>
+		</div>
+	</div>
 
 	<div class="limpeed-app-panel" x-data="limpeedPaymentsApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
 		<div class="limpeed-app-toolbar">

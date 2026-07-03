@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.29.0
+Stable tag: 1.30.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,11 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.30.0 =
+* Harmonisation visuelle : chaque section de gestion (Propriétaires, Édifices, Biens, Locataires, Documents, Mandats, États des lieux, Paiements, Bordereaux, Agents) affiche désormais une rangée de cartes de synthèse en haut de page, dans le même style que le tableau de bord (icône colorée, chiffre clé, barre d'accent en bas de carte).
+* Nouveaux indicateurs par section : ratio loués/vacants et loyer moyen (Biens), commission moyenne (Édifices), impayés et baux à échéance (Locataires), espace de stockage utilisé (Documents), mandats actifs/expirant (Mandats), entrées/sorties (États des lieux), encaissé/commissions du mois (Paiements), total reversé/commissions (Bordereaux), demandes en attente (Agents).
+* Nouvelles méthodes utilitaires purement calculées (aucune nouvelle table) : `Limpeed_Buildings::get_average_commission_rate()`, `Limpeed_Properties::get_average_rent()`, `Limpeed_Documents::count_all()/get_total_size()/count_added_this_month()`, `Limpeed_Agents::count_created_this_month()`.
 
 = 1.29.0 =
 * Nouveau module "Comptabilité" (menu Finances) : comptabilité de base pour l'agence, avec trois onglets.

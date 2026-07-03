@@ -118,6 +118,18 @@ class Limpeed_Buildings {
 	}
 
 	/**
+	 * Taux de commission moyen tous édifices confondus (carte de synthèse).
+	 *
+	 * @return float
+	 */
+	public static function get_average_commission_rate() {
+		global $wpdb;
+		$table = self::table();
+		$avg   = $wpdb->get_var( "SELECT AVG(commission_rate) FROM {$table}" );
+		return $avg ? (float) $avg : 0.0;
+	}
+
+	/**
 	 * Insère un nouvel édifice.
 	 *
 	 * @param array $data

@@ -256,7 +256,45 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
 		'nonce' => wp_create_nonce( 'wp_rest' ),
 	);
+
+	// Cartes de synthèse.
+	$buildings_total          = Limpeed_Buildings::count();
+	$properties_total         = Limpeed_Properties::count();
+	$average_commission_rate  = Limpeed_Buildings::get_average_commission_rate();
 	?>
+
+	<div class="limpeed-cards-row">
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $buildings_total ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Édifices', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-admin-multisite"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $properties_total ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Biens rattachés', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-building"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-green"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $average_commission_rate, 1 ) ); ?>%</div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Commission moyenne', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-chart-bar"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
+		</div>
+	</div>
 
 	<div class="limpeed-app-panel" x-data="limpeedBuildingsApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
 		<div class="limpeed-app-toolbar">

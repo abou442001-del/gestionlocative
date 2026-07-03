@@ -221,7 +221,50 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 
 	$total_items = Limpeed_Owners::count( $args );
 	$owners      = Limpeed_Owners::get_all( $args );
+
+	// Cartes de synthèse.
+	$owners_total    = Limpeed_Owners::count();
+	$buildings_total = Limpeed_Buildings::count();
+	$properties_total = Limpeed_Properties::count();
+	$properties_occupied = Limpeed_Properties::count( array( 'status' => 'loue' ) );
+	$properties_occupied_ratio = $properties_total > 0 ? round( ( $properties_occupied / $properties_total ) * 100 ) : 0;
 	?>
+
+	<div class="limpeed-cards-row">
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $owners_total ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Propriétaires', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-groups"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $buildings_total ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Édifices gérés', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-admin-multisite"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $properties_total ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Biens gérés au total', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-building"></span></span>
+			</div>
+			<div class="limpeed-app-card-ratio"><span style="width: <?php echo esc_attr( $properties_occupied_ratio ); ?>%; background: var(--limpeed-blue);"></span></div>
+			<div class="limpeed-app-card-bar limpeed-bar-green">
+				<span><?php echo esc_html( $properties_occupied_ratio ); ?>% <?php esc_html_e( 'loués', 'limpeed-immobilier' ); ?></span>
+			</div>
+		</div>
+	</div>
 
 	<div class="limpeed-app-panel">
 		<div class="limpeed-app-toolbar">

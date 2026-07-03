@@ -84,7 +84,45 @@ if ( 'add' === $action ) :
 	$total_items   = Limpeed_Statements::count( $args );
 	$statements    = Limpeed_Statements::get_all( $args );
 	$filter_owners = Limpeed_Owners::get_all( array( 'per_page' => 9999 ) );
+
+	// Cartes de synthèse.
+	$statements_total   = Limpeed_Statements::count();
+	$total_reversed     = Limpeed_Treasury::get_total_reversed();
+	$total_commission   = Limpeed_Treasury::get_total_commission();
 	?>
+
+	<div class="limpeed-cards-row">
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $statements_total ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Bordereaux générés', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-media-document"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( Limpeed_Payments::format_amount( $total_reversed ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Total reversé aux propriétaires', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-red"><span class="dashicons dashicons-upload"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-red"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( Limpeed_Payments::format_amount( $total_commission ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Total commissions agence', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-portfolio"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
+		</div>
+	</div>
 
 	<div class="limpeed-app-panel">
 		<div class="limpeed-app-toolbar">

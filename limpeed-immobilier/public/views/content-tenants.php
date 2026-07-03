@@ -457,7 +457,60 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
 		'nonce' => wp_create_nonce( 'wp_rest' ),
 	);
+
+	// Cartes de synthèse (mêmes indicateurs que les cartes "Locataires" et
+	// KPI du tableau de bord, recalculés ici directement en PHP puisque
+	// cette vue est déjà rendue côté serveur).
+	$tenants_total    = Limpeed_Tenants::count();
+	$tenants_active   = Limpeed_Tenants::count( array( 'status' => 'actif' ) );
+	$tenants_inactive = max( 0, $tenants_total - $tenants_active );
+	$period_summary   = Limpeed_Payments::get_period_summary();
+	$unpaid_tenants   = $period_summary['unpaid_tenants'];
+	$unpaid_total     = 0.0;
+	foreach ( $unpaid_tenants as $unpaid_tenant ) {
+		$unpaid_total += (float) $unpaid_tenant->rent_amount;
+	}
+	$expiring_leases_count = count( Limpeed_Tenants::get_expiring_leases( 30 ) );
+	$tenants_active_ratio  = $tenants_total > 0 ? round( ( $tenants_active / $tenants_total ) * 100 ) : 0;
 	?>
+
+	<div class="limpeed-cards-row">
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $tenants_total ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Locataires', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-red"><span class="dashicons dashicons-admin-users"></span></span>
+			</div>
+			<div class="limpeed-app-card-ratio"><span style="width: <?php echo esc_attr( $tenants_active_ratio ); ?>%; background: var(--limpeed-green);"></span></div>
+			<div class="limpeed-app-card-bar limpeed-bar-red">
+				<span><?php printf( esc_html__( '%1$d actifs / %2$d inactifs', 'limpeed-immobilier' ), (int) $tenants_active, (int) $tenants_inactive ); ?></span>
+			</div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( count( $unpaid_tenants ) ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Loyers impayés (mois en cours)', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-warning"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-orange">
+				<span><?php echo esc_html( Limpeed_Payments::format_amount( $unpaid_total ) ); ?></span>
+			</div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $expiring_leases_count ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Baux arrivant à échéance (30 jours)', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-calendar-alt"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+		</div>
+	</div>
 
 	<div class="limpeed-app-panel" x-data="limpeedTenantsApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
 		<div class="limpeed-app-toolbar">

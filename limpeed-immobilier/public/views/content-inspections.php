@@ -27,7 +27,45 @@ $rest_config = array(
 	'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
 	'nonce' => wp_create_nonce( 'wp_rest' ),
 );
+
+// Cartes de synthèse.
+$inspections_total   = Limpeed_Inspections::count();
+$inspections_entree  = Limpeed_Inspections::count( array( 'type' => 'entree' ) );
+$inspections_sortie  = Limpeed_Inspections::count( array( 'type' => 'sortie' ) );
 ?>
+
+<div class="limpeed-cards-row">
+	<div class="limpeed-app-card">
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $inspections_total ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'États des lieux', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-camera"></span></span>
+		</div>
+		<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+	</div>
+	<div class="limpeed-app-card">
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $inspections_entree ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'États des lieux d\'entrée', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-arrow-right-alt"></span></span>
+		</div>
+		<div class="limpeed-app-card-bar limpeed-bar-green"></div>
+	</div>
+	<div class="limpeed-app-card">
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $inspections_sortie ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'États des lieux de sortie', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-arrow-left-alt"></span></span>
+		</div>
+		<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
+	</div>
+</div>
 
 <div class="limpeed-app-panel" x-data="limpeedInspectionsApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
 	<div class="limpeed-app-toolbar">

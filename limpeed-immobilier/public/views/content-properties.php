@@ -262,7 +262,50 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
 		'nonce' => wp_create_nonce( 'wp_rest' ),
 	);
+
+	// Cartes de synthèse.
+	$properties_total    = Limpeed_Properties::count();
+	$properties_occupied = Limpeed_Properties::count( array( 'status' => 'loue' ) );
+	$properties_vacant   = Limpeed_Properties::count( array( 'status' => 'vacant' ) );
+	$properties_occupied_ratio = $properties_total > 0 ? round( ( $properties_occupied / $properties_total ) * 100 ) : 0;
+	$average_rent        = Limpeed_Properties::get_average_rent();
 	?>
+
+	<div class="limpeed-cards-row">
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $properties_total ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Biens (sous-édifices)', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-building"></span></span>
+			</div>
+			<div class="limpeed-app-card-ratio"><span style="width: <?php echo esc_attr( $properties_occupied_ratio ); ?>%; background: var(--limpeed-blue);"></span></div>
+			<div class="limpeed-app-card-bar limpeed-bar-green">
+				<span><?php printf( esc_html__( '%1$d disponibles / %2$d occupés', 'limpeed-immobilier' ), (int) $properties_vacant, (int) $properties_occupied ); ?></span>
+			</div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( $properties_occupied_ratio ); ?>%</div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Taux d\'occupation', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-chart-pie"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+		</div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( Limpeed_Payments::format_amount( $average_rent ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Loyer moyen', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-money-alt"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
+		</div>
+	</div>
 
 	<div class="limpeed-app-panel" x-data="limpeedPropertiesApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
 		<div class="limpeed-app-toolbar">

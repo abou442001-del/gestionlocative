@@ -42,7 +42,45 @@ $rest_config = array(
 	'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
 	'nonce' => wp_create_nonce( 'wp_rest' ),
 );
+
+// Cartes de synthèse.
+$mandates_total    = Limpeed_Mandates::count();
+$mandates_active   = Limpeed_Mandates::count( array( 'status' => 'actif' ) );
+$mandates_expiring = count( Limpeed_Mandates::get_expiring( 30 ) );
 ?>
+
+<div class="limpeed-cards-row">
+	<div class="limpeed-app-card">
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $mandates_total ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Mandats de gestion', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-media-document"></span></span>
+		</div>
+		<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+	</div>
+	<div class="limpeed-app-card">
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $mandates_active ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Mandats actifs', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-yes-alt"></span></span>
+		</div>
+		<div class="limpeed-app-card-bar limpeed-bar-green"></div>
+	</div>
+	<div class="limpeed-app-card">
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $mandates_expiring ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Expirant sous 30 jours', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-calendar-alt"></span></span>
+		</div>
+		<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
+	</div>
+</div>
 
 <div class="limpeed-app-panel" x-data="limpeedMandatesApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
 	<div class="limpeed-app-toolbar">

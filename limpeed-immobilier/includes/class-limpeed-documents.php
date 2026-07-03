@@ -139,6 +139,48 @@ class Limpeed_Documents {
 	}
 
 	/**
+	 * Nombre total de documents stockés, tous types d'entités confondus
+	 * (carte de synthèse).
+	 *
+	 * @return int
+	 */
+	public static function count_all() {
+		global $wpdb;
+		$table = self::table();
+		return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
+	}
+
+	/**
+	 * Taille totale occupée par les documents stockés, en octets (carte de
+	 * synthèse).
+	 *
+	 * @return int
+	 */
+	public static function get_total_size() {
+		global $wpdb;
+		$table = self::table();
+		$total = $wpdb->get_var( "SELECT SUM(file_size) FROM {$table}" );
+		return $total ? (int) $total : 0;
+	}
+
+	/**
+	 * Nombre de documents ajoutés depuis le début du mois en cours (carte de
+	 * synthèse).
+	 *
+	 * @return int
+	 */
+	public static function count_added_this_month() {
+		global $wpdb;
+		$table = self::table();
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$table} WHERE DATE_FORMAT(created_at, '%%Y-%%m') = %s",
+				current_time( 'Y-m' )
+			)
+		);
+	}
+
+	/**
 	 * Chemin absolu du fichier d'un document.
 	 *
 	 * @param object $document

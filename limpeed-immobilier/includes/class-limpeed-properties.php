@@ -93,6 +93,18 @@ class Limpeed_Properties {
 	}
 
 	/**
+	 * Loyer mensuel moyen tous types de biens confondus (carte de synthèse).
+	 *
+	 * @return float
+	 */
+	public static function get_average_rent() {
+		global $wpdb;
+		$table = self::table();
+		$avg   = $wpdb->get_var( "SELECT AVG(monthly_rent) FROM {$table} WHERE monthly_rent > 0" );
+		return $avg ? (float) $avg : 0.0;
+	}
+
+	/**
 	 * Statuts possibles d'un bien.
 	 *
 	 * @return array

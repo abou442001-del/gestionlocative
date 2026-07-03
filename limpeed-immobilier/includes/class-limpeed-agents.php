@@ -99,6 +99,28 @@ class Limpeed_Agents {
 	}
 
 	/**
+	 * Nombre de comptes agents créés depuis le début du mois en cours (carte
+	 * de synthèse).
+	 *
+	 * @return int
+	 */
+	public static function count_created_this_month() {
+		$query = new WP_User_Query(
+			array(
+				'role__in'   => array_keys( self::get_available_roles() ),
+				'fields'     => 'ID',
+				'date_query' => array(
+					array(
+						'after'     => current_time( 'Y-m-01 00:00:00' ),
+						'inclusive' => true,
+					),
+				),
+			)
+		);
+		return (int) $query->get_total();
+	}
+
+	/**
 	 * Crée un nouveau compte agent WordPress avec le rôle choisi.
 	 * Un mot de passe aléatoire est généré ; l'agent reçoit un email
 	 * l'invitant à définir son propre mot de passe.

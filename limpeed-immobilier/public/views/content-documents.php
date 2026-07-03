@@ -22,7 +22,45 @@ $rest_config = array(
 	'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
 	'nonce' => wp_create_nonce( 'wp_rest' ),
 );
+
+// Cartes de synthèse.
+$documents_total      = Limpeed_Documents::count_all();
+$documents_total_size = Limpeed_Documents::get_total_size();
+$documents_this_month = Limpeed_Documents::count_added_this_month();
 ?>
+
+<div class="limpeed-cards-row">
+	<div class="limpeed-app-card">
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $documents_total ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Documents stockés', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-portfolio"></span></span>
+		</div>
+		<div class="limpeed-app-card-bar limpeed-bar-green"></div>
+	</div>
+	<div class="limpeed-app-card">
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( size_format( $documents_total_size ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Espace de stockage utilisé', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-cloud"></span></span>
+		</div>
+		<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
+	</div>
+	<div class="limpeed-app-card">
+		<div class="limpeed-app-card-top">
+			<div>
+				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $documents_this_month ) ); ?></div>
+				<div class="limpeed-app-card-label"><?php esc_html_e( 'Ajoutés ce mois-ci', 'limpeed-immobilier' ); ?></div>
+			</div>
+			<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-upload"></span></span>
+		</div>
+		<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
+	</div>
+</div>
 
 <div class="limpeed-app-panel" x-data="limpeedDocumentsApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
 	<h2><?php esc_html_e( 'Rechercher une fiche', 'limpeed-immobilier' ); ?></h2>
