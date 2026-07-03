@@ -114,7 +114,8 @@ if ( 'add' === $action ) :
 		);
 		?>
 
-		<table class="limpeed-app-table">
+		<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Période', 'limpeed-immobilier' ); ?></th>
@@ -155,6 +156,7 @@ if ( 'add' === $action ) :
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+</div>
 
 		<?php Limpeed_Frontend::render_pagination( $total_items, $per_page, $paged, array( 'owner_id' => $owner_id ) ); ?>
 	</div>

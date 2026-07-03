@@ -218,7 +218,8 @@ window.limpeedRest = <?php echo wp_json_encode( $kpi_rest_config ); ?>;
 <div class="limpeed-tables-row">
 	<div class="limpeed-app-panel">
 		<h2 class="limpeed-panel-title-green"><?php esc_html_e( 'Liste des 10 derniers locataires', 'limpeed-immobilier' ); ?></h2>
-		<table class="limpeed-app-table">
+		<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
@@ -243,11 +244,13 @@ window.limpeedRest = <?php echo wp_json_encode( $kpi_rest_config ); ?>;
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+</div>
 	</div>
 
 	<div class="limpeed-app-panel">
 		<h2 class="limpeed-panel-title-orange"><?php esc_html_e( 'Liste des 10 derniers propriétaires', 'limpeed-immobilier' ); ?></h2>
-		<table class="limpeed-app-table">
+		<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
@@ -266,13 +269,15 @@ window.limpeedRest = <?php echo wp_json_encode( $kpi_rest_config ); ?>;
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+</div>
 	</div>
 </div>
 
 <div class="limpeed-tables-row">
 	<div class="limpeed-app-panel">
 		<h2 class="limpeed-panel-title-green"><?php esc_html_e( 'Liste des 10 dernières quittances soldées', 'limpeed-immobilier' ); ?></h2>
-		<table class="limpeed-app-table">
+		<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Locataire', 'limpeed-immobilier' ); ?></th>
@@ -294,11 +299,13 @@ window.limpeedRest = <?php echo wp_json_encode( $kpi_rest_config ); ?>;
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+</div>
 	</div>
 
 	<div class="limpeed-app-panel">
 		<h2 class="limpeed-panel-title-blue"><?php esc_html_e( 'Liste des 10 dernières quittances en attente de paiement', 'limpeed-immobilier' ); ?></h2>
-		<table class="limpeed-app-table">
+		<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Locataire', 'limpeed-immobilier' ); ?></th>
@@ -319,5 +326,6 @@ window.limpeedRest = <?php echo wp_json_encode( $kpi_rest_config ); ?>;
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+</div>
 	</div>
 </div>

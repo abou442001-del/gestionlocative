@@ -477,7 +477,8 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<button type="button" class="limpeed-app-btn" @click="openAddModal()"><?php esc_html_e( 'Ajouter un locataire', 'limpeed-immobilier' ); ?></button>
 		</div>
 
-		<table class="limpeed-app-table">
+		<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
@@ -522,6 +523,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				</template>
 			</tbody>
 		</table>
+</div>
 
 		<div class="limpeed-app-pagination" x-show="totalPages > 1" x-cloak>
 			<template x-for="p in totalPages" :key="p">

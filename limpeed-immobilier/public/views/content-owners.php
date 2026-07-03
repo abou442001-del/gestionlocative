@@ -161,7 +161,8 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<?php if ( empty( $building_properties ) ) : ?>
 				<p><?php esc_html_e( 'Aucun sous-édifice pour cet édifice.', 'limpeed-immobilier' ); ?></p>
 			<?php else : ?>
-				<table class="limpeed-app-table">
+				<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 					<thead>
 						<tr>
 							<th><?php esc_html_e( 'Bien', 'limpeed-immobilier' ); ?></th>
@@ -198,6 +199,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 						<?php endforeach; ?>
 					</tbody>
 				</table>
+</div>
 			<?php endif; ?>
 		</div>
 	<?php endforeach; ?>
@@ -243,7 +245,8 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		);
 		?>
 
-		<table class="limpeed-app-table">
+		<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
@@ -278,6 +281,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+</div>
 
 		<?php Limpeed_Frontend::render_pagination( $total_items, $per_page, $paged, array( 'q' => $search ) ); ?>
 	</div>

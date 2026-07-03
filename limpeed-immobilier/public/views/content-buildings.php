@@ -153,6 +153,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					<?php endforeach; ?>
 				</tbody>
 			</table>
+</div>
 			<p><button type="button" class="limpeed-app-btn limpeed-app-btn-secondary" id="limpeed-add-sub-unit-row"><?php esc_html_e( '+ Ajouter un sous-édifice', 'limpeed-immobilier' ); ?></button></p>
 
 			<button type="submit" class="limpeed-app-btn"><?php echo $is_edit ? esc_html__( 'Mettre à jour', 'limpeed-immobilier' ) : esc_html__( 'Ajouter', 'limpeed-immobilier' ); ?></button>
@@ -271,7 +272,8 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<button type="button" class="limpeed-app-btn" @click="openAddModal()"><?php esc_html_e( 'Ajouter un édifice', 'limpeed-immobilier' ); ?></button>
 		</div>
 
-		<table class="limpeed-app-table">
+		<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Édifice', 'limpeed-immobilier' ); ?></th>
@@ -313,6 +315,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				</template>
 			</tbody>
 		</table>
+</div>
 
 		<div class="limpeed-app-pagination" x-show="totalPages > 1" x-cloak>
 			<template x-for="p in totalPages" :key="p">

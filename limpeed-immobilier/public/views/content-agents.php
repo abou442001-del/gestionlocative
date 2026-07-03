@@ -165,7 +165,8 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 	<?php if ( ! empty( $pending ) ) : ?>
 		<div class="limpeed-app-panel">
 			<h2><?php esc_html_e( 'Demandes en attente', 'limpeed-immobilier' ); ?></h2>
-			<table class="limpeed-app-table">
+			<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'Identifiant', 'limpeed-immobilier' ); ?></th>
@@ -198,6 +199,7 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 					<?php endforeach; ?>
 				</tbody>
 			</table>
+</div>
 		</div>
 	<?php endif; ?>
 
@@ -213,7 +215,8 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 			<button type="submit" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Rechercher', 'limpeed-immobilier' ); ?></button>
 		</form>
 
-		<table class="limpeed-app-table">
+		<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Nom', 'limpeed-immobilier' ); ?></th>
@@ -258,6 +261,7 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 				<?php endforeach; ?>
 			</tbody>
 		</table>
+</div>
 
 		<?php Limpeed_Frontend::render_pagination( $total_items, $per_page, $paged, array( 'q' => $search ) ); ?>
 	</div>

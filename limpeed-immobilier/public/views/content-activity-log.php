@@ -48,7 +48,8 @@ $entries     = Limpeed_Activity_Log::get_all( $args );
 		<button type="submit" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Filtrer', 'limpeed-immobilier' ); ?></button>
 	</form>
 
-	<table class="limpeed-app-table">
+	<div class="limpeed-app-table-wrap">
+<table class="limpeed-app-table">
 		<thead>
 			<tr>
 				<th><?php esc_html_e( 'Date', 'limpeed-immobilier' ); ?></th>
@@ -78,6 +79,7 @@ $entries     = Limpeed_Activity_Log::get_all( $args );
 			<?php endforeach; ?>
 		</tbody>
 	</table>
+</div>
 
 	<?php Limpeed_Frontend::render_pagination( $total_items, $per_page, $paged, array( 'object_type' => $object_type, 'action_filter' => $action_filter ) ); ?>
 </div>

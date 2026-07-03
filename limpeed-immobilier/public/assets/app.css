@@ -57,8 +57,13 @@
 	display: none !important;
 }
 
+html {
+	overflow-x: hidden;
+}
+
 body.limpeed-app {
 	margin: 0;
+	overflow-x: hidden;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 	background: var(--limpeed-bg);
 	color: var(--limpeed-text);
@@ -584,8 +589,15 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	gap: 24px;
 }
 
+.limpeed-app-table-wrap {
+	width: 100%;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
 .limpeed-app-table {
 	width: 100%;
+	min-width: 640px;
 	border-collapse: collapse;
 	font-size: 13px;
 }
