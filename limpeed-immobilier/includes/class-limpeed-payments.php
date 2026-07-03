@@ -256,6 +256,61 @@ class Limpeed_Payments {
 	}
 
 	/**
+	 * Version recherchable/paginée de la liste des locataires actifs sans
+	 * paiement "payé" sur la période (widget "quittances en attente" du
+	 * tableau de bord). Séparée de get_period_summary() : cette dernière est
+	 * appelée en boucle par get_monthly_summary() et ne doit pas porter de
+	 * logique de pagination/recherche inutile à ces appels.
+	 *
+	 * @param array $args {
+	 *     @type string $search
+	 *     @type string $period   Format YYYY-MM. Par défaut le mois en cours.
+	 *     @type int    $paged
+	 *     @type int    $per_page
+	 * }
+	 * @return array { @type array $items, @type int $total, @type string $period }
+	 */
+	public static function get_unpaid_tenants_paged( $args = array() ) {
+		global $wpdb;
+
+		$defaults = array(
+			'search'   => '',
+			'period'   => '',
+			'paged'    => 1,
+			'per_page' => 10,
+		);
+		$args   = wp_parse_args( $args, $defaults );
+		$period = $args['period'] ? $args['period'] : self::get_current_period();
+
+		$tenants_table = Limpeed_Tenants::table();
+		$payments_table = self::table();
+
+		$where  = "WHERE t.status = 'actif' AND t.id NOT IN ( SELECT tenant_id FROM {$payments_table} WHERE period = %s AND status = 'paye' )";
+		$params = array( $period );
+
+		if ( ! empty( $args['search'] ) ) {
+			$where   .= ' AND t.full_name LIKE %s';
+			$params[] = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+		}
+
+		$total_sql = "SELECT COUNT(*) FROM {$tenants_table} t {$where}";
+		$total     = (int) $wpdb->get_var( $wpdb->prepare( $total_sql, $params ) );
+
+		$per_page = max( 1, (int) $args['per_page'] );
+		$paged    = max( 1, (int) $args['paged'] );
+		$offset   = ( $paged - 1 ) * $per_page;
+
+		$items_sql = "SELECT t.* FROM {$tenants_table} t {$where} ORDER BY t.full_name ASC LIMIT %d OFFSET %d";
+		$items     = $wpdb->get_results( $wpdb->prepare( $items_sql, array_merge( $params, array( $per_page, $offset ) ) ) );
+
+		return array(
+			'items'  => $items,
+			'total'  => $total,
+			'period' => $period,
+		);
+	}
+
+	/**
 	 * Résumé des recouvrements de loyers sur les N derniers mois (le mois en
 	 * cours inclus), du plus ancien au plus récent. Utilisé pour le graphique
 	 * du tableau de bord.

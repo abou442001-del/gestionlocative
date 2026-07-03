@@ -8,8 +8,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-global $wpdb;
-
 // Indicateurs généraux.
 $owners_count        = Limpeed_Owners::count();
 $buildings_count     = Limpeed_Buildings::count();
@@ -22,32 +20,11 @@ $tenants_inactive    = max( 0, $tenants_count - $tenants_active );
 
 // Recouvrement des loyers sur les 6 derniers mois.
 $monthly_summary = Limpeed_Payments::get_monthly_summary( 6 );
-$current_summary = end( $monthly_summary );
 $chart_max       = 1;
 foreach ( $monthly_summary as $month ) {
 	$chart_max = max( $chart_max, $month['expected_total'] );
 }
 
-// Listes des 10 derniers éléments.
-$recent_tenants = Limpeed_Tenants::get_all( array( 'orderby' => 'id', 'order' => 'DESC', 'per_page' => 10 ) );
-$recent_owners  = Limpeed_Owners::get_all( array( 'orderby' => 'id', 'order' => 'DESC', 'per_page' => 10 ) );
-$recent_paid    = Limpeed_Payments::get_all( array( 'status' => 'paye', 'orderby' => 'payment_date', 'order' => 'DESC', 'per_page' => 10 ) );
-$unpaid_tenants = array_slice( $current_summary['unpaid_tenants'], 0, 10 );
-
-// Solde du mois en cours pour chaque locataire récent (0 si un paiement "payé" existe déjà ce mois-ci).
-$current_period  = Limpeed_Payments::get_current_period();
-$payments_table  = Limpeed_Payments::table();
-$tenant_balances = array();
-foreach ( $recent_tenants as $recent_tenant ) {
-	$has_paid = $wpdb->get_var(
-		$wpdb->prepare(
-			"SELECT COUNT(*) FROM {$payments_table} WHERE tenant_id = %d AND period = %s AND status = 'paye'",
-			$recent_tenant->id,
-			$current_period
-		)
-	);
-	$tenant_balances[ $recent_tenant->id ] = $has_paid ? 0.0 : (float) $recent_tenant->rent_amount;
-}
 ?>
 
 <?php
@@ -184,8 +161,9 @@ $kpi_rest_config = array(
 window.limpeedRest = <?php echo wp_json_encode( $kpi_rest_config ); ?>;
 </script>
 <script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/limpeed-rest-client.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
-<?php /* dashboard-kpis-app.js enregistre son composant via l'événement "alpine:init", déclenché de façon synchrone dès l'exécution du script Alpine ci-dessous : il doit donc être chargé (et son listener attaché) AVANT le script Alpine, pas après. */ ?>
+<?php /* dashboard-kpis-app.js et dashboard-lists-app.js enregistrent leur composant via l'événement "alpine:init", déclenché de façon synchrone dès l'exécution du script Alpine ci-dessous : ils doivent donc être chargés (et leur listener attaché) AVANT le script Alpine, pas après. */ ?>
 <script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/dashboard-kpis-app.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
+<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/dashboard-lists-app.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
 <script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/vendor/alpinejs/alpine.min.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
 
 <div class="limpeed-app-panel">
@@ -215,117 +193,231 @@ window.limpeedRest = <?php echo wp_json_encode( $kpi_rest_config ); ?>;
 	</div>
 </div>
 
-<div class="limpeed-tables-row">
-	<div class="limpeed-app-panel">
-		<h2 class="limpeed-panel-title-green"><?php esc_html_e( 'Liste des 10 derniers locataires', 'limpeed-immobilier' ); ?></h2>
-		<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Solde', 'limpeed-immobilier' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php if ( empty( $recent_tenants ) ) : ?>
-					<tr><td colspan="3"><?php esc_html_e( 'Aucun locataire pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
-				<?php endif; ?>
-				<?php foreach ( $recent_tenants as $recent_tenant ) : ?>
-					<?php $balance = $tenant_balances[ $recent_tenant->id ]; ?>
-					<tr>
-						<td>
-							<?php echo esc_html( $recent_tenant->full_name ); ?><br>
-							<small><?php echo esc_html( $recent_tenant->phone ); ?></small>
-						</td>
-						<td><span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $recent_tenant->status ); ?>"><?php echo esc_html( Limpeed_Tenants::get_statuses()[ $recent_tenant->status ] ?? $recent_tenant->status ); ?></span></td>
-						<td class="<?php echo $balance > 0 ? 'limpeed-text-danger' : ''; ?>"><?php echo esc_html( Limpeed_Payments::format_amount( $balance ) ); ?></td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-</div>
+<?php
+$lists_config = array(
+	'i18n' => array(
+		'showingRange' => __( '%1$d–%2$d sur %3$d', 'limpeed-immobilier' ),
+		'noResults'    => __( 'Aucun résultat.', 'limpeed-immobilier' ),
+	),
+);
+?>
+<div x-data="limpeedDashboardListsApp(<?php echo esc_attr( wp_json_encode( $lists_config ) ); ?>)">
+	<div class="limpeed-tables-row">
+		<div class="limpeed-app-panel">
+			<h2 class="limpeed-panel-title-green"><?php esc_html_e( 'Derniers locataires', 'limpeed-immobilier' ); ?></h2>
+			<div class="limpeed-app-list-toolbar">
+				<label class="limpeed-app-list-pagesize">
+					<?php esc_html_e( 'Afficher', 'limpeed-immobilier' ); ?>
+					<select x-model.number="lists.tenants.perPage" @change="onPerPageChange('tenants')">
+						<option value="5">5</option>
+						<option value="10">10</option>
+						<option value="25">25</option>
+						<option value="50">50</option>
+					</select>
+				</label>
+				<input type="text" placeholder="<?php esc_attr_e( 'Rechercher…', 'limpeed-immobilier' ); ?>" x-model="lists.tenants.search" @input="onSearchInput('tenants')">
+			</div>
+			<div class="limpeed-app-table-wrap">
+				<table class="limpeed-app-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Solde', 'limpeed-immobilier' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<template x-if="lists.tenants.loading">
+							<tr class="limpeed-app-skeleton-row"><td colspan="3"><div class="limpeed-app-skeleton-bar"></div></td></tr>
+						</template>
+						<template x-if="!lists.tenants.loading && lists.tenants.items.length === 0">
+							<tr><td colspan="3"><?php esc_html_e( 'Aucun locataire pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
+						</template>
+						<template x-for="tenant in lists.tenants.items" :key="tenant.id">
+							<tr>
+								<td>
+									<span x-text="tenant.full_name"></span><br>
+									<small x-text="tenant.phone"></small>
+								</td>
+								<td><span class="limpeed-app-badge" :class="'limpeed-app-badge-' + tenant.status" x-text="tenant.status_label"></span></td>
+								<td :class="{ 'limpeed-text-danger': tenant.balance > 0 }" x-text="tenant.balance_formatted"></td>
+							</tr>
+						</template>
+					</tbody>
+				</table>
+			</div>
+			<div class="limpeed-app-pagination-bar">
+				<span class="limpeed-app-pagination-range" x-text="rangeLabel('tenants')"></span>
+				<div class="limpeed-app-pagination">
+					<button type="button" @click="goToPage('tenants', 1)" :disabled="lists.tenants.page === 1"><?php esc_html_e( 'Premier', 'limpeed-immobilier' ); ?></button>
+					<button type="button" @click="goToPage('tenants', lists.tenants.page - 1)" :disabled="lists.tenants.page === 1"><?php esc_html_e( 'Précédent', 'limpeed-immobilier' ); ?></button>
+					<template x-for="p in pageNumbers('tenants')" :key="p">
+						<button type="button" @click="goToPage('tenants', p)" :class="{ 'is-active': p === lists.tenants.page }" x-text="p"></button>
+					</template>
+					<button type="button" @click="goToPage('tenants', lists.tenants.page + 1)" :disabled="lists.tenants.page === lists.tenants.totalPages"><?php esc_html_e( 'Suivant', 'limpeed-immobilier' ); ?></button>
+					<button type="button" @click="goToPage('tenants', lists.tenants.totalPages)" :disabled="lists.tenants.page === lists.tenants.totalPages"><?php esc_html_e( 'Dernier', 'limpeed-immobilier' ); ?></button>
+				</div>
+			</div>
+		</div>
+
+		<div class="limpeed-app-panel">
+			<h2 class="limpeed-panel-title-orange"><?php esc_html_e( 'Derniers propriétaires', 'limpeed-immobilier' ); ?></h2>
+			<div class="limpeed-app-list-toolbar">
+				<label class="limpeed-app-list-pagesize">
+					<?php esc_html_e( 'Afficher', 'limpeed-immobilier' ); ?>
+					<select x-model.number="lists.owners.perPage" @change="onPerPageChange('owners')">
+						<option value="5">5</option>
+						<option value="10">10</option>
+						<option value="25">25</option>
+						<option value="50">50</option>
+					</select>
+				</label>
+				<input type="text" placeholder="<?php esc_attr_e( 'Rechercher…', 'limpeed-immobilier' ); ?>" x-model="lists.owners.search" @input="onSearchInput('owners')">
+			</div>
+			<div class="limpeed-app-table-wrap">
+				<table class="limpeed-app-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Téléphone', 'limpeed-immobilier' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<template x-if="lists.owners.loading">
+							<tr class="limpeed-app-skeleton-row"><td colspan="2"><div class="limpeed-app-skeleton-bar"></div></td></tr>
+						</template>
+						<template x-if="!lists.owners.loading && lists.owners.items.length === 0">
+							<tr><td colspan="2"><?php esc_html_e( 'Aucun propriétaire pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
+						</template>
+						<template x-for="owner in lists.owners.items" :key="owner.id">
+							<tr>
+								<td x-text="owner.full_name"></td>
+								<td x-text="owner.phone"></td>
+							</tr>
+						</template>
+					</tbody>
+				</table>
+			</div>
+			<div class="limpeed-app-pagination-bar">
+				<span class="limpeed-app-pagination-range" x-text="rangeLabel('owners')"></span>
+				<div class="limpeed-app-pagination">
+					<button type="button" @click="goToPage('owners', 1)" :disabled="lists.owners.page === 1"><?php esc_html_e( 'Premier', 'limpeed-immobilier' ); ?></button>
+					<button type="button" @click="goToPage('owners', lists.owners.page - 1)" :disabled="lists.owners.page === 1"><?php esc_html_e( 'Précédent', 'limpeed-immobilier' ); ?></button>
+					<template x-for="p in pageNumbers('owners')" :key="p">
+						<button type="button" @click="goToPage('owners', p)" :class="{ 'is-active': p === lists.owners.page }" x-text="p"></button>
+					</template>
+					<button type="button" @click="goToPage('owners', lists.owners.page + 1)" :disabled="lists.owners.page === lists.owners.totalPages"><?php esc_html_e( 'Suivant', 'limpeed-immobilier' ); ?></button>
+					<button type="button" @click="goToPage('owners', lists.owners.totalPages)" :disabled="lists.owners.page === lists.owners.totalPages"><?php esc_html_e( 'Dernier', 'limpeed-immobilier' ); ?></button>
+				</div>
+			</div>
+		</div>
 	</div>
 
-	<div class="limpeed-app-panel">
-		<h2 class="limpeed-panel-title-orange"><?php esc_html_e( 'Liste des 10 derniers propriétaires', 'limpeed-immobilier' ); ?></h2>
-		<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Téléphone', 'limpeed-immobilier' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php if ( empty( $recent_owners ) ) : ?>
-					<tr><td colspan="2"><?php esc_html_e( 'Aucun propriétaire pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
-				<?php endif; ?>
-				<?php foreach ( $recent_owners as $recent_owner ) : ?>
-					<tr>
-						<td><?php echo esc_html( $recent_owner->full_name ); ?></td>
-						<td><?php echo esc_html( $recent_owner->phone ); ?></td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-</div>
-	</div>
-</div>
+	<div class="limpeed-tables-row">
+		<div class="limpeed-app-panel">
+			<h2 class="limpeed-panel-title-green"><?php esc_html_e( 'Quittances soldées', 'limpeed-immobilier' ); ?></h2>
+			<div class="limpeed-app-list-toolbar">
+				<label class="limpeed-app-list-pagesize">
+					<?php esc_html_e( 'Afficher', 'limpeed-immobilier' ); ?>
+					<select x-model.number="lists.paid.perPage" @change="onPerPageChange('paid')">
+						<option value="5">5</option>
+						<option value="10">10</option>
+						<option value="25">25</option>
+						<option value="50">50</option>
+					</select>
+				</label>
+				<input type="text" placeholder="<?php esc_attr_e( 'Rechercher…', 'limpeed-immobilier' ); ?>" x-model="lists.paid.search" @input="onSearchInput('paid')">
+			</div>
+			<div class="limpeed-app-table-wrap">
+				<table class="limpeed-app-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Locataire', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Période', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Montant', 'limpeed-immobilier' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<template x-if="lists.paid.loading">
+							<tr class="limpeed-app-skeleton-row"><td colspan="3"><div class="limpeed-app-skeleton-bar"></div></td></tr>
+						</template>
+						<template x-if="!lists.paid.loading && lists.paid.items.length === 0">
+							<tr><td colspan="3"><?php esc_html_e( 'Aucune quittance pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
+						</template>
+						<template x-for="payment in lists.paid.items" :key="payment.id">
+							<tr>
+								<td x-text="payment.tenant_label || '—'"></td>
+								<td x-text="payment.period"></td>
+								<td x-text="payment.amount_formatted"></td>
+							</tr>
+						</template>
+					</tbody>
+				</table>
+			</div>
+			<div class="limpeed-app-pagination-bar">
+				<span class="limpeed-app-pagination-range" x-text="rangeLabel('paid')"></span>
+				<div class="limpeed-app-pagination">
+					<button type="button" @click="goToPage('paid', 1)" :disabled="lists.paid.page === 1"><?php esc_html_e( 'Premier', 'limpeed-immobilier' ); ?></button>
+					<button type="button" @click="goToPage('paid', lists.paid.page - 1)" :disabled="lists.paid.page === 1"><?php esc_html_e( 'Précédent', 'limpeed-immobilier' ); ?></button>
+					<template x-for="p in pageNumbers('paid')" :key="p">
+						<button type="button" @click="goToPage('paid', p)" :class="{ 'is-active': p === lists.paid.page }" x-text="p"></button>
+					</template>
+					<button type="button" @click="goToPage('paid', lists.paid.page + 1)" :disabled="lists.paid.page === lists.paid.totalPages"><?php esc_html_e( 'Suivant', 'limpeed-immobilier' ); ?></button>
+					<button type="button" @click="goToPage('paid', lists.paid.totalPages)" :disabled="lists.paid.page === lists.paid.totalPages"><?php esc_html_e( 'Dernier', 'limpeed-immobilier' ); ?></button>
+				</div>
+			</div>
+		</div>
 
-<div class="limpeed-tables-row">
-	<div class="limpeed-app-panel">
-		<h2 class="limpeed-panel-title-green"><?php esc_html_e( 'Liste des 10 dernières quittances soldées', 'limpeed-immobilier' ); ?></h2>
-		<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Locataire', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Période', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Montant', 'limpeed-immobilier' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php if ( empty( $recent_paid ) ) : ?>
-					<tr><td colspan="3"><?php esc_html_e( 'Aucune quittance pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
-				<?php endif; ?>
-				<?php foreach ( $recent_paid as $payment ) : ?>
-					<?php $payment_tenant = Limpeed_Tenants::get( $payment->tenant_id ); ?>
-					<tr>
-						<td><?php echo $payment_tenant ? esc_html( $payment_tenant->full_name ) : '&mdash;'; ?></td>
-						<td><?php echo esc_html( $payment->period ); ?></td>
-						<td><?php echo esc_html( Limpeed_Payments::format_amount( $payment->amount ) ); ?></td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-</div>
-	</div>
-
-	<div class="limpeed-app-panel">
-		<h2 class="limpeed-panel-title-blue"><?php esc_html_e( 'Liste des 10 dernières quittances en attente de paiement', 'limpeed-immobilier' ); ?></h2>
-		<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Locataire', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Période', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Montant', 'limpeed-immobilier' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php if ( empty( $unpaid_tenants ) ) : ?>
-					<tr><td colspan="3"><?php esc_html_e( 'Aucun impayé ce mois-ci.', 'limpeed-immobilier' ); ?></td></tr>
-				<?php endif; ?>
-				<?php foreach ( $unpaid_tenants as $unpaid_tenant ) : ?>
-					<tr>
-						<td><?php echo esc_html( $unpaid_tenant->full_name ); ?></td>
-						<td><?php echo esc_html( $current_period ); ?></td>
-						<td class="limpeed-text-danger"><?php echo esc_html( Limpeed_Payments::format_amount( $unpaid_tenant->rent_amount ) ); ?></td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-</div>
+		<div class="limpeed-app-panel">
+			<h2 class="limpeed-panel-title-blue"><?php esc_html_e( 'Quittances en attente de paiement', 'limpeed-immobilier' ); ?></h2>
+			<div class="limpeed-app-list-toolbar">
+				<label class="limpeed-app-list-pagesize">
+					<?php esc_html_e( 'Afficher', 'limpeed-immobilier' ); ?>
+					<select x-model.number="lists.unpaid.perPage" @change="onPerPageChange('unpaid')">
+						<option value="5">5</option>
+						<option value="10">10</option>
+						<option value="25">25</option>
+						<option value="50">50</option>
+					</select>
+				</label>
+				<input type="text" placeholder="<?php esc_attr_e( 'Rechercher…', 'limpeed-immobilier' ); ?>" x-model="lists.unpaid.search" @input="onSearchInput('unpaid')">
+			</div>
+			<div class="limpeed-app-table-wrap">
+				<table class="limpeed-app-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Locataire', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Montant', 'limpeed-immobilier' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<template x-if="lists.unpaid.loading">
+							<tr class="limpeed-app-skeleton-row"><td colspan="2"><div class="limpeed-app-skeleton-bar"></div></td></tr>
+						</template>
+						<template x-if="!lists.unpaid.loading && lists.unpaid.items.length === 0">
+							<tr><td colspan="2"><?php esc_html_e( 'Aucun impayé ce mois-ci.', 'limpeed-immobilier' ); ?></td></tr>
+						</template>
+						<template x-for="tenant in lists.unpaid.items" :key="tenant.id">
+							<tr>
+								<td x-text="tenant.full_name"></td>
+								<td class="limpeed-text-danger" x-text="tenant.rent_formatted"></td>
+							</tr>
+						</template>
+					</tbody>
+				</table>
+			</div>
+			<div class="limpeed-app-pagination-bar">
+				<span class="limpeed-app-pagination-range" x-text="rangeLabel('unpaid')"></span>
+				<div class="limpeed-app-pagination">
+					<button type="button" @click="goToPage('unpaid', 1)" :disabled="lists.unpaid.page === 1"><?php esc_html_e( 'Premier', 'limpeed-immobilier' ); ?></button>
+					<button type="button" @click="goToPage('unpaid', lists.unpaid.page - 1)" :disabled="lists.unpaid.page === 1"><?php esc_html_e( 'Précédent', 'limpeed-immobilier' ); ?></button>
+					<template x-for="p in pageNumbers('unpaid')" :key="p">
+						<button type="button" @click="goToPage('unpaid', p)" :class="{ 'is-active': p === lists.unpaid.page }" x-text="p"></button>
+					</template>
+					<button type="button" @click="goToPage('unpaid', lists.unpaid.page + 1)" :disabled="lists.unpaid.page === lists.unpaid.totalPages"><?php esc_html_e( 'Suivant', 'limpeed-immobilier' ); ?></button>
+					<button type="button" @click="goToPage('unpaid', lists.unpaid.totalPages)" :disabled="lists.unpaid.page === lists.unpaid.totalPages"><?php esc_html_e( 'Dernier', 'limpeed-immobilier' ); ?></button>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>

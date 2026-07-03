@@ -425,15 +425,15 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 }
 
 .limpeed-app-content {
-	padding: var(--space-7);
+	padding: var(--space-6);
 }
 
 /* KPI cards */
 .limpeed-cards-row {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: var(--space-5);
-	margin-bottom: var(--space-7);
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: var(--space-4);
+	margin-bottom: var(--space-5);
 }
 
 .limpeed-app-card {
@@ -453,13 +453,13 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
-	padding: var(--space-4) var(--space-4) var(--space-2);
-	gap: var(--space-3);
+	padding: var(--space-3) var(--space-3) var(--space-1);
+	gap: var(--space-2);
 }
 
 .limpeed-app-card-number {
 	font-family: var(--font-heading);
-	font-size: 30px;
+	font-size: 26px;
 	font-weight: 800;
 	letter-spacing: -.02em;
 }
@@ -524,18 +524,18 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 
 /* Sur la bande d'info des cartes KPI : couleur pleine remplacée par une teinte
    douce, plus lisible pour du texte que l'aplat utilisé pour les pastilles. */
-.limpeed-app-card-bar.limpeed-bar-orange { background: var(--limpeed-orange-light); color: var(--limpeed-orange-text); }
-.limpeed-app-card-bar.limpeed-bar-red { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
-.limpeed-app-card-bar.limpeed-bar-green { background: var(--limpeed-green-light); color: var(--limpeed-green-dark); }
-.limpeed-app-card-bar.limpeed-bar-blue { background: var(--limpeed-blue-light); color: var(--limpeed-blue); }
+.limpeed-app-card-bar.limpeed-bar-orange { background: var(--limpeed-orange); color: #fff; }
+.limpeed-app-card-bar.limpeed-bar-red { background: var(--limpeed-danger); color: #fff; }
+.limpeed-app-card-bar.limpeed-bar-green { background: var(--limpeed-primary); color: #fff; }
+.limpeed-app-card-bar.limpeed-bar-blue { background: var(--limpeed-blue); color: #fff; }
 
 /* Panels */
 .limpeed-app-panel {
 	background: var(--limpeed-surface);
 	border-radius: var(--limpeed-radius);
 	box-shadow: var(--limpeed-shadow);
-	padding: var(--space-6);
-	margin-bottom: var(--space-6);
+	padding: var(--space-5);
+	margin-bottom: var(--space-5);
 }
 
 .limpeed-app-panel h2 {
@@ -563,18 +563,18 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	border-top: none;
 }
 
-.limpeed-panel-title-green,
-.limpeed-panel-title-orange,
-.limpeed-panel-title-blue {
-	padding: 8px 12px;
+h2.limpeed-panel-title-green,
+h2.limpeed-panel-title-orange,
+h2.limpeed-panel-title-blue {
+	padding: 10px 14px;
 	border-radius: var(--limpeed-radius-sm);
-	border-left: 3px solid transparent;
 	font-weight: 700;
+	color: #fff;
 }
 
-.limpeed-panel-title-green { background: var(--limpeed-green-light); color: var(--limpeed-green-dark); border-left-color: var(--limpeed-green); }
-.limpeed-panel-title-orange { background: var(--limpeed-orange-light); color: var(--limpeed-orange-text); border-left-color: var(--limpeed-orange); }
-.limpeed-panel-title-blue { background: var(--limpeed-blue-light); color: var(--limpeed-blue); border-left-color: var(--limpeed-blue); }
+h2.limpeed-panel-title-green { background: var(--limpeed-primary); }
+h2.limpeed-panel-title-orange { background: var(--limpeed-orange); }
+h2.limpeed-panel-title-blue { background: var(--limpeed-blue); }
 
 /* Chart */
 .limpeed-chart {
@@ -639,7 +639,8 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 .limpeed-tables-row {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-	gap: 24px;
+	gap: var(--space-4);
+	margin-bottom: var(--space-4);
 }
 
 .limpeed-app-table-wrap {
@@ -798,16 +799,17 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 
 /* Selects personnalisés (masque le rendu natif du navigateur, très daté). */
 .limpeed-app-search select,
-.limpeed-app-form select {
+.limpeed-app-form select,
+.limpeed-app-list-pagesize select {
 	appearance: none;
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	cursor: pointer;
-	padding-right: 32px;
+	padding-right: 28px;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236b7280' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 7.5l4.5 4.5 4.5-4.5'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
-	background-position: right 10px center;
-	background-size: 14px;
+	background-position: right 8px center;
+	background-size: 13px;
 }
 
 .limpeed-app-search select:disabled,
@@ -831,21 +833,95 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	margin-top: 18px;
 	display: flex;
 	gap: 6px;
+	flex-wrap: wrap;
 }
 
-.limpeed-app-pagination a {
+.limpeed-app-pagination a,
+.limpeed-app-pagination button {
 	padding: 7px 13px;
 	border: 1px solid var(--limpeed-border);
 	border-radius: var(--limpeed-radius-sm);
 	text-decoration: none;
+	background: var(--limpeed-surface);
 	color: var(--limpeed-text);
 	font-size: 13px;
+	cursor: pointer;
+	font-family: inherit;
+	transition: background .12s ease, color .12s ease, border-color .12s ease;
 }
 
-.limpeed-app-pagination a.is-active {
+.limpeed-app-pagination button:hover:not(:disabled) {
+	background: var(--limpeed-bg);
+}
+
+.limpeed-app-pagination button:disabled {
+	opacity: .45;
+	cursor: not-allowed;
+}
+
+.limpeed-app-pagination a.is-active,
+.limpeed-app-pagination button.is-active {
 	background: var(--limpeed-primary);
 	color: #fff;
 	border-color: var(--limpeed-primary);
+}
+
+/* Listes du tableau de bord (widgets Ajax : recherche + pagination) */
+.limpeed-app-list-toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: var(--space-4);
+}
+
+.limpeed-app-list-pagesize {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	color: var(--limpeed-text-muted);
+	white-space: nowrap;
+}
+
+.limpeed-app-list-pagesize select {
+	padding: 5px 28px 5px 10px;
+	font-size: 12px;
+}
+
+.limpeed-app-list-toolbar input[type="text"] {
+	padding: 6px 10px;
+	border: 1px solid var(--limpeed-border);
+	border-radius: var(--limpeed-radius-sm);
+	font-size: 12px;
+	background: var(--limpeed-surface);
+	color: var(--limpeed-text);
+	max-width: 180px;
+}
+
+.limpeed-app-list-toolbar input[type="text"]:focus {
+	outline: none;
+	border-color: var(--limpeed-primary);
+	box-shadow: 0 0 0 3px rgba(var(--limpeed-primary-rgb), .15);
+}
+
+.limpeed-app-pagination-bar {
+	margin-top: var(--space-4);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.limpeed-app-pagination-bar .limpeed-app-pagination {
+	margin-top: 0;
+}
+
+.limpeed-app-pagination-range {
+	font-size: 12px;
+	color: var(--limpeed-text-muted);
 }
 
 /* Forms */

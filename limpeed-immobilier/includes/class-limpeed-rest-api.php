@@ -56,11 +56,12 @@ class Limpeed_Rest_Api {
 					'callback'            => array( $this, 'get_tenants' ),
 					'permission_callback' => array( $this, 'can_view_lookups' ),
 					'args'                => array(
-						'search'      => array( 'sanitize_callback' => 'sanitize_text_field' ),
-						'property_id' => array( 'sanitize_callback' => 'absint' ),
-						'status'      => array( 'sanitize_callback' => 'sanitize_key' ),
-						'paged'       => array( 'sanitize_callback' => 'absint' ),
-						'per_page'    => array( 'sanitize_callback' => 'absint' ),
+						'search'       => array( 'sanitize_callback' => 'sanitize_text_field' ),
+						'property_id'  => array( 'sanitize_callback' => 'absint' ),
+						'status'       => array( 'sanitize_callback' => 'sanitize_key' ),
+						'paged'        => array( 'sanitize_callback' => 'absint' ),
+						'per_page'     => array( 'sanitize_callback' => 'absint' ),
+						'with_balance' => array( 'sanitize_callback' => 'absint' ),
 					),
 				),
 				array(
@@ -125,6 +126,11 @@ class Limpeed_Rest_Api {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_owners' ),
 				'permission_callback' => array( $this, 'can_view_lookups' ),
+				'args'                => array(
+					'search'   => array( 'sanitize_callback' => 'sanitize_text_field' ),
+					'paged'    => array( 'sanitize_callback' => 'absint' ),
+					'per_page' => array( 'sanitize_callback' => 'absint' ),
+				),
 			)
 		);
 
@@ -334,6 +340,22 @@ class Limpeed_Rest_Api {
 				),
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/dashboard/unpaid-tenants',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_dashboard_unpaid_tenants' ),
+				'permission_callback' => array( $this, 'can_view_lookups' ),
+				'args'                => array(
+					'search'   => array( 'sanitize_callback' => 'sanitize_text_field' ),
+					'period'   => array( 'sanitize_callback' => 'sanitize_text_field' ),
+					'paged'    => array( 'sanitize_callback' => 'absint' ),
+					'per_page' => array( 'sanitize_callback' => 'absint' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -399,6 +421,25 @@ class Limpeed_Rest_Api {
 		$total   = Limpeed_Tenants::count( $args );
 
 		$items = array_map( array( $this, 'format_tenant_row' ), $tenants );
+
+		// Solde du mois en cours (0 si un paiement "payé" existe déjà) : calculé
+		// uniquement à la demande (widget "derniers locataires" du tableau de
+		// bord) pour ne pas alourdir la liste complète de la section Locataires.
+		if ( $request->get_param( 'with_balance' ) ) {
+			$current_period = Limpeed_Payments::get_current_period();
+			foreach ( $tenants as $index => $tenant ) {
+				$has_paid = Limpeed_Payments::count(
+					array(
+						'tenant_id' => $tenant->id,
+						'period'    => $current_period,
+						'status'    => 'paye',
+					)
+				);
+				$balance                       = $has_paid ? 0.0 : (float) $tenant->rent_amount;
+				$items[ $index ]['balance']    = $balance;
+				$items[ $index ]['balance_formatted'] = Limpeed_Payments::format_amount( $balance );
+			}
+		}
 
 		return new WP_REST_Response(
 			array(
@@ -582,20 +623,46 @@ class Limpeed_Rest_Api {
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function get_owners() {
-		$owners = Limpeed_Owners::get_all( array( 'per_page' => 500, 'orderby' => 'full_name', 'order' => 'ASC' ) );
+	/**
+	 * GET /owners?search=&paged=&per_page= : sert à la fois de cascade légère
+	 * (appel sans paramètre, per_page par défaut à 500) et de liste paginée
+	 * pour le widget "derniers propriétaires" du tableau de bord.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_owners( WP_REST_Request $request ) {
+		$args = array(
+			'search'   => (string) $request->get_param( 'search' ),
+			'paged'    => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page' => min( 500, max( 1, (int) $request->get_param( 'per_page' ) ?: 500 ) ),
+			'orderby'  => 'full_name',
+			'order'    => 'ASC',
+		);
+
+		$owners = Limpeed_Owners::get_all( $args );
+		$total  = Limpeed_Owners::count( $args );
 
 		$items = array_map(
 			function ( $owner ) {
 				return array(
-					'id'    => (int) $owner->id,
-					'label' => $owner->full_name,
+					'id'        => (int) $owner->id,
+					'label'     => $owner->full_name,
+					'full_name' => $owner->full_name,
+					'phone'     => $owner->phone,
 				);
 			},
 			$owners
 		);
 
-		return new WP_REST_Response( array( 'items' => $items ) );
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+			)
+		);
 	}
 
 	/**
@@ -1287,6 +1354,48 @@ class Limpeed_Rest_Api {
 				'expiring_count'        => count( $expiring_items ),
 				'expiring_days'         => $expiring_days,
 				'expiring_leases'       => $expiring_items,
+			)
+		);
+	}
+
+	/**
+	 * GET /dashboard/unpaid-tenants?search=&period=&paged=&per_page= : locataires
+	 * actifs sans paiement "payé" sur la période (widget "quittances en attente"
+	 * du tableau de bord). Donnée synthétique (pas des lignes wp_limpeed_payments)
+	 * qui nécessite donc son propre endpoint plutôt que de réutiliser /payments.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_dashboard_unpaid_tenants( WP_REST_Request $request ) {
+		$args = array(
+			'search'   => (string) $request->get_param( 'search' ),
+			'period'   => (string) $request->get_param( 'period' ),
+			'paged'    => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page' => min( 100, max( 1, (int) $request->get_param( 'per_page' ) ?: 10 ) ),
+		);
+
+		$result = Limpeed_Payments::get_unpaid_tenants_paged( $args );
+
+		$items = array_map(
+			function ( $tenant ) {
+				return array(
+					'id'              => (int) $tenant->id,
+					'full_name'       => $tenant->full_name,
+					'rent_amount'     => (float) $tenant->rent_amount,
+					'rent_formatted'  => Limpeed_Payments::format_amount( $tenant->rent_amount ),
+				);
+			},
+			$result['items']
+		);
+
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $result['total'],
+				'total_pages' => max( 1, (int) ceil( $result['total'] / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+				'period'      => $result['period'],
 			)
 		);
 	}

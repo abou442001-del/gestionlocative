@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.23.0
+Stable tag: 1.24.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.24.0 =
+* Tableau de bord : les 4 listes ("Derniers locataires", "Derniers propriétaires", "Quittances soldées", "Quittances en attente de paiement") sont désormais des widgets Ajax avec recherche et pagination réelles ("Afficher X / Rechercher", boutons Premier/Précédent/numéros de page/Suivant/Dernier), au lieu d'un instantané statique limité aux 10 derniers éléments.
+* Nouveaux endpoints REST : `GET /owners` étendu (recherche + pagination, en plus de son usage existant pour les listes déroulantes en cascade), `GET /tenants` accepte un paramètre `with_balance` (solde du mois en cours), nouvel endpoint `GET /dashboard/unpaid-tenants` (liste paginée des locataires actifs sans paiement sur la période).
+* Cartes KPI et en-têtes de listes du tableau de bord : bandeaux de couleur pleine (au lieu de teintes pastel) pour un rendu plus dense et affirmé.
+* Densité générale resserrée sur le tableau de bord (espacements réduits, plus de cartes visibles à l'écran).
 
 = 1.23.0 =
 * Refonte visuelle de l'application frontend (identité propre, sans changement de structure/menus/contenu) :
