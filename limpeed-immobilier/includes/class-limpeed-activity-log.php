@@ -39,6 +39,7 @@ class Limpeed_Activity_Log {
 			'mandate'    => __( 'Mandat de gestion', 'limpeed-immobilier' ),
 			'inspection' => __( 'État des lieux', 'limpeed-immobilier' ),
 			'document'   => __( 'Document', 'limpeed-immobilier' ),
+			'expense'    => __( 'Charge', 'limpeed-immobilier' ),
 		);
 	}
 

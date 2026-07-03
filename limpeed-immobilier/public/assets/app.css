@@ -692,6 +692,7 @@ h2.limpeed-panel-title-blue { background: var(--limpeed-blue); }
 .limpeed-app-badge-paye,
 .limpeed-app-badge-suffisant,
 .limpeed-app-badge-loue,
+.limpeed-app-badge-encaissement,
 .limpeed-app-badge-a_jour { background: var(--limpeed-green-light); color: var(--limpeed-green-dark); }
 
 .limpeed-app-badge-termine,
@@ -704,8 +705,10 @@ h2.limpeed-panel-title-blue { background: var(--limpeed-blue); }
 .limpeed-app-badge-expire,
 .limpeed-app-badge-travaux { background: var(--limpeed-warning-light); color: var(--limpeed-warning); }
 .limpeed-app-badge-en_retard,
+.limpeed-app-badge-charge,
 .limpeed-app-badge-insuffisant { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
-.limpeed-app-badge-en_avance { background: var(--limpeed-blue-light); color: var(--limpeed-blue); }
+.limpeed-app-badge-en_avance,
+.limpeed-app-badge-reversement { background: var(--limpeed-blue-light); color: var(--limpeed-blue); }
 
 .limpeed-text-danger {
 	color: var(--limpeed-danger);

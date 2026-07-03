@@ -398,6 +398,28 @@ class Limpeed_Activator {
 			KEY entity (entity_type, entity_id)
 		) {$charset_collate};";
 
+		$expenses_table = $wpdb->prefix . 'limpeed_expenses';
+
+		$sql_expenses = "CREATE TABLE {$expenses_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			expense_date DATE NOT NULL,
+			category VARCHAR(30) NOT NULL DEFAULT 'autre',
+			label VARCHAR(191) NOT NULL,
+			amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+			building_id BIGINT UNSIGNED NULL,
+			property_id BIGINT UNSIGNED NULL,
+			notes TEXT NULL,
+			created_by BIGINT UNSIGNED NULL,
+			updated_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NULL,
+			PRIMARY KEY  (id),
+			KEY expense_date (expense_date),
+			KEY category (category),
+			KEY building_id (building_id),
+			KEY property_id (property_id)
+		) {$charset_collate};";
+
 		dbDelta( $sql_owners );
 		dbDelta( $sql_buildings );
 		dbDelta( $sql_properties );
@@ -409,5 +431,6 @@ class Limpeed_Activator {
 		dbDelta( $sql_amendments );
 		dbDelta( $sql_inspections );
 		dbDelta( $sql_documents );
+		dbDelta( $sql_expenses );
 	}
 }

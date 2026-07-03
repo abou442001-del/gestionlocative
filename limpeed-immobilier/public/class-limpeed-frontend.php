@@ -180,6 +180,12 @@ class Limpeed_Frontend {
 				'icon'  => 'dashicons-chart-line',
 				'group' => __( 'Finances', 'limpeed-immobilier' ),
 			),
+			'accounting'   => array(
+				'label' => __( 'Comptabilité', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_statements',
+				'icon'  => 'dashicons-calculator',
+				'group' => __( 'Finances', 'limpeed-immobilier' ),
+			),
 			'agents'       => array(
 				'label' => __( 'Agents', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_agents',

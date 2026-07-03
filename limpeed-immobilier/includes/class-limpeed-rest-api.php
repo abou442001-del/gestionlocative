@@ -549,6 +549,80 @@ class Limpeed_Rest_Api {
 				'args'                => $id_arg,
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/expenses',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_expenses' ),
+					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'args'                => array(
+						'search'      => array( 'sanitize_callback' => 'sanitize_text_field' ),
+						'category'    => array( 'sanitize_callback' => 'sanitize_key' ),
+						'period'      => array( 'sanitize_callback' => 'sanitize_text_field' ),
+						'building_id' => array( 'sanitize_callback' => 'absint' ),
+						'paged'       => array( 'sanitize_callback' => 'absint' ),
+						'per_page'    => array( 'sanitize_callback' => 'absint' ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_expense' ),
+					'permission_callback' => array( $this, 'can_manage_statements' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/expenses/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_expense' ),
+					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_expense' ),
+					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'args'                => $id_arg,
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/accounting/ledger',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_accounting_ledger' ),
+				'permission_callback' => array( $this, 'can_manage_statements' ),
+				'args'                => array(
+					'entry_type' => array( 'sanitize_callback' => 'sanitize_key' ),
+					'period'     => array( 'sanitize_callback' => 'sanitize_text_field' ),
+					'search'     => array( 'sanitize_callback' => 'sanitize_text_field' ),
+					'paged'      => array( 'sanitize_callback' => 'absint' ),
+					'per_page'   => array( 'sanitize_callback' => 'absint' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/accounting/summary',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_accounting_summary' ),
+				'permission_callback' => array( $this, 'can_manage_statements' ),
+				'args'                => array(
+					'period' => array( 'sanitize_callback' => 'sanitize_text_field' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -579,6 +653,16 @@ class Limpeed_Rest_Api {
 	 */
 	public function can_manage_payments() {
 		return current_user_can( 'manage_limpeed_payments' );
+	}
+
+	/**
+	 * Capacité requise pour les routes des sections Bordereaux/Trésorerie/
+	 * Comptabilité (finances de l'agence).
+	 *
+	 * @return bool
+	 */
+	public function can_manage_statements() {
+		return current_user_can( 'manage_limpeed_statements' );
 	}
 
 	/**
@@ -2743,6 +2827,255 @@ class Limpeed_Rest_Api {
 			'mime_type'         => $document->mime_type,
 			'created_at'        => date_i18n( 'd/m/Y H:i', strtotime( $document->created_at ) ),
 			'download_url'      => Limpeed_Frontend::app_url( 'documents', array( 'action' => 'download', 'id' => $document->id, '_wpnonce' => wp_create_nonce( 'limpeed_download_document_' . $document->id ) ) ),
+		);
+	}
+
+	/**
+	 * GET /expenses?search=&category=&period=&building_id=&paged=&per_page= :
+	 * liste filtrée + paginée des charges.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_expenses( WP_REST_Request $request ) {
+		$args = array(
+			'search'      => (string) $request->get_param( 'search' ),
+			'category'    => (string) $request->get_param( 'category' ),
+			'period'      => (string) $request->get_param( 'period' ),
+			'building_id' => (int) $request->get_param( 'building_id' ),
+			'paged'       => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page'    => min( 100, max( 1, (int) $request->get_param( 'per_page' ) ?: 20 ) ),
+		);
+
+		$expenses = Limpeed_Expenses::get_all( $args );
+		$total    = Limpeed_Expenses::count( $args );
+
+		$items = array_map( array( $this, 'format_expense_row' ), $expenses );
+
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+			)
+		);
+	}
+
+	/**
+	 * POST /expenses : création d'une charge.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_expense( WP_REST_Request $request ) {
+		$data   = $this->extract_expense_data( $request );
+		$errors = $this->validate_expense( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$id = Limpeed_Expenses::insert( $data );
+		if ( ! $id ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible d\'enregistrer la charge.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_expense_row( Limpeed_Expenses::get( $id ) ), 201 );
+	}
+
+	/**
+	 * PUT/PATCH /expenses/{id} : modification.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function update_expense( WP_REST_Request $request ) {
+		$id      = (int) $request['id'];
+		$expense = Limpeed_Expenses::get( $id );
+		if ( ! $expense ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Charge introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$data   = $this->extract_expense_data( $request );
+		$errors = $this->validate_expense( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$result = Limpeed_Expenses::update( $id, $data );
+		if ( ! $result ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible de mettre à jour la charge.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_expense_row( Limpeed_Expenses::get( $id ) ) );
+	}
+
+	/**
+	 * DELETE /expenses/{id}.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_expense( WP_REST_Request $request ) {
+		$id      = (int) $request['id'];
+		$expense = Limpeed_Expenses::get( $id );
+		if ( ! $expense ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Charge introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		Limpeed_Expenses::delete( $id );
+
+		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
+	}
+
+	/**
+	 * Formate une ligne de charge pour la liste.
+	 *
+	 * @param object $expense
+	 * @return array
+	 */
+	private function format_expense_row( $expense ) {
+		$categories = Limpeed_Expenses::get_categories();
+		$building   = $expense->building_id ? Limpeed_Buildings::get( $expense->building_id ) : null;
+
+		return array(
+			'id'             => (int) $expense->id,
+			'expense_date'   => $expense->expense_date,
+			'category'       => $expense->category,
+			'category_label' => $categories[ $expense->category ] ?? $expense->category,
+			'label'          => $expense->label,
+			'amount'         => (float) $expense->amount,
+			'amount_label'   => Limpeed_Payments::format_amount( (float) $expense->amount ),
+			'building_id'    => $expense->building_id ? (int) $expense->building_id : 0,
+			'building_label' => $building ? $building->name : '',
+			'notes'          => $expense->notes,
+		);
+	}
+
+	/**
+	 * Extrait et pré-nettoie les données d'une charge depuis une requête REST.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return array
+	 */
+	private function extract_expense_data( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_body_params();
+		}
+
+		return array(
+			'expense_date' => isset( $params['expense_date'] ) ? sanitize_text_field( $params['expense_date'] ) : '',
+			'category'     => isset( $params['category'] ) ? sanitize_key( $params['category'] ) : 'autre',
+			'label'        => isset( $params['label'] ) ? sanitize_text_field( wp_unslash( $params['label'] ) ) : '',
+			'amount'       => isset( $params['amount'] ) ? wp_unslash( $params['amount'] ) : '',
+			'building_id'  => isset( $params['building_id'] ) ? (int) $params['building_id'] : 0,
+			'property_id'  => isset( $params['property_id'] ) ? (int) $params['property_id'] : 0,
+			'notes'        => isset( $params['notes'] ) ? wp_unslash( $params['notes'] ) : '',
+		);
+	}
+
+	/**
+	 * Règles de validation métier d'une charge.
+	 *
+	 * @param array $data
+	 * @return array Liste de messages d'erreur (vide si valide).
+	 */
+	private function validate_expense( $data ) {
+		$errors = array();
+
+		if ( empty( $data['expense_date'] ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $data['expense_date'] ) ) {
+			$errors[] = __( 'La date de la charge est obligatoire et doit être une date valide.', 'limpeed-immobilier' );
+		}
+
+		if ( empty( $data['label'] ) ) {
+			$errors[] = __( 'Le libellé de la charge est obligatoire.', 'limpeed-immobilier' );
+		}
+
+		if ( '' === $data['amount'] || ! is_numeric( $data['amount'] ) || $data['amount'] < 0 ) {
+			$errors[] = __( 'Le montant doit être un nombre positif.', 'limpeed-immobilier' );
+		}
+
+		if ( ! empty( $data['building_id'] ) && ! Limpeed_Buildings::get( $data['building_id'] ) ) {
+			$errors[] = __( 'Édifice sélectionné invalide.', 'limpeed-immobilier' );
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * GET /accounting/ledger?entry_type=&period=&search=&paged=&per_page= :
+	 * grand livre consolidé (encaissements, reversements, charges).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_accounting_ledger( WP_REST_Request $request ) {
+		$args = array(
+			'entry_type' => (string) $request->get_param( 'entry_type' ),
+			'period'     => (string) $request->get_param( 'period' ),
+			'search'     => (string) $request->get_param( 'search' ),
+			'paged'      => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page'   => min( 100, max( 1, (int) $request->get_param( 'per_page' ) ?: 20 ) ),
+		);
+
+		$entries = Limpeed_Accounting::get_ledger( $args );
+		$total   = Limpeed_Accounting::count_ledger( $args );
+
+		$entry_types = Limpeed_Accounting::get_entry_types();
+
+		$items = array_map(
+			function ( $entry ) use ( $entry_types ) {
+				return array(
+					'entry_date'     => $entry->entry_date,
+					'entry_type'     => $entry->entry_type,
+					'entry_type_label' => $entry_types[ $entry->entry_type ] ?? $entry->entry_type,
+					'label'          => $entry->label,
+					'amount'         => (float) $entry->amount,
+					'amount_label'   => Limpeed_Payments::format_amount( (float) $entry->amount ),
+					'reference_id'   => (int) $entry->reference_id,
+				);
+			},
+			$entries
+		);
+
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+			)
+		);
+	}
+
+	/**
+	 * GET /accounting/summary?period= : bilan simplifié (produits, charges,
+	 * résultat) d'une période. La période par défaut est le mois en cours.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_accounting_summary( WP_REST_Request $request ) {
+		$period = (string) $request->get_param( 'period' );
+		if ( empty( $period ) || ! preg_match( '/^\d{4}-\d{2}$/', $period ) ) {
+			$period = current_time( 'Y-m' );
+		}
+
+		$summary = Limpeed_Accounting::get_period_summary( $period );
+
+		return new WP_REST_Response(
+			array(
+				'period'         => $summary['period'],
+				'revenue'        => $summary['revenue'],
+				'revenue_label'  => Limpeed_Payments::format_amount( $summary['revenue'] ),
+				'expenses'       => $summary['expenses'],
+				'expenses_label' => Limpeed_Payments::format_amount( $summary['expenses'] ),
+				'result'         => $summary['result'],
+				'result_label'   => Limpeed_Payments::format_amount( $summary['result'] ),
+			)
 		);
 	}
 }

@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.28.0
+Stable tag: 1.29.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,13 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.29.0 =
+* Nouveau module "Comptabilité" (menu Finances) : comptabilité de base pour l'agence, avec trois onglets.
+  * Bilan : produits (commissions prélevées), charges de l'agence et résultat net pour une période choisie (sélecteur mois).
+  * Grand livre : vue consolidée et paginée de tous les mouvements financiers (encaissements de loyers, reversements aux propriétaires, charges), filtrable par type et par période.
+  * Charges : gestion complète (ajout/modification/suppression) des dépenses de l'agence, avec catégorie, montant et rattachement optionnel à un édifice.
+  * Nouvelle table `wp_limpeed_expenses`, nouvelle classe `Limpeed_Accounting` (grand livre et bilan calculés à partir des paiements, bordereaux et charges déjà existants, aucune duplication de données), nouveaux endpoints REST `/expenses`, `/expenses/{id}`, `/accounting/ledger`, `/accounting/summary`.
 
 = 1.28.0 =
 * Nouveau module "Documents" (menu Gestion) : gestion documentaire centralisée pour tout type de pièce administrative (bail, quittance, pièce d'identité, etc.).
