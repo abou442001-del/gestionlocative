@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.22.0
+Stable tag: 1.22.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.22.1 =
+* Correction : dans les fenêtres modales d'ajout/modification (Locataires, Édifices, Biens, Paiements), lorsque le formulaire était plus long que la fenêtre (ex. le formulaire complet "Ajouter un locataire" avec la section "Informations complémentaires"), son contenu débordait visuellement hors de la modale au lieu de défiler à l'intérieur, laissant apparaître le tableau de la page en arrière-plan. Le formulaire défile désormais correctement dans sa propre modale, quelle que soit la hauteur de l'écran.
 
 = 1.22.0 =
 * Rafraîchissement visuel de l'application frontend : barre supérieure plus sobre (couleur moins saturée, ombre allégée remplacée par une fine bordure), listes déroulantes (filtres et formulaires) désormais personnalisées avec une flèche dédiée au lieu du rendu natif du navigateur, et bandeaux de titre des listes du tableau de bord ("Liste des...") remplacés par un style plus discret (fond teinté + liseré de couleur) au lieu d'un aplat de couleur plein.
