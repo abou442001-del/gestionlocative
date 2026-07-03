@@ -96,6 +96,37 @@ class Limpeed_Contracts {
 	}
 
 	/**
+	 * Génère et envoie au navigateur le PDF d'un état des lieux.
+	 *
+	 * @param int $inspection_id
+	 */
+	public static function stream_inspection_pdf( $inspection_id ) {
+		$loaded = self::load_dompdf();
+		if ( is_wp_error( $loaded ) ) {
+			wp_die( esc_html( $loaded->get_error_message() ) );
+		}
+
+		$inspection = Limpeed_Inspections::get( $inspection_id );
+		if ( ! $inspection ) {
+			wp_die( esc_html__( 'État des lieux introuvable.', 'limpeed-immobilier' ) );
+		}
+
+		$tenant   = Limpeed_Tenants::get( $inspection->tenant_id );
+		$property = Limpeed_Properties::get( $inspection->property_id );
+
+		$html   = self::render_inspection_html( $inspection, $tenant, $property );
+		$dompdf = new \Dompdf\Dompdf( array( 'isRemoteEnabled' => false ) );
+		$dompdf->loadHtml( $html );
+		$dompdf->setPaper( 'A4', 'portrait' );
+		$dompdf->render();
+
+		Limpeed_Activity_Log::log( 'created', 'inspection', $inspection_id, __( 'État des lieux (PDF) généré', 'limpeed-immobilier' ) );
+
+		$types = Limpeed_Inspections::get_types();
+		self::send_pdf( $dompdf->output(), sanitize_file_name( 'etat-des-lieux-' . ( $types[ $inspection->type ] ?? $inspection->type ) . '-' . ( $tenant ? $tenant->full_name : $inspection_id ) . '.pdf' ) );
+	}
+
+	/**
 	 * Envoie un flux PDF au navigateur en téléchargement et termine la requête.
 	 *
 	 * @param string $content
@@ -248,6 +279,86 @@ class Limpeed_Contracts {
 					<tr>
 						<td>Le mandant</td>
 						<td>Le mandataire</td>
+					</tr>
+				</table>
+			</div>
+
+			<p style="margin-top: 24px; color: #50575e;">Document généré le <?php echo esc_html( date_i18n( 'd/m/Y' ) ); ?>.</p>
+		</body>
+		</html>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Construit le HTML d'un état des lieux.
+	 *
+	 * @param object      $inspection
+	 * @param object|null $tenant
+	 * @param object|null $property
+	 * @return string
+	 */
+	private static function render_inspection_html( $inspection, $tenant, $property ) {
+		$types      = Limpeed_Inspections::get_types();
+		$conditions = Limpeed_Inspections::get_room_conditions();
+		$rooms      = Limpeed_Inspections::get_rooms( $inspection );
+
+		ob_start();
+		?>
+		<html>
+		<head>
+			<meta charset="utf-8">
+			<style>
+				<?php echo self::common_styles(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				th { text-align: left; border-bottom: 1px solid #c3c4c7; padding: 6px 4px; background: #f0f0f1; }
+				td.room-cell { border-bottom: 1px solid #e0e0e0; padding: 6px 4px; }
+			</style>
+		</head>
+		<body>
+			<h1>Limpeed Immobilier</h1>
+			<p class="subtitle">État des lieux — <?php echo esc_html( $types[ $inspection->type ] ?? $inspection->type ); ?></p>
+
+			<h2>Informations générales</h2>
+			<table>
+				<tr><td class="label">Locataire</td><td><?php echo esc_html( $tenant ? $tenant->full_name : '—' ); ?></td></tr>
+				<tr><td class="label">Bien</td><td><?php echo esc_html( $property ? Limpeed_Properties::get_display_label( $property ) : '—' ); ?></td></tr>
+				<tr><td class="label">Date de l'état des lieux</td><td><?php echo esc_html( date_i18n( 'd/m/Y', strtotime( $inspection->inspection_date ) ) ); ?></td></tr>
+			</table>
+
+			<h2>Détail par pièce</h2>
+			<table>
+				<thead>
+					<tr><th>Pièce</th><th>État</th><th>Notes</th></tr>
+				</thead>
+				<tbody>
+					<?php if ( empty( $rooms ) ) : ?>
+						<tr><td class="room-cell" colspan="3">Aucune pièce renseignée.</td></tr>
+					<?php endif; ?>
+					<?php foreach ( $rooms as $room ) : ?>
+						<tr>
+							<td class="room-cell"><?php echo esc_html( $room['name'] ); ?></td>
+							<td class="room-cell"><?php echo esc_html( $conditions[ $room['condition'] ] ?? $room['condition'] ); ?></td>
+							<td class="room-cell"><?php echo esc_html( $room['notes'] ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+
+			<?php if ( ! empty( $inspection->general_notes ) ) : ?>
+				<h2>Observations générales</h2>
+				<p><?php echo nl2br( esc_html( $inspection->general_notes ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+			<?php endif; ?>
+
+			<p style="margin-top: 24px;">
+				Le présent état des lieux, établi contradictoirement entre les parties, fait foi de l'état du logement à la date
+				mentionnée ci-dessus.
+			</p>
+
+			<div class="signatures">
+				<table>
+					<tr>
+						<td>Le bailleur (ou son mandataire)</td>
+						<td>Le locataire</td>
 					</tr>
 				</table>
 			</div>

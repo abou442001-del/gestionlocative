@@ -446,6 +446,77 @@ class Limpeed_Rest_Api {
 				'args'                => $id_arg,
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/inspections',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_inspections' ),
+					'permission_callback' => array( $this, 'can_manage_tenants' ),
+					'args'                => array(
+						'tenant_id'   => array( 'sanitize_callback' => 'absint' ),
+						'property_id' => array( 'sanitize_callback' => 'absint' ),
+						'type'        => array( 'sanitize_callback' => 'sanitize_key' ),
+						'paged'       => array( 'sanitize_callback' => 'absint' ),
+						'per_page'    => array( 'sanitize_callback' => 'absint' ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_inspection' ),
+					'permission_callback' => array( $this, 'can_manage_tenants' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/inspections/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_inspection' ),
+					'permission_callback' => array( $this, 'can_manage_tenants' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_inspection' ),
+					'permission_callback' => array( $this, 'can_manage_tenants' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_inspection' ),
+					'permission_callback' => array( $this, 'can_manage_tenants' ),
+					'args'                => $id_arg,
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/inspections/(?P<id>\d+)/history',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_inspection_history' ),
+				'permission_callback' => array( $this, 'can_manage_tenants' ),
+				'args'                => $id_arg,
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/tenants/(?P<id>\d+)/inspection-comparison',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_inspection_comparison' ),
+				'permission_callback' => array( $this, 'can_manage_tenants' ),
+				'args'                => $id_arg,
+			)
+		);
 	}
 
 	/**
@@ -2251,5 +2322,310 @@ class Limpeed_Rest_Api {
 		Limpeed_Lease_Amendments::delete( $amendment->id );
 
 		return new WP_REST_Response( array( 'deleted' => true ) );
+	}
+
+	/**
+	 * GET /inspections?tenant_id=&property_id=&type=&paged=&per_page= : liste
+	 * filtrée + paginée des états des lieux.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_inspections( WP_REST_Request $request ) {
+		$args = array(
+			'tenant_id'   => (int) $request->get_param( 'tenant_id' ),
+			'property_id' => (int) $request->get_param( 'property_id' ),
+			'type'        => (string) $request->get_param( 'type' ),
+			'paged'       => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page'    => min( 100, max( 1, (int) $request->get_param( 'per_page' ) ?: 20 ) ),
+		);
+
+		$inspections = Limpeed_Inspections::get_all( $args );
+		$total       = Limpeed_Inspections::count( $args );
+
+		$items = array_map( array( $this, 'format_inspection_row' ), $inspections );
+
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+			)
+		);
+	}
+
+	/**
+	 * GET /inspections/{id} : fiche complète.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_inspection( WP_REST_Request $request ) {
+		$inspection = Limpeed_Inspections::get( (int) $request['id'] );
+		if ( ! $inspection ) {
+			return new WP_Error( 'limpeed_not_found', __( 'État des lieux introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		return new WP_REST_Response( $this->format_inspection_detail( $inspection ) );
+	}
+
+	/**
+	 * POST /inspections : création.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_inspection( WP_REST_Request $request ) {
+		$data   = $this->extract_inspection_data( $request );
+		$errors = $this->validate_inspection( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$id = Limpeed_Inspections::insert( $data );
+		if ( ! $id ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible d\'enregistrer l\'état des lieux.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_inspection_detail( Limpeed_Inspections::get( $id ) ), 201 );
+	}
+
+	/**
+	 * PUT/PATCH /inspections/{id} : modification.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function update_inspection( WP_REST_Request $request ) {
+		$id         = (int) $request['id'];
+		$inspection = Limpeed_Inspections::get( $id );
+		if ( ! $inspection ) {
+			return new WP_Error( 'limpeed_not_found', __( 'État des lieux introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$data   = $this->extract_inspection_data( $request );
+		$errors = $this->validate_inspection( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$result = Limpeed_Inspections::update( $id, $data );
+		if ( ! $result ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible de mettre à jour l\'état des lieux.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_inspection_detail( Limpeed_Inspections::get( $id ) ) );
+	}
+
+	/**
+	 * DELETE /inspections/{id}.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_inspection( WP_REST_Request $request ) {
+		$id         = (int) $request['id'];
+		$inspection = Limpeed_Inspections::get( $id );
+		if ( ! $inspection ) {
+			return new WP_Error( 'limpeed_not_found', __( 'État des lieux introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		Limpeed_Inspections::delete( $id );
+
+		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
+	}
+
+	/**
+	 * GET /inspections/{id}/history.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_inspection_history( WP_REST_Request $request ) {
+		$id         = (int) $request['id'];
+		$inspection = Limpeed_Inspections::get( $id );
+		if ( ! $inspection ) {
+			return new WP_Error( 'limpeed_not_found', __( 'État des lieux introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$entries = Limpeed_Activity_Log::get_all(
+			array(
+				'object_type' => 'inspection',
+				'object_id'   => $id,
+				'per_page'    => 50,
+			)
+		);
+
+		$actions = Limpeed_Activity_Log::get_actions();
+
+		$items = array_map(
+			function ( $entry ) use ( $actions ) {
+				$user = $entry->user_id ? get_userdata( $entry->user_id ) : false;
+				return array(
+					'id'           => (int) $entry->id,
+					'action'       => $entry->action,
+					'action_label' => $actions[ $entry->action ] ?? $entry->action,
+					'description'  => $entry->description,
+					'agent_name'   => $user ? $user->display_name : __( 'Agent supprimé', 'limpeed-immobilier' ),
+					'created_at'   => date_i18n( 'd/m/Y H:i', strtotime( $entry->created_at ) ),
+				);
+			},
+			$entries
+		);
+
+		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * GET /tenants/{id}/inspection-comparison : comparaison pièce par pièce
+	 * des états des lieux d'entrée et de sortie les plus récents du locataire.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_inspection_comparison( WP_REST_Request $request ) {
+		$tenant_id = (int) $request['id'];
+		$tenant    = Limpeed_Tenants::get( $tenant_id );
+		if ( ! $tenant ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Locataire introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$comparison = Limpeed_Inspections::compare_for_tenant( $tenant_id );
+
+		if ( null === $comparison ) {
+			return new WP_REST_Response( array( 'available' => false ) );
+		}
+
+		$conditions = Limpeed_Inspections::get_room_conditions();
+
+		$rows = array_map(
+			function ( $row ) use ( $conditions ) {
+				return array(
+					'name'              => $row['name'],
+					'entree'            => $row['entree'],
+					'entree_label'      => $row['entree'] ? ( $conditions[ $row['entree'] ] ?? $row['entree'] ) : '—',
+					'sortie'            => $row['sortie'],
+					'sortie_label'      => $row['sortie'] ? ( $conditions[ $row['sortie'] ] ?? $row['sortie'] ) : '—',
+					'has_changed'       => $row['has_changed'],
+				);
+			},
+			$comparison['rooms']
+		);
+
+		return new WP_REST_Response(
+			array(
+				'available'   => true,
+				'entree_id'   => $comparison['entree_id'],
+				'sortie_id'   => $comparison['sortie_id'],
+				'entree_date' => $comparison['entree_date'],
+				'sortie_date' => $comparison['sortie_date'],
+				'rooms'       => $rows,
+			)
+		);
+	}
+
+	/**
+	 * Formate une ligne d'état des lieux pour la liste.
+	 *
+	 * @param object $inspection
+	 * @return array
+	 */
+	private function format_inspection_row( $inspection ) {
+		$tenant   = Limpeed_Tenants::get( $inspection->tenant_id );
+		$property = Limpeed_Properties::get( $inspection->property_id );
+		$types    = Limpeed_Inspections::get_types();
+
+		return array(
+			'id'              => (int) $inspection->id,
+			'tenant_id'       => (int) $inspection->tenant_id,
+			'tenant_label'    => $tenant ? $tenant->full_name : '',
+			'property_id'     => (int) $inspection->property_id,
+			'property_label'  => $property ? Limpeed_Properties::get_display_label( $property ) : '',
+			'type'            => $inspection->type,
+			'type_label'      => $types[ $inspection->type ] ?? $inspection->type,
+			'inspection_date' => $inspection->inspection_date,
+			'rooms_count'     => count( Limpeed_Inspections::get_rooms( $inspection ) ),
+		);
+	}
+
+	/**
+	 * Formate la fiche complète d'un état des lieux.
+	 *
+	 * @param object $inspection
+	 * @return array
+	 */
+	private function format_inspection_detail( $inspection ) {
+		$tenant   = Limpeed_Tenants::get( $inspection->tenant_id );
+		$property = Limpeed_Properties::get( $inspection->property_id );
+		$types    = Limpeed_Inspections::get_types();
+
+		return array(
+			'id'              => (int) $inspection->id,
+			'tenant_id'       => (int) $inspection->tenant_id,
+			'tenant_label'    => $tenant ? $tenant->full_name : '',
+			'property_id'     => (int) $inspection->property_id,
+			'property_label'  => $property ? Limpeed_Properties::get_display_label( $property ) : '',
+			'type'            => $inspection->type,
+			'type_label'      => $types[ $inspection->type ] ?? $inspection->type,
+			'inspection_date' => $inspection->inspection_date,
+			'rooms'           => Limpeed_Inspections::get_rooms( $inspection ),
+			'general_notes'   => $inspection->general_notes,
+			'pdf_url'         => Limpeed_Frontend::app_url( 'inspections', array( 'action' => 'download_pdf', 'id' => $inspection->id, '_wpnonce' => wp_create_nonce( 'limpeed_download_inspection_pdf_' . $inspection->id ) ) ),
+		);
+	}
+
+	/**
+	 * Extrait et pré-nettoie les données d'un état des lieux depuis une
+	 * requête REST.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return array
+	 */
+	private function extract_inspection_data( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_body_params();
+		}
+
+		return array(
+			'tenant_id'       => isset( $params['tenant_id'] ) ? (int) $params['tenant_id'] : 0,
+			'property_id'     => isset( $params['property_id'] ) ? (int) $params['property_id'] : 0,
+			'type'            => isset( $params['type'] ) ? sanitize_key( $params['type'] ) : 'entree',
+			'inspection_date' => isset( $params['inspection_date'] ) ? sanitize_text_field( $params['inspection_date'] ) : '',
+			'rooms'           => isset( $params['rooms'] ) && is_array( $params['rooms'] ) ? $params['rooms'] : array(),
+			'general_notes'   => isset( $params['general_notes'] ) ? wp_unslash( $params['general_notes'] ) : '',
+		);
+	}
+
+	/**
+	 * Règles de validation métier d'un état des lieux.
+	 *
+	 * @param array $data
+	 * @return array Liste de messages d'erreur (vide si valide).
+	 */
+	private function validate_inspection( $data ) {
+		$errors = array();
+
+		$tenant = ! empty( $data['tenant_id'] ) ? Limpeed_Tenants::get( $data['tenant_id'] ) : null;
+		if ( ! $tenant ) {
+			$errors[] = __( 'Veuillez sélectionner un locataire valide.', 'limpeed-immobilier' );
+		}
+
+		if ( empty( $data['property_id'] ) || ! Limpeed_Properties::get( $data['property_id'] ) ) {
+			$errors[] = __( 'Bien introuvable pour ce locataire.', 'limpeed-immobilier' );
+		}
+
+		if ( empty( $data['inspection_date'] ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $data['inspection_date'] ) ) {
+			$errors[] = __( 'La date de l\'état des lieux est obligatoire et doit être une date valide.', 'limpeed-immobilier' );
+		}
+
+		if ( ! array_key_exists( $data['type'], Limpeed_Inspections::get_types() ) ) {
+			$errors[] = __( 'Le type d\'état des lieux sélectionné n\'est pas valide.', 'limpeed-immobilier' );
+		}
+
+		return $errors;
 	}
 }

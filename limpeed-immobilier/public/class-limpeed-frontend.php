@@ -144,6 +144,12 @@ class Limpeed_Frontend {
 				'icon'  => 'dashicons-admin-users',
 				'group' => __( 'Gestion', 'limpeed-immobilier' ),
 			),
+			'inspections'  => array(
+				'label' => __( 'États des lieux', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_tenants',
+				'icon'  => 'dashicons-camera',
+				'group' => __( 'Gestion', 'limpeed-immobilier' ),
+			),
 			'mandates'     => array(
 				'label' => __( 'Mandats', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_properties',

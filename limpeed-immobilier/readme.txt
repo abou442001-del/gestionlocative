@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.25.0
+Stable tag: 1.26.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,13 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.26.0 =
+* Nouveau module "États des lieux" (menu Gestion) :
+  * Fiches d'entrée et de sortie par locataire, détail pièce par pièce (nom, état bon/moyen/mauvais, notes) avec répétiteur dynamique dans le formulaire.
+  * Comparaison automatique entrée/sortie pièce par pièce dans le panneau de détail, avec mise en évidence des pièces dont l'état a changé et des pièces manquantes d'un côté ou de l'autre.
+  * Génération à la volée du PDF de l'état des lieux (même principe que les contrats de bail/mandats : régénéré à chaque téléchargement, non stocké).
+  * Nouvelle table `wp_limpeed_inspections`, nouveaux endpoints REST `/inspections`, `/inspections/{id}`, `/inspections/{id}/history`, `/tenants/{id}/inspection-comparison`.
 
 = 1.25.0 =
 * Nouveau module "Contrats & Mandats" :

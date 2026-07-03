@@ -361,6 +361,26 @@ class Limpeed_Activator {
 			KEY tenant_id (tenant_id)
 		) {$charset_collate};";
 
+		$inspections_table = $wpdb->prefix . 'limpeed_inspections';
+
+		$sql_inspections = "CREATE TABLE {$inspections_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			tenant_id BIGINT UNSIGNED NOT NULL,
+			property_id BIGINT UNSIGNED NOT NULL,
+			type VARCHAR(20) NOT NULL DEFAULT 'entree',
+			inspection_date DATE NOT NULL,
+			rooms_data LONGTEXT NULL,
+			general_notes TEXT NULL,
+			created_by BIGINT UNSIGNED NULL,
+			updated_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NULL,
+			PRIMARY KEY  (id),
+			KEY tenant_id (tenant_id),
+			KEY property_id (property_id),
+			KEY type (type)
+		) {$charset_collate};";
+
 		dbDelta( $sql_owners );
 		dbDelta( $sql_buildings );
 		dbDelta( $sql_properties );
@@ -370,5 +390,6 @@ class Limpeed_Activator {
 		dbDelta( $sql_activity_log );
 		dbDelta( $sql_mandates );
 		dbDelta( $sql_amendments );
+		dbDelta( $sql_inspections );
 	}
 }
