@@ -187,4 +187,77 @@ class Limpeed_Accounting {
 			'result'   => $revenue - $expenses,
 		);
 	}
+
+	/**
+	 * Détail ligne à ligne des produits (une ligne par paiement générant une
+	 * commission) et des charges (une ligne par dépense) d'une période, pour
+	 * le document imprimable "Résultats financiers du mois" — reproduit le
+	 * même principe que le rapport de l'ancien logiciel de l'agence : chaque
+	 * honoraire perçu et chaque dépense sont listés individuellement plutôt
+	 * que résumés en un seul total.
+	 *
+	 * @param string $period Format YYYY-MM.
+	 * @return array { period, revenue_lines, expense_lines, total_revenue, total_expenses, result }
+	 */
+	public static function get_monthly_results( $period ) {
+		global $wpdb;
+
+		$payments_table  = Limpeed_Payments::table();
+		$properties_table = Limpeed_Properties::table();
+
+		$revenue_rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT p.payment_date AS entry_date, p.commission_amount AS amount, pr.reference AS property_reference, pr.id AS property_id
+				FROM {$payments_table} p
+				LEFT JOIN {$properties_table} pr ON pr.id = p.property_id
+				WHERE p.status IN ('paye','partiel') AND p.commission_amount > 0 AND DATE_FORMAT(p.payment_date, '%%Y-%%m') = %s
+				ORDER BY p.payment_date ASC",
+				$period
+			)
+		);
+
+		$revenue_lines = array_map(
+			function ( $row ) {
+				$label = $row->property_reference ? sprintf( __( 'Honoraire %s', 'limpeed-immobilier' ), $row->property_reference ) : __( 'Honoraire', 'limpeed-immobilier' );
+				return array(
+					'date'   => $row->entry_date,
+					'label'  => $label,
+					'amount' => (float) $row->amount,
+				);
+			},
+			$revenue_rows
+		);
+
+		$expenses = Limpeed_Expenses::get_all(
+			array(
+				'period'   => $period,
+				'orderby'  => 'expense_date',
+				'order'    => 'ASC',
+				'per_page' => 500,
+			)
+		);
+
+		$expense_lines = array_map(
+			function ( $expense ) {
+				return array(
+					'date'   => $expense->expense_date,
+					'label'  => $expense->label,
+					'amount' => (float) $expense->amount,
+				);
+			},
+			$expenses
+		);
+
+		$total_revenue  = array_sum( wp_list_pluck( $revenue_lines, 'amount' ) );
+		$total_expenses = array_sum( wp_list_pluck( $expense_lines, 'amount' ) );
+
+		return array(
+			'period'         => $period,
+			'revenue_lines'  => $revenue_lines,
+			'expense_lines'  => $expense_lines,
+			'total_revenue'  => $total_revenue,
+			'total_expenses' => $total_expenses,
+			'result'         => $total_revenue - $total_expenses,
+		);
+	}
 }

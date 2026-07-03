@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.31.0
+Stable tag: 1.32.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.32.0 =
+* Onglet Bilan de la section Comptabilité : bouton "Télécharger le PDF « Résultats financiers du mois »" reproduisant le rapport imprimé de l'ancien logiciel de l'agence.
+  * Logo de l'agence en en-tête (même mécanisme que le bordereau), charges et produits détaillés ligne par ligne côte à côte (un honoraire par paiement encaissé, une ligne par charge), synthèse du bénéfice réalisé (ou déficit) en bas de page.
+  * Généré à la volée à chaque téléchargement (comme les contrats de bail/mandats/états des lieux), pas de stockage d'historique.
+  * Nouvelle méthode `Limpeed_Accounting::get_monthly_results()`, nouveau contrôleur frontend `Limpeed_Frontend_Accounting`, nouveau type d'objet `financial_report` dans le journal d'activité.
 
 = 1.31.0 =
 * Refonte du PDF du bordereau ("Décompte propriétaire") pour reprendre le format utilisé par l'ancien logiciel de l'agence :

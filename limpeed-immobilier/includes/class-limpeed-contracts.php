@@ -127,6 +127,34 @@ class Limpeed_Contracts {
 	}
 
 	/**
+	 * Génère et envoie au navigateur le PDF "Résultats financiers du mois"
+	 * (module Comptabilité, onglet Bilan) : reproduit le format du rapport de
+	 * l'ancien logiciel de l'agence (charges/produits détaillés côte à côte,
+	 * synthèse du bénéfice réalisé). Comme les autres documents de cette
+	 * classe, régénéré à la volée à chaque téléchargement plutôt que stocké.
+	 *
+	 * @param string $period Format YYYY-MM.
+	 */
+	public static function stream_financial_results_pdf( $period ) {
+		$loaded = self::load_dompdf();
+		if ( is_wp_error( $loaded ) ) {
+			wp_die( esc_html( $loaded->get_error_message() ) );
+		}
+
+		$data = Limpeed_Accounting::get_monthly_results( $period );
+
+		$html   = self::render_financial_results_html( $data );
+		$dompdf = new \Dompdf\Dompdf( array( 'isRemoteEnabled' => false ) );
+		$dompdf->loadHtml( $html );
+		$dompdf->setPaper( 'A4', 'landscape' );
+		$dompdf->render();
+
+		Limpeed_Activity_Log::log( 'created', 'financial_report', 0, sprintf( 'Résultats financiers (PDF) générés pour %s', $period ) );
+
+		self::send_pdf( $dompdf->output(), sanitize_file_name( 'resultats-financiers-' . $period . '.pdf' ) );
+	}
+
+	/**
 	 * Envoie un flux PDF au navigateur en téléchargement et termine la requête.
 	 *
 	 * @param string $content
@@ -364,6 +392,144 @@ class Limpeed_Contracts {
 			</div>
 
 			<p style="margin-top: 24px; color: #50575e;">Document généré le <?php echo esc_html( date_i18n( 'd/m/Y' ) ); ?>.</p>
+		</body>
+		</html>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Construit le HTML du document "Résultats financiers du mois" : charges
+	 * et produits détaillés en deux colonnes côte à côte, avec une ligne par
+	 * paiement générant une commission (produit) ou par dépense (charge), et
+	 * une synthèse du bénéfice réalisé — reprend le format du rapport de
+	 * l'ancien logiciel de l'agence.
+	 *
+	 * @param array $data Voir Limpeed_Accounting::get_monthly_results().
+	 * @return string
+	 */
+	private static function render_financial_results_html( $data ) {
+		$logo_data_uri = Limpeed_Branding::get_logo_data_uri();
+		$period_label  = date_i18n( 'F Y', strtotime( $data['period'] . '-01' ) );
+
+		ob_start();
+		?>
+		<html>
+		<head>
+			<meta charset="utf-8">
+			<style>
+				body { font-family: sans-serif; font-size: 11px; color: #1d2327; }
+				.header { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+				.header td { border: none; padding: 0; vertical-align: middle; }
+				.logo-img { height: 38px; }
+				.logo-text { font-size: 18px; font-weight: bold; color: #1f7a41; }
+				.logo-text .sub { display: block; font-size: 10px; font-weight: normal; color: #1d2327; }
+				h1 { font-size: 16px; text-align: center; text-transform: uppercase; margin: 4px 0 10px; }
+				.summary-bar { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+				.summary-bar td { border: 1px solid #c3c4c7; padding: 5px 8px; text-align: center; }
+				.summary-bar .label { font-weight: bold; background: #f0f0f1; }
+				table.columns { width: 100%; border-collapse: collapse; }
+				table.columns > tbody > tr > td { vertical-align: top; width: 50%; padding: 0 6px; }
+				table.inner { width: 100%; border-collapse: collapse; }
+				table.inner th, table.inner td { border: 1px solid #c3c4c7; padding: 4px 6px; text-align: left; }
+				table.inner th { background: #f0f0f1; }
+				.col-title { text-align: center; font-weight: bold; text-transform: uppercase; padding: 6px; }
+				.col-title.charges { background: #f7d9d9; }
+				.col-title.produits { background: #d9ecd9; }
+				.text-right { text-align: right; }
+				.totals-row td { font-weight: bold; background: #f7f7f7; }
+				.synthese { width: 60%; margin: 20px auto 0; border-collapse: collapse; }
+				.synthese td { padding: 6px 10px; text-align: center; }
+				.synthese .result-row td { font-weight: bold; font-size: 14px; border-top: 2px solid #1d2327; padding-top: 10px; }
+			</style>
+		</head>
+		<body>
+			<table class="header">
+				<tr>
+					<td style="width: 60px;">
+						<?php if ( $logo_data_uri ) : ?>
+							<img class="logo-img" src="<?php echo esc_attr( $logo_data_uri ); ?>" alt="Limpeed Immobilier">
+						<?php else : ?>
+							<span class="logo-text">Limpeed<span class="sub">IMMOBILIER</span></span>
+						<?php endif; ?>
+					</td>
+					<td></td>
+				</tr>
+			</table>
+
+			<h1>Résultats financiers du mois de <?php echo esc_html( $period_label ); ?></h1>
+
+			<table class="summary-bar">
+				<tr>
+					<td class="label">Fait le</td>
+					<td><?php echo esc_html( date_i18n( 'd F Y' ) ); ?></td>
+					<td class="label">Produits <?php echo esc_html( $period_label ); ?></td>
+					<td><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_revenue'] ) ); ?></td>
+					<td class="label">Charges <?php echo esc_html( $period_label ); ?></td>
+					<td><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_expenses'] ) ); ?></td>
+				</tr>
+			</table>
+
+			<table class="columns">
+				<tr>
+					<td>
+						<div class="col-title charges">Charges</div>
+						<table class="inner">
+							<thead>
+								<tr><th>Date</th><th>Libellé</th><th class="text-right">Montant</th></tr>
+							</thead>
+							<tbody>
+								<?php if ( empty( $data['expense_lines'] ) ) : ?>
+									<tr><td colspan="3">Aucune charge sur cette période.</td></tr>
+								<?php endif; ?>
+								<?php foreach ( $data['expense_lines'] as $line ) : ?>
+									<tr>
+										<td><?php echo esc_html( date_i18n( 'd/m', strtotime( $line['date'] ) ) ); ?></td>
+										<td><?php echo esc_html( $line['label'] ); ?></td>
+										<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $line['amount'] ) ); ?></td>
+									</tr>
+								<?php endforeach; ?>
+								<tr class="totals-row">
+									<td colspan="2">Total charges</td>
+									<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_expenses'] ) ); ?></td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+					<td>
+						<div class="col-title produits">Produits</div>
+						<table class="inner">
+							<thead>
+								<tr><th>Date</th><th>Libellé</th><th class="text-right">Montant</th></tr>
+							</thead>
+							<tbody>
+								<?php if ( empty( $data['revenue_lines'] ) ) : ?>
+									<tr><td colspan="3">Aucun produit sur cette période.</td></tr>
+								<?php endif; ?>
+								<?php foreach ( $data['revenue_lines'] as $line ) : ?>
+									<tr>
+										<td><?php echo esc_html( date_i18n( 'd/m', strtotime( $line['date'] ) ) ); ?></td>
+										<td><?php echo esc_html( $line['label'] ); ?></td>
+										<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $line['amount'] ) ); ?></td>
+									</tr>
+								<?php endforeach; ?>
+								<tr class="totals-row">
+									<td colspan="2">Total produits</td>
+									<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_revenue'] ) ); ?></td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</table>
+
+			<table class="synthese">
+				<tr><td colspan="2" style="font-weight: bold; text-transform: uppercase;">Synthèse — Différence entre produits et charges de <?php echo esc_html( $period_label ); ?></td></tr>
+				<tr class="result-row">
+					<td><?php echo $data['result'] >= 0 ? 'Bénéfice réalisé' : 'Déficit constaté'; ?></td>
+					<td><?php echo esc_html( Limpeed_Payments::format_amount( abs( $data['result'] ) ) ); ?></td>
+				</tr>
+			</table>
 		</body>
 		</html>
 		<?php

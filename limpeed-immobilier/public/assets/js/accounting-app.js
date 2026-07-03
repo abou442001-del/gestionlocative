@@ -22,6 +22,7 @@ document.addEventListener( 'alpine:init', function () {
 			categories: config.categories || {},
 			entryTypes: config.entryTypes || {},
 			currentPeriod: config.currentPeriod || '',
+			financialResultsUrlBase: config.financialResultsUrlBase || '',
 			i18n: config.i18n || {},
 
 			activeTab: 'bilan',
@@ -113,6 +114,14 @@ document.addEventListener( 'alpine:init', function () {
 
 			onBilanPeriodChange: function () {
 				this.fetchBilan();
+			},
+
+			financialResultsUrl: function () {
+				if ( ! this.financialResultsUrlBase ) {
+					return '#';
+				}
+				var separator = this.financialResultsUrlBase.indexOf( '?' ) === -1 ? '?' : '&';
+				return this.financialResultsUrlBase + separator + 'period=' + encodeURIComponent( this.bilan.period );
 			},
 
 			// -----------------------------------------------------------

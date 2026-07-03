@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes du plugin.
-define( 'LIMPEED_VERSION', '1.31.0' );
+define( 'LIMPEED_VERSION', '1.32.0' );
 define( 'LIMPEED_DB_VERSION', '1.14.0' );
 define( 'LIMPEED_PLUGIN_FILE', __FILE__ );
 define( 'LIMPEED_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -56,6 +56,7 @@ if ( is_admin() ) {
 	require_once LIMPEED_PLUGIN_DIR . 'public/class-limpeed-frontend-mandates.php';
 	require_once LIMPEED_PLUGIN_DIR . 'public/class-limpeed-frontend-inspections.php';
 	require_once LIMPEED_PLUGIN_DIR . 'public/class-limpeed-frontend-documents.php';
+	require_once LIMPEED_PLUGIN_DIR . 'public/class-limpeed-frontend-accounting.php';
 	require_once LIMPEED_PLUGIN_DIR . 'public/class-limpeed-frontend-payments.php';
 	require_once LIMPEED_PLUGIN_DIR . 'public/class-limpeed-frontend-statements.php';
 	require_once LIMPEED_PLUGIN_DIR . 'public/class-limpeed-frontend-agents.php';

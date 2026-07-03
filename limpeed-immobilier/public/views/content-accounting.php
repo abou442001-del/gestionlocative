@@ -25,12 +25,13 @@ $building_options = array_map(
 );
 
 $app_config = array(
-	'buildingOptions' => $building_options,
-	'categories'      => Limpeed_Expenses::get_categories(),
-	'entryTypes'      => Limpeed_Accounting::get_entry_types(),
-	'currentPeriod'   => current_time( 'Y-m' ),
-	'currentDate'     => current_time( 'Y-m-d' ),
-	'i18n'            => array(
+	'buildingOptions'        => $building_options,
+	'categories'             => Limpeed_Expenses::get_categories(),
+	'entryTypes'             => Limpeed_Accounting::get_entry_types(),
+	'currentPeriod'          => current_time( 'Y-m' ),
+	'currentDate'            => current_time( 'Y-m-d' ),
+	'financialResultsUrlBase' => Limpeed_Frontend::app_url( 'accounting', array( 'action' => 'download_financial_results', '_wpnonce' => wp_create_nonce( 'limpeed_download_financial_results' ) ) ),
+	'i18n'                   => array(
 		'expenseCreated' => __( 'Charge ajoutée avec succès.', 'limpeed-immobilier' ),
 		'expenseUpdated' => __( 'Charge mise à jour avec succès.', 'limpeed-immobilier' ),
 		'expenseDeleted' => __( 'Charge supprimée avec succès.', 'limpeed-immobilier' ),
@@ -93,6 +94,7 @@ $rest_config = array(
 				</div>
 			</template>
 			<p class="limpeed-app-description"><?php esc_html_e( 'Les produits de l\'agence sont ses commissions prélevées sur les loyers, pas les loyers eux-mêmes (qui appartiennent aux propriétaires). Le résultat net = produits − charges.', 'limpeed-immobilier' ); ?></p>
+			<p><a :href="financialResultsUrl()" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Télécharger le PDF « Résultats financiers du mois »', 'limpeed-immobilier' ); ?></a></p>
 		</div>
 	</template>
 
