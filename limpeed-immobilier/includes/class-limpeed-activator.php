@@ -301,6 +301,8 @@ class Limpeed_Activator {
 			period_end VARCHAR(7) NOT NULL,
 			total_collected DECIMAL(12,2) NOT NULL DEFAULT 0,
 			total_commission DECIMAL(12,2) NOT NULL DEFAULT 0,
+			other_deduction_label VARCHAR(191) NULL,
+			other_deduction_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
 			net_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
 			file_path VARCHAR(255) NOT NULL,
 			generated_by BIGINT UNSIGNED NULL,

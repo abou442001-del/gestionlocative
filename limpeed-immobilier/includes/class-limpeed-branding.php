@@ -49,6 +49,51 @@ class Limpeed_Branding {
 	}
 
 	/**
+	 * Chemin absolu local du fichier de logo personnalisé, ou chaîne vide si
+	 * aucun n'est défini. Utilisé pour les PDF générés par Dompdf (isRemoteEnabled
+	 * désactivé) : le fichier doit être encodé en data URI plutôt que référencé
+	 * par son URL publique.
+	 *
+	 * @return string
+	 */
+	public static function get_logo_path() {
+		$path = get_option( 'limpeed_logo_path', '' );
+		return ( is_string( $path ) && file_exists( $path ) ) ? $path : '';
+	}
+
+	/**
+	 * Logo encodé en data URI (base64), prêt à être inséré dans une balise
+	 * <img> d'un document PDF généré par Dompdf. Chaîne vide si aucun logo
+	 * personnalisé n'est défini ou si le fichier est illisible : l'appelant
+	 * doit alors utiliser un repli textuel/SVG.
+	 *
+	 * @return string
+	 */
+	public static function get_logo_data_uri() {
+		$path = self::get_logo_path();
+		if ( ! $path ) {
+			return '';
+		}
+
+		$contents = file_get_contents( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
+		if ( false === $contents ) {
+			return '';
+		}
+
+		$mime_types = array(
+			'png'  => 'image/png',
+			'jpg'  => 'image/jpeg',
+			'jpeg' => 'image/jpeg',
+			'gif'  => 'image/gif',
+			'webp' => 'image/webp',
+		);
+		$extension = strtolower( pathinfo( $path, PATHINFO_EXTENSION ) );
+		$mime      = $mime_types[ $extension ] ?? 'image/png';
+
+		return 'data:' . $mime . ';base64,' . base64_encode( $contents ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+	}
+
+	/**
 	 * Traite l'upload d'un logo personnalisé.
 	 *
 	 * @param array $file Une entrée de $_FILES (ex. $_FILES['limpeed_logo']).

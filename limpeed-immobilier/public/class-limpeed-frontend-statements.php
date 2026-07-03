@@ -77,9 +77,11 @@ class Limpeed_Frontend_Statements {
 			check_admin_referer( 'limpeed_generate_statement', 'limpeed_statement_nonce' );
 
 			$data = array(
-				'owner_id'     => isset( $_POST['owner_id'] ) ? (int) $_POST['owner_id'] : 0,
-				'period_start' => isset( $_POST['period_start'] ) ? sanitize_text_field( wp_unslash( $_POST['period_start'] ) ) : '',
-				'period_end'   => isset( $_POST['period_end'] ) ? sanitize_text_field( wp_unslash( $_POST['period_end'] ) ) : '',
+				'owner_id'               => isset( $_POST['owner_id'] ) ? (int) $_POST['owner_id'] : 0,
+				'period_start'           => isset( $_POST['period_start'] ) ? sanitize_text_field( wp_unslash( $_POST['period_start'] ) ) : '',
+				'period_end'             => isset( $_POST['period_end'] ) ? sanitize_text_field( wp_unslash( $_POST['period_end'] ) ) : '',
+				'other_deduction_label'  => isset( $_POST['other_deduction_label'] ) ? sanitize_text_field( wp_unslash( $_POST['other_deduction_label'] ) ) : '',
+				'other_deduction_amount' => isset( $_POST['other_deduction_amount'] ) ? (float) $_POST['other_deduction_amount'] : 0,
 			);
 
 			$errors = self::validate( $data );
@@ -90,7 +92,7 @@ class Limpeed_Frontend_Statements {
 				return;
 			}
 
-			$result = Limpeed_Statements::generate( $data['owner_id'], $data['period_start'], $data['period_end'] );
+			$result = Limpeed_Statements::generate( $data['owner_id'], $data['period_start'], $data['period_end'], $data['other_deduction_label'], $data['other_deduction_amount'] );
 
 			if ( is_wp_error( $result ) ) {
 				self::$errors = array( $result->get_error_message() );

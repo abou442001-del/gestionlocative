@@ -61,6 +61,16 @@ if ( 'add' === $action ) :
 				<input type="month" name="period_end" id="period_end" required value="<?php echo esc_attr( $field( 'period_end', $current_month ) ); ?>">
 			</div>
 
+			<div class="limpeed-form-row">
+				<label for="other_deduction_label"><?php esc_html_e( 'Déduction supplémentaire (optionnel)', 'limpeed-immobilier' ); ?></label>
+				<input type="text" name="other_deduction_label" id="other_deduction_label" placeholder="<?php esc_attr_e( 'Ex : Redevance CIE, réparation avancée...', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $field( 'other_deduction_label' ) ); ?>">
+				<p class="limpeed-app-form-hint"><?php esc_html_e( 'Une charge ponctuelle à retenir sur ce reversement précis (électricité avancée, réparation...), en plus des honoraires d\'agence. Pour les charges récurrentes de l\'agence, utilisez plutôt la section Comptabilité.', 'limpeed-immobilier' ); ?></p>
+			</div>
+			<div class="limpeed-form-row">
+				<label for="other_deduction_amount"><?php esc_html_e( 'Montant de la déduction (FCFA)', 'limpeed-immobilier' ); ?></label>
+				<input type="number" step="1" min="0" name="other_deduction_amount" id="other_deduction_amount" value="<?php echo esc_attr( $field( 'other_deduction_amount' ) ); ?>">
+			</div>
+
 			<button type="submit" class="limpeed-app-btn"><?php esc_html_e( 'Générer le bordereau PDF', 'limpeed-immobilier' ); ?></button>
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'statements' ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Annuler', 'limpeed-immobilier' ); ?></a>
 		</form>
