@@ -2,8 +2,9 @@
 /**
  * API REST du plugin (namespace limpeed/v1).
  *
- * Pilote : section Locataires uniquement pour l'instant (recherche live, cascade
- * Propriétaire → Édifice → Sous-édifice, CRUD Ajax, panneau de détail).
+ * Couvre les sections Locataires, Édifices et Biens : recherche/filtre en
+ * direct, cascade Propriétaire → Édifice → Sous-édifice, CRUD Ajax, panneau
+ * de détail.
  *
  * Sécurité :
  * - Chaque route déclare un permission_callback basé sur les capacités du plugin
@@ -145,7 +146,7 @@ class Limpeed_Rest_Api {
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'create_building' ),
-					'permission_callback' => array( $this, 'can_manage_buildings' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
 				),
 			)
 		);
@@ -163,13 +164,13 @@ class Limpeed_Rest_Api {
 				array(
 					'methods'             => WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'update_building' ),
-					'permission_callback' => array( $this, 'can_manage_buildings' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
 					'args'                => $id_arg,
 				),
 				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete_building' ),
-					'permission_callback' => array( $this, 'can_manage_buildings' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
 					'args'                => $id_arg,
 				),
 			)
@@ -181,7 +182,7 @@ class Limpeed_Rest_Api {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_building_history' ),
-				'permission_callback' => array( $this, 'can_manage_buildings' ),
+				'permission_callback' => array( $this, 'can_manage_properties' ),
 				'args'                => $id_arg,
 			)
 		);
@@ -190,13 +191,72 @@ class Limpeed_Rest_Api {
 			self::NAMESPACE_V1,
 			'/properties',
 			array(
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_properties' ),
-				'permission_callback' => array( $this, 'can_view_lookups' ),
-				'args'                => array(
-					'building_id' => array( 'sanitize_callback' => 'absint' ),
-					'tenant_id'   => array( 'sanitize_callback' => 'absint' ),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_properties' ),
+					'permission_callback' => array( $this, 'can_view_lookups' ),
+					'args'                => array(
+						'search'      => array( 'sanitize_callback' => 'sanitize_text_field' ),
+						'owner_id'    => array( 'sanitize_callback' => 'absint' ),
+						'building_id' => array( 'sanitize_callback' => 'absint' ),
+						'status'      => array( 'sanitize_callback' => 'sanitize_key' ),
+						'tenant_id'   => array( 'sanitize_callback' => 'absint' ),
+						'paged'       => array( 'sanitize_callback' => 'absint' ),
+						'per_page'    => array( 'sanitize_callback' => 'absint' ),
+					),
 				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_property' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/properties/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_property' ),
+					'permission_callback' => array( $this, 'can_view_lookups' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_property' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_property' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+					'args'                => $id_arg,
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/properties/(?P<id>\d+)/history',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_property_history' ),
+				'permission_callback' => array( $this, 'can_manage_properties' ),
+				'args'                => $id_arg,
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/properties/(?P<id>\d+)/payments',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_property_payments' ),
+				'permission_callback' => array( $this, 'can_manage_properties' ),
+				'args'                => $id_arg,
 			)
 		);
 	}
@@ -211,13 +271,14 @@ class Limpeed_Rest_Api {
 	}
 
 	/**
-	 * Capacité requise pour les routes de la section Édifices (mêmes droits
-	 * que les biens : il n'existe pas de capacité manage_limpeed_buildings
-	 * dédiée, voir Limpeed_Frontend_Buildings::handle_request()).
+	 * Capacité requise pour les routes des sections Édifices et Biens (une
+	 * seule et même capacité manage_limpeed_properties couvre les deux, voir
+	 * Limpeed_Frontend_Buildings::handle_request() et
+	 * Limpeed_Frontend_Properties::handle_request()).
 	 *
 	 * @return bool
 	 */
-	public function can_manage_buildings() {
+	public function can_manage_properties() {
 		return current_user_can( 'manage_limpeed_properties' );
 	}
 
@@ -708,44 +769,354 @@ class Limpeed_Rest_Api {
 	}
 
 	/**
-	 * GET /properties?building_id=&tenant_id= : troisième niveau de la cascade.
-	 * Le paramètre tenant_id (optionnel) indique le locataire en cours de
-	 * modification : son bien actuel reste sélectionnable même s'il est occupé.
+	 * GET /properties?building_id=&tenant_id=&search=&owner_id=&status=&paged=&per_page= :
+	 * sert à la fois de troisième niveau de la cascade Locataires (appel léger
+	 * avec building_id + tenant_id) et de liste paginée pour la section Biens
+	 * elle-même (avec recherche et filtres). Le per_page par défaut (500)
+	 * préserve le comportement de la cascade quand ces paramètres ne sont pas
+	 * fournis. Le paramètre tenant_id (optionnel) indique le locataire en
+	 * cours de modification : son bien actuel reste sélectionnable même s'il
+	 * est occupé.
 	 *
 	 * @param WP_REST_Request $request
 	 * @return WP_REST_Response
 	 */
 	public function get_properties( WP_REST_Request $request ) {
-		$building_id      = (int) $request->get_param( 'building_id' );
 		$editing_tenant_id = (int) $request->get_param( 'tenant_id' );
 
-		$properties = Limpeed_Properties::get_all(
-			array(
-				'building_id' => $building_id,
-				'per_page'    => 500,
-				'orderby'     => 'address',
-				'order'       => 'ASC',
-			)
+		$args = array(
+			'search'      => (string) $request->get_param( 'search' ),
+			'owner_id'    => (int) $request->get_param( 'owner_id' ),
+			'building_id' => (int) $request->get_param( 'building_id' ),
+			'status'      => (string) $request->get_param( 'status' ),
+			'paged'       => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page'    => min( 500, max( 1, (int) $request->get_param( 'per_page' ) ?: 500 ) ),
+			'orderby'     => 'address',
+			'order'       => 'ASC',
 		);
+
+		$properties = Limpeed_Properties::get_all( $args );
+		$total      = Limpeed_Properties::count( $args );
 
 		$items = array_map(
 			function ( $property ) use ( $editing_tenant_id ) {
-				$current_tenant = Limpeed_Properties::get_current_tenant( $property->id );
-				$occupied       = $current_tenant && (int) $current_tenant->id !== $editing_tenant_id;
-
-				return array(
-					'id'              => (int) $property->id,
-					'label'           => Limpeed_Properties::get_display_label( $property ),
-					'building_id'     => (int) $property->building_id,
-					'monthly_rent'    => (float) $property->monthly_rent,
-					'status'          => $property->status,
-					'occupied'        => $occupied,
-				);
+				return $this->format_property_row( $property, $editing_tenant_id );
 			},
 			$properties
 		);
 
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+			)
+		);
+	}
+
+	/**
+	 * GET /properties/{id} : fiche complète (onglet Infos du panneau de détail).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_property( WP_REST_Request $request ) {
+		$property = Limpeed_Properties::get( (int) $request['id'] );
+		if ( ! $property ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Bien introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		return new WP_REST_Response( $this->format_property_detail( $property ) );
+	}
+
+	/**
+	 * POST /properties : création.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_property( WP_REST_Request $request ) {
+		$data   = $this->extract_property_data( $request );
+		$errors = $this->validate_property( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$id = Limpeed_Properties::insert( $data );
+		if ( ! $id ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible d\'enregistrer le bien.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_property_detail( Limpeed_Properties::get( $id ) ), 201 );
+	}
+
+	/**
+	 * PUT/PATCH /properties/{id} : modification.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function update_property( WP_REST_Request $request ) {
+		$id       = (int) $request['id'];
+		$property = Limpeed_Properties::get( $id );
+		if ( ! $property ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Bien introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$data   = $this->extract_property_data( $request );
+		$errors = $this->validate_property( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$result = Limpeed_Properties::update( $id, $data );
+		if ( ! $result ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible de mettre à jour le bien.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_property_detail( Limpeed_Properties::get( $id ) ) );
+	}
+
+	/**
+	 * DELETE /properties/{id}. Refusé si des locataires y sont encore
+	 * rattachés (voir Limpeed_Properties::delete()).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_property( WP_REST_Request $request ) {
+		$id       = (int) $request['id'];
+		$property = Limpeed_Properties::get( $id );
+		if ( ! $property ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Bien introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$result = Limpeed_Properties::delete( $id );
+
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
+	}
+
+	/**
+	 * GET /properties/{id}/history : journal d'activité lié à ce bien.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_property_history( WP_REST_Request $request ) {
+		$id       = (int) $request['id'];
+		$property = Limpeed_Properties::get( $id );
+		if ( ! $property ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Bien introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$entries = Limpeed_Activity_Log::get_all(
+			array(
+				'object_type' => 'property',
+				'object_id'   => $id,
+				'per_page'    => 50,
+			)
+		);
+
+		$actions = Limpeed_Activity_Log::get_actions();
+
+		$items = array_map(
+			function ( $entry ) use ( $actions ) {
+				$user = $entry->user_id ? get_userdata( $entry->user_id ) : false;
+				return array(
+					'id'           => (int) $entry->id,
+					'action'       => $entry->action,
+					'action_label' => $actions[ $entry->action ] ?? $entry->action,
+					'description'  => $entry->description,
+					'agent_name'   => $user ? $user->display_name : __( 'Inconnu', 'limpeed-immobilier' ),
+					'created_at'   => $entry->created_at,
+				);
+			},
+			$entries
+		);
+
 		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * GET /properties/{id}/payments : historique des paiements de ce bien.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_property_payments( WP_REST_Request $request ) {
+		$id       = (int) $request['id'];
+		$property = Limpeed_Properties::get( $id );
+		if ( ! $property ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Bien introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$payments = Limpeed_Payments::get_all(
+			array(
+				'property_id' => $id,
+				'orderby'     => 'period',
+				'order'       => 'DESC',
+				'per_page'    => 100,
+			)
+		);
+
+		$statuses = Limpeed_Payments::get_statuses();
+
+		$items = array_map(
+			function ( $payment ) use ( $statuses ) {
+				return array(
+					'id'               => (int) $payment->id,
+					'period'           => $payment->period,
+					'amount_formatted' => Limpeed_Payments::format_amount( $payment->amount ),
+					'status'           => $payment->status,
+					'status_label'     => $statuses[ $payment->status ] ?? $payment->status,
+				);
+			},
+			$payments
+		);
+
+		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * Extrait et pré-nettoie les données bien d'une requête REST, mêmes champs
+	 * que Limpeed_Frontend_Properties::handle_request().
+	 *
+	 * @param WP_REST_Request $request
+	 * @return array
+	 */
+	private function extract_property_data( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_body_params();
+		}
+
+		return array(
+			'building_id'    => isset( $params['building_id'] ) ? (int) $params['building_id'] : 0,
+			'reference'      => isset( $params['reference'] ) ? wp_unslash( $params['reference'] ) : '',
+			'address'        => isset( $params['address'] ) ? wp_unslash( $params['address'] ) : '',
+			'type'           => isset( $params['type'] ) ? sanitize_text_field( $params['type'] ) : '',
+			'monthly_rent'   => isset( $params['monthly_rent'] ) ? wp_unslash( $params['monthly_rent'] ) : '',
+			'charges'        => isset( $params['charges'] ) ? wp_unslash( $params['charges'] ) : '',
+			'deposit_amount' => isset( $params['deposit_amount'] ) ? wp_unslash( $params['deposit_amount'] ) : '',
+			'status'         => isset( $params['status'] ) ? sanitize_text_field( $params['status'] ) : '',
+		);
+	}
+
+	/**
+	 * Règles de validation métier, identiques à Limpeed_Frontend_Properties::validate()
+	 * (types valides = types actuels + anciens types conservés pour compatibilité).
+	 *
+	 * @param array $data
+	 * @return array Liste de messages d'erreur (vide si valide).
+	 */
+	private function validate_property( $data ) {
+		$errors = array();
+
+		if ( empty( $data['building_id'] ) || ! Limpeed_Buildings::get( $data['building_id'] ) ) {
+			$errors[] = __( 'Veuillez sélectionner un édifice valide.', 'limpeed-immobilier' );
+		}
+
+		if ( '' === trim( (string) $data['reference'] ) && '' === trim( (string) $data['address'] ) ) {
+			$errors[] = __( 'Indiquez au moins un identifiant ou une adresse pour ce bien.', 'limpeed-immobilier' );
+		}
+
+		if ( ! array_key_exists( $data['type'], Limpeed_Properties::get_types() + Limpeed_Properties::get_legacy_types() ) ) {
+			$errors[] = __( 'Le type de bien sélectionné n\'est pas valide.', 'limpeed-immobilier' );
+		}
+
+		if ( ! array_key_exists( $data['status'], Limpeed_Properties::get_statuses() ) ) {
+			$errors[] = __( 'Le statut sélectionné n\'est pas valide.', 'limpeed-immobilier' );
+		}
+
+		foreach ( array( 'monthly_rent', 'charges', 'deposit_amount' ) as $field ) {
+			if ( '' !== $data[ $field ] && ! is_numeric( $data[ $field ] ) ) {
+				$errors[] = __( 'Les montants (loyer, charges, dépôt) doivent être des nombres.', 'limpeed-immobilier' );
+				break;
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Formate une ligne de la liste (colonnes affichées dans le tableau Biens),
+	 * et sert aussi de forme allégée pour la cascade de sélection de la section
+	 * Locataires (les champs id/label/building_id/monthly_rent/status/occupied
+	 * y suffisent, le reste est ignoré).
+	 *
+	 * @param object $property
+	 * @param int    $editing_tenant_id Id du locataire en cours de modification
+	 *                                  côté cascade Locataires (0 sinon) : son
+	 *                                  bien actuel reste sélectionnable même occupé.
+	 * @return array
+	 */
+	private function format_property_row( $property, $editing_tenant_id = 0 ) {
+		$building       = Limpeed_Buildings::get( $property->building_id );
+		$owner          = $building ? Limpeed_Owners::get( $building->owner_id ) : null;
+		$current_tenant = Limpeed_Properties::get_current_tenant( $property->id );
+		$statuses       = Limpeed_Properties::get_statuses();
+
+		return array(
+			'id'                => (int) $property->id,
+			'label'             => Limpeed_Properties::get_display_label( $property ),
+			'reference'         => $property->reference,
+			'address'           => $property->address,
+			'building_id'       => (int) $property->building_id,
+			'building_label'    => $building ? $building->name : '',
+			'owner_id'          => $building ? (int) $building->owner_id : 0,
+			'owner_label'       => $owner ? $owner->full_name : '',
+			'type'              => $property->type,
+			'type_label'        => Limpeed_Properties::get_type_label( $property->type ),
+			'monthly_rent'      => (float) $property->monthly_rent,
+			'rent_formatted'    => Limpeed_Payments::format_amount( $property->monthly_rent ),
+			'status'            => $property->status,
+			'status_label'      => $statuses[ $property->status ] ?? $property->status,
+			'tenant_id'         => $current_tenant ? (int) $current_tenant->id : 0,
+			'tenant_label'      => $current_tenant ? $current_tenant->full_name : '',
+			'occupied'          => $current_tenant && (int) $current_tenant->id !== $editing_tenant_id,
+		);
+	}
+
+	/**
+	 * Formate la fiche complète d'un bien (onglet Infos du panneau de détail).
+	 *
+	 * @param object $property
+	 * @return array
+	 */
+	private function format_property_detail( $property ) {
+		$building       = Limpeed_Buildings::get( $property->building_id );
+		$owner          = $building ? Limpeed_Owners::get( $building->owner_id ) : null;
+		$current_tenant = Limpeed_Properties::get_current_tenant( $property->id );
+		$statuses       = Limpeed_Properties::get_statuses();
+
+		return array(
+			'id'                 => (int) $property->id,
+			'building_id'        => (int) $property->building_id,
+			'building_label'     => $building ? $building->name : '',
+			'owner_id'           => $building ? (int) $building->owner_id : 0,
+			'owner_label'        => $owner ? $owner->full_name : '',
+			'reference'          => $property->reference,
+			'address'            => $property->address,
+			'type'               => $property->type,
+			'type_label'         => Limpeed_Properties::get_type_label( $property->type ),
+			'monthly_rent'       => (float) $property->monthly_rent,
+			'rent_formatted'     => Limpeed_Payments::format_amount( $property->monthly_rent ),
+			'charges'            => (float) $property->charges,
+			'charges_formatted'  => Limpeed_Payments::format_amount( $property->charges ),
+			'deposit_amount'     => (float) $property->deposit_amount,
+			'deposit_formatted'  => Limpeed_Payments::format_amount( $property->deposit_amount ),
+			'status'             => $property->status,
+			'status_label'       => $statuses[ $property->status ] ?? $property->status,
+			'tenant_id'          => $current_tenant ? (int) $current_tenant->id : 0,
+			'tenant_label'       => $current_tenant ? $current_tenant->full_name : '',
+		);
 	}
 
 	/**

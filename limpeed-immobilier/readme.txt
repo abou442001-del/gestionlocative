@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.18.0
+Stable tag: 1.19.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,11 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.19.0 =
+* Section Biens / sous-édifices (application frontend) rendue dynamique : recherche et filtres (propriétaire, édifice, statut) en direct, modale d'ajout/modification avec cascade Propriétaire → Édifice peuplée en Ajax, suppression Ajax avec confirmation (bloquée avec message clair si un locataire est encore rattaché), panneau de détail à onglets (Infos, Paiements, Historique). L'aide contextuelle sur le loyer moyen par type de bien reste disponible directement dans la modale.
+* L'API REST `limpeed/v1` gère désormais aussi les biens (liste paginée/recherche, création, modification, suppression, historique, paiements).
+* Correction : les formulaires de modification d'un bien (admin et frontend) rejetaient à tort les biens ayant conservé un ancien type (Appartement, Maison, Local commercial) lors de leur enregistrement sans changement de type.
 
 = 1.18.0 =
 * Section Édifices (application frontend) rendue dynamique sur le même modèle que les Locataires : recherche et filtre par propriétaire en direct, modale d'ajout/modification, suppression Ajax avec confirmation (bloquée avec message clair si des sous-édifices y sont encore rattachés), panneau de détail à onglets (Infos, Biens, Historique).

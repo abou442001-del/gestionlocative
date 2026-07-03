@@ -104,7 +104,7 @@ class Limpeed_Frontend_Properties {
 			$errors[] = __( 'Indiquez au moins un identifiant ou une adresse pour ce bien.', 'limpeed-immobilier' );
 		}
 
-		if ( ! array_key_exists( $data['type'], Limpeed_Properties::get_types() ) ) {
+		if ( ! array_key_exists( $data['type'], Limpeed_Properties::get_types() + Limpeed_Properties::get_legacy_types() ) ) {
 			$errors[] = __( 'Le type de bien sélectionné n\'est pas valide.', 'limpeed-immobilier' );
 		}
 
