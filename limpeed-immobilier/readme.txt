@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.32.0
+Stable tag: 1.33.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,13 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.33.0 =
+* Bordereau ("Décompte propriétaire") aligné plus fidèlement sur le modèle fourni par le client :
+  * Nouvelles colonnes dans le détail bien par bien : "Libellé facture" (ex. "Facture du loyer de juillet 2026"), "Caution" (dépôt de garantie configuré sur le bien) et "Total arriérés" (créance cumulée du locataire depuis le début du bail, distincte du "Restant" propre à la période du bordereau).
+  * Formule d'acquit ajoutée avant la signature : "Le client reconnaît avoir reçu un versement des loyers indiqués ci-dessus la somme de [montant en toutes lettres] francs CFA et donne ainsi décharge."
+  * Mise en page basculée en format paysage pour accueillir les colonnes supplémentaires sans les compresser.
+  * Nouvelle méthode utilitaire `Limpeed_Statements::amount_to_french_words()` (conversion d'un montant en toutes lettres françaises).
 
 = 1.32.0 =
 * Onglet Bilan de la section Comptabilité : bouton "Télécharger le PDF « Résultats financiers du mois »" reproduisant le rapport imprimé de l'ancien logiciel de l'agence.

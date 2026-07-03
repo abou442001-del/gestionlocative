@@ -153,6 +153,146 @@ class Limpeed_Statements {
 	}
 
 	/**
+	 * Convertit un montant entier en toutes lettres françaises (ex. 48000 →
+	 * "quarante-huit mille"), pour la formule d'acquit du bordereau ("le
+	 * client reconnaît avoir reçu... la somme de [en lettres]"), comme sur
+	 * les décomptes de l'ancien logiciel de l'agence.
+	 *
+	 * @param float $amount
+	 * @return string
+	 */
+	private static function amount_to_french_words( $amount ) {
+		$number = (int) round( $amount );
+		if ( 0 === $number ) {
+			return 'zéro';
+		}
+		if ( $number < 0 ) {
+			return 'moins ' . self::amount_to_french_words( -$number );
+		}
+
+		$units = array( '', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf' );
+		$tens  = array( '', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix' );
+
+		$under_100 = function ( $n ) use ( $units, $tens ) {
+			if ( $n < 20 ) {
+				return $units[ $n ];
+			}
+			$ten  = intdiv( $n, 10 );
+			$unit = $n % 10;
+			if ( 7 === $ten || 9 === $ten ) {
+				return $tens[ $ten - 1 ] . '-' . $units[ 10 + $unit ];
+			}
+			if ( 0 === $unit ) {
+				return ( 8 === $ten ) ? $tens[ $ten ] . 's' : $tens[ $ten ];
+			}
+			if ( 1 === $unit && 8 !== $ten ) {
+				return $tens[ $ten ] . ' et un';
+			}
+			return $tens[ $ten ] . '-' . $units[ $unit ];
+		};
+
+		$under_1000 = function ( $n ) use ( $under_100 ) {
+			$hundreds = intdiv( $n, 100 );
+			$rest     = $n % 100;
+			$result   = '';
+			if ( $hundreds > 0 ) {
+				$result .= ( $hundreds > 1 ) ? $under_100( $hundreds ) . ' cent' : 'cent';
+				if ( $hundreds > 1 && 0 === $rest ) {
+					$result .= 's';
+				}
+			}
+			if ( $rest > 0 ) {
+				$result .= ( '' !== $result ? ' ' : '' ) . $under_100( $rest );
+			}
+			return $result;
+		};
+
+		$scales = array(
+			array( 1000000000, 'milliard', 'milliards' ),
+			array( 1000000, 'million', 'millions' ),
+			array( 1000, 'mille', 'mille' ),
+		);
+
+		$parts = array();
+		$n     = $number;
+		foreach ( $scales as $scale ) {
+			list( $value, $singular, $plural ) = $scale;
+			if ( $n >= $value ) {
+				$count = intdiv( $n, $value );
+				$n     = $n % $value;
+				if ( 1000 === $value ) {
+					$parts[] = ( 1 === $count ) ? 'mille' : $under_1000( $count ) . ' mille';
+				} else {
+					$parts[] = $under_1000( $count ) . ' ' . ( $count > 1 ? $plural : $singular );
+				}
+			}
+		}
+		if ( $n > 0 || empty( $parts ) ) {
+			$parts[] = $under_1000( $n );
+		}
+
+		return trim( implode( ' ', $parts ) );
+	}
+
+	/**
+	 * Libellé de facture pour une ligne du détail, dans le même esprit que
+	 * "Facture du loyer avril 2026" de l'ancien logiciel.
+	 *
+	 * @param string $period_start
+	 * @param string $period_end
+	 * @return string
+	 */
+	private static function invoice_label( $period_start, $period_end ) {
+		if ( $period_start === $period_end ) {
+			return sprintf( __( 'Facture du loyer de %s', 'limpeed-immobilier' ), date_i18n( 'F Y', strtotime( $period_start . '-01' ) ) );
+		}
+		return sprintf(
+			__( 'Factures des loyers de %1$s à %2$s', 'limpeed-immobilier' ),
+			date_i18n( 'F Y', strtotime( $period_start . '-01' ) ),
+			date_i18n( 'F Y', strtotime( $period_end . '-01' ) )
+		);
+	}
+
+	/**
+	 * Arriérés cumulés d'un locataire sur un bien depuis le début du bail
+	 * jusqu'à la fin de la période du bordereau (loyer attendu depuis le
+	 * début du bail moins tout ce qui a été payé depuis lors) : une créance
+	 * qui remonte à avant la période du bordereau, contrairement à "Restant"
+	 * qui ne porte que sur la période couverte par ce document.
+	 *
+	 * @param object $tenant
+	 * @param string $period_end
+	 * @return float
+	 */
+	private static function calculate_lifetime_arrears( $tenant, $period_end ) {
+		global $wpdb;
+
+		if ( empty( $tenant->lease_start ) ) {
+			return 0.0;
+		}
+
+		$lease_start_period = substr( $tenant->lease_start, 0, 7 );
+		if ( $lease_start_period > $period_end ) {
+			return 0.0;
+		}
+
+		$months_since_start = self::count_months( $lease_start_period, $period_end );
+		$expected_lifetime  = (float) $tenant->rent_amount * $months_since_start;
+
+		$payments_table = Limpeed_Payments::table();
+		$collected_lifetime = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT SUM(amount) FROM {$payments_table} WHERE tenant_id = %d AND status IN ('paye','partiel') AND period <= %s",
+				$tenant->id,
+				$period_end
+			)
+		);
+		$collected_lifetime = $collected_lifetime ? (float) $collected_lifetime : 0.0;
+
+		return max( 0.0, $expected_lifetime - $collected_lifetime );
+	}
+
+	/**
 	 * Calcule le détail bien par bien (loyer attendu / charges / payé / restant
 	 * / commission) pour un propriétaire sur une période donnée, dans le même
 	 * esprit que le "décompte propriétaire" bien par bien de l'ancien logiciel.
@@ -168,12 +308,14 @@ class Limpeed_Statements {
 		$properties     = Limpeed_Properties::get_all( array( 'owner_id' => $owner_id, 'per_page' => 9999 ) );
 		$payments_table = Limpeed_Payments::table();
 		$months         = self::count_months( $period_start, $period_end );
+		$invoice_label  = self::invoice_label( $period_start, $period_end );
 
 		$breakdown        = array();
 		$total_collected  = 0.0;
 		$total_commission = 0.0;
 		$total_expected   = 0.0;
 		$total_restant    = 0.0;
+		$total_arrears    = 0.0;
 
 		foreach ( $properties as $property ) {
 			$row = $wpdb->get_row(
@@ -203,22 +345,27 @@ class Limpeed_Statements {
 			}
 
 			$restant = max( 0.0, $expected - $collected );
+			$arrears = $tenant ? self::calculate_lifetime_arrears( $tenant, $period_end ) : $restant;
 
 			$breakdown[] = array(
-				'property'   => $property,
-				'tenant'     => $tenant,
-				'expected'   => $expected,
-				'charges'    => (float) $property->charges,
-				'collected'  => $collected,
-				'commission' => $commission,
-				'restant'    => $restant,
-				'net'        => $collected - $commission,
+				'property'      => $property,
+				'tenant'        => $tenant,
+				'invoice_label' => $invoice_label,
+				'expected'      => $expected,
+				'caution'       => (float) $property->deposit_amount,
+				'charges'       => (float) $property->charges,
+				'collected'     => $collected,
+				'commission'    => $commission,
+				'restant'       => $restant,
+				'arrears'       => $arrears,
+				'net'           => $collected - $commission,
 			);
 
 			$total_collected  += $collected;
 			$total_commission += $commission;
 			$total_expected   += $expected;
 			$total_restant    += $restant;
+			$total_arrears    += $arrears;
 		}
 
 		return array(
@@ -230,6 +377,7 @@ class Limpeed_Statements {
 			// global : un trop-perçu sur un bien ne doit jamais masquer un
 			// impayé sur un autre bien du même propriétaire.
 			'total_restant'    => $total_restant,
+			'total_arrears'    => $total_arrears,
 			'net_amount'       => $total_collected - $total_commission,
 		);
 	}
@@ -278,7 +426,7 @@ class Limpeed_Statements {
 		$html     = self::render_html( $owner, $period_start, $period_end, $data, $other_deduction_label, $other_deduction_amount );
 		$dompdf   = new \Dompdf\Dompdf( array( 'isRemoteEnabled' => false ) );
 		$dompdf->loadHtml( $html );
-		$dompdf->setPaper( 'A4', 'portrait' );
+		$dompdf->setPaper( 'A4', 'landscape' );
 		$dompdf->render();
 
 		$filename = sprintf(
@@ -380,7 +528,7 @@ class Limpeed_Statements {
 				table.detail th { background: #f0f0f1; }
 				.text-right { text-align: right; }
 				.totals td { font-weight: bold; background: #f7f7f7; }
-				.deduct-box { width: 60%; margin-left: auto; margin-top: 18px; border-collapse: collapse; }
+				.deduct-box { width: 40%; margin-left: auto; margin-top: 18px; border-collapse: collapse; }
 				.deduct-box td { padding: 4px 8px; }
 				.deduct-box .deduct-title { font-weight: bold; text-transform: uppercase; padding-bottom: 6px; }
 				.deduct-box .net-row td { font-weight: bold; font-size: 13px; border-top: 2px solid #1d2327; padding-top: 8px; }
@@ -402,7 +550,7 @@ class Limpeed_Statements {
 				</tr>
 			</table>
 
-			<h1>Décompte propriétaire</h1>
+			<h1>Décompte propriétaire N° —</h1>
 			<p class="subtitle">Période du <?php echo esc_html( $period_label ); ?></p>
 
 			<table class="identity">
@@ -435,33 +583,42 @@ class Limpeed_Statements {
 					<tr>
 						<th>Bien</th>
 						<th>Locataire</th>
+						<th>Libellé facture</th>
 						<th class="text-right">Loyer</th>
+						<th class="text-right">Caution</th>
 						<th class="text-right">Charges</th>
 						<th class="text-right">Payé</th>
 						<th class="text-right">Restant</th>
+						<th class="text-right">Total arriérés</th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php if ( empty( $data['properties'] ) ) : ?>
-						<tr><td colspan="6">Aucune activité sur cette période.</td></tr>
+						<tr><td colspan="9">Aucune activité sur cette période.</td></tr>
 					<?php endif; ?>
 					<?php foreach ( $data['properties'] as $row ) : ?>
 						<tr>
 							<td><?php echo esc_html( Limpeed_Properties::get_display_label( $row['property'] ) ); ?></td>
 							<td><?php echo esc_html( $row['tenant'] ? $row['tenant']->full_name : '—' ); ?></td>
+							<td><?php echo esc_html( $row['invoice_label'] ); ?></td>
 							<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $row['expected'] ) ); ?></td>
+							<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $row['caution'] ) ); ?></td>
 							<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $row['charges'] ) ); ?></td>
 							<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $row['collected'] ) ); ?></td>
 							<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $row['restant'] ) ); ?></td>
+							<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $row['arrears'] ) ); ?></td>
 						</tr>
 					<?php endforeach; ?>
 					<tr class="totals">
 						<td>Total</td>
 						<td></td>
+						<td></td>
 						<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_expected'] ) ); ?></td>
+						<td></td>
 						<td></td>
 						<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_collected'] ) ); ?></td>
 						<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_restant'] ) ); ?></td>
+						<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_arrears'] ) ); ?></td>
 					</tr>
 				</tbody>
 			</table>
@@ -483,6 +640,12 @@ class Limpeed_Statements {
 					<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['net_amount'] ) ); ?></td>
 				</tr>
 			</table>
+
+			<p style="margin-top: 24px;">
+				Le client reconnaît avoir reçu un versement des loyers indiqués ci-dessus la somme de
+				<strong><?php echo esc_html( self::amount_to_french_words( $data['net_amount'] ) ); ?> francs CFA</strong>
+				et donne ainsi décharge.
+			</p>
 
 			<div class="signature">
 				<p class="date">Fait le <?php echo esc_html( date_i18n( 'd F Y' ) ); ?></p>
