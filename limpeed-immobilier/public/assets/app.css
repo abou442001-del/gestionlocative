@@ -1,4 +1,12 @@
 :root {
+	/* Couleur de marque : dérivée du vert déjà présent dans le logo Limpeed
+	   (le bleu, historiquement utilisé comme couleur d'action principale,
+	   n'apparaît dans aucun élément de la charte réelle — il devient une
+	   teinte secondaire/informative ci-dessous, --limpeed-blue). */
+	--limpeed-primary: #0e7c55;
+	--limpeed-primary-dark: #0b5f41;
+	--limpeed-primary-light: #e3f5ec;
+	--limpeed-primary-rgb: 14, 124, 85;
 	--limpeed-blue: #1d4e89;
 	--limpeed-blue-dark: #143a68;
 	--limpeed-blue-light: #e8eef7;
@@ -21,11 +29,28 @@
 	--limpeed-radius-sm: 7px;
 	--limpeed-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 2px 8px rgba(16, 24, 40, .05);
 	--limpeed-header-height: 64px;
-	--limpeed-header-bg: #24406f;
+	--limpeed-header-bg: #24272b;
+	/* Typographie : Manrope pour les titres/chiffres (plus distinctif),
+	   Inter pour le texte courant et les tableaux (très lisible en petit). */
+	--font-heading: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+	--font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+	/* Grille d'espacement 4px/8px. */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-7: 32px;
+	--space-8: 40px;
 	color-scheme: light;
 }
 
 [data-theme="dark"] {
+	--limpeed-primary: #34c795;
+	--limpeed-primary-dark: #21a374;
+	--limpeed-primary-light: #123326;
+	--limpeed-primary-rgb: 52, 199, 149;
 	--limpeed-blue: #5b9bd8;
 	--limpeed-blue-dark: #3f7ab8;
 	--limpeed-blue-light: #1c2b3f;
@@ -45,8 +70,28 @@
 	--limpeed-warning: #e0b23d;
 	--limpeed-warning-light: #3a331a;
 	--limpeed-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 2px 8px rgba(0, 0, 0, .35);
-	--limpeed-header-bg: #16202f;
+	--limpeed-header-bg: #12151a;
 	color-scheme: dark;
+}
+
+/* Polices auto-hébergées (sous-ensemble latin, couvre les caractères
+   accentués français) — pas d'appel externe à Google Fonts. */
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 400 700;
+	font-display: swap;
+	src: url('vendor/fonts/inter-latin-var.woff2') format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+	font-family: 'Manrope';
+	font-style: normal;
+	font-weight: 700 800;
+	font-display: swap;
+	src: url('vendor/fonts/manrope-latin-var.woff2') format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 * {
@@ -64,7 +109,7 @@ html {
 body.limpeed-app {
 	margin: 0;
 	overflow-x: hidden;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+	font-family: var(--font-body);
 	background: var(--limpeed-bg);
 	color: var(--limpeed-text);
 	-webkit-font-smoothing: antialiased;
@@ -102,9 +147,10 @@ body.limpeed-app {
 }
 
 .limpeed-brand-name {
+	font-family: var(--font-heading);
 	font-size: 17px;
 	font-weight: 800;
-	color: var(--limpeed-blue);
+	color: var(--limpeed-primary);
 	letter-spacing: .01em;
 }
 
@@ -134,7 +180,7 @@ body.limpeed-app {
 .limpeed-app-nav {
 	display: flex;
 	flex-direction: column;
-	padding: 12px;
+	padding: var(--space-3);
 	gap: 2px;
 	flex: 1;
 	overflow-x: hidden;
@@ -155,8 +201,8 @@ body.limpeed-app {
 .limpeed-app-nav-item {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 10px 14px;
+	gap: var(--space-3);
+	padding: var(--space-2) var(--space-4);
 	color: var(--limpeed-text-muted);
 	text-decoration: none;
 	font-size: 14px;
@@ -180,9 +226,9 @@ body.limpeed-app {
 }
 
 .limpeed-app-nav-item.is-active {
-	background: var(--limpeed-green-light);
-	color: var(--limpeed-green-dark);
-	border-left-color: var(--limpeed-green);
+	background: var(--limpeed-primary-light);
+	color: var(--limpeed-primary-dark);
+	border-left-color: var(--limpeed-primary);
 	font-weight: 600;
 }
 
@@ -260,10 +306,12 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 }
 
 .limpeed-app-page-title {
-	font-size: 20px;
-	font-weight: 700;
-	margin: 0 0 20px;
+	font-family: var(--font-heading);
+	font-size: 22px;
+	font-weight: 800;
+	margin: 0 0 var(--space-5);
 	color: var(--limpeed-text);
+	letter-spacing: -.01em;
 }
 
 .limpeed-app-theme-toggle {
@@ -377,15 +425,15 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 }
 
 .limpeed-app-content {
-	padding: 28px;
+	padding: var(--space-7);
 }
 
 /* KPI cards */
 .limpeed-cards-row {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: 18px;
-	margin-bottom: 28px;
+	gap: var(--space-5);
+	margin-bottom: var(--space-7);
 }
 
 .limpeed-app-card {
@@ -405,14 +453,15 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
-	padding: 18px 18px 6px;
-	gap: 10px;
+	padding: var(--space-4) var(--space-4) var(--space-2);
+	gap: var(--space-3);
 }
 
 .limpeed-app-card-number {
-	font-size: 28px;
-	font-weight: 700;
-	letter-spacing: -.01em;
+	font-family: var(--font-heading);
+	font-size: 30px;
+	font-weight: 800;
+	letter-spacing: -.02em;
 }
 
 .limpeed-app-card-label {
@@ -485,23 +534,25 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	background: var(--limpeed-surface);
 	border-radius: var(--limpeed-radius);
 	box-shadow: var(--limpeed-shadow);
-	padding: 24px;
-	margin-bottom: 24px;
+	padding: var(--space-6);
+	margin-bottom: var(--space-6);
 }
 
 .limpeed-app-panel h2 {
-	font-size: 16px;
-	margin: 0 0 18px;
+	font-family: var(--font-heading);
+	font-size: 17px;
+	margin: 0 0 var(--space-4);
 	color: var(--limpeed-text);
-	font-weight: 700;
+	font-weight: 800;
 }
 
 .limpeed-app-panel h3 {
-	font-size: 14px;
-	margin: 28px 0 14px;
+	font-family: var(--font-heading);
+	font-size: 15px;
+	margin: var(--space-7) 0 var(--space-3);
 	color: var(--limpeed-text);
 	font-weight: 700;
-	padding-top: 20px;
+	padding-top: var(--space-5);
 	border-top: 1px solid var(--limpeed-border);
 }
 
@@ -682,28 +733,42 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 }
 
 .limpeed-app-btn {
-	display: inline-block;
-	background: var(--limpeed-blue);
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-2);
+	background: var(--limpeed-primary);
 	color: #fff;
-	padding: 9px 18px;
+	padding: 10px var(--space-5);
 	border-radius: var(--limpeed-radius-sm);
 	text-decoration: none;
-	border: none;
+	border: 1px solid transparent;
 	cursor: pointer;
 	font-size: 14px;
 	font-weight: 600;
 	box-shadow: 0 1px 2px rgba(16, 24, 40, .06);
-	transition: background .12s ease, transform .12s ease, box-shadow .12s ease;
+	transition: background .12s ease, transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
 
 .limpeed-app-btn:hover {
-	background: var(--limpeed-blue-dark);
+	background: var(--limpeed-primary-dark);
 	color: #fff;
 	transform: translateY(-1px);
 	box-shadow: 0 3px 8px rgba(16, 24, 40, .12);
 }
-.limpeed-app-btn-secondary { background: var(--limpeed-bg); color: var(--limpeed-text); }
-.limpeed-app-btn-secondary:hover { background: var(--limpeed-border); color: var(--limpeed-text); }
+
+.limpeed-app-btn-secondary {
+	background: transparent;
+	color: var(--limpeed-text);
+	border-color: var(--limpeed-border);
+	box-shadow: none;
+}
+.limpeed-app-btn-secondary:hover {
+	background: var(--limpeed-bg);
+	color: var(--limpeed-text);
+	border-color: var(--limpeed-text-muted);
+	transform: none;
+	box-shadow: none;
+}
 .limpeed-app-btn-danger { background: var(--limpeed-danger); color: #fff; }
 .limpeed-app-btn-danger:hover { background: #b83c39; color: #fff; }
 
@@ -727,8 +792,8 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 .limpeed-app-search input[type="text"]:focus,
 .limpeed-app-search select:focus {
 	outline: none;
-	border-color: var(--limpeed-blue);
-	box-shadow: 0 0 0 3px rgba(29, 78, 137, .12);
+	border-color: var(--limpeed-primary);
+	box-shadow: 0 0 0 3px rgba(var(--limpeed-primary-rgb), .15);
 }
 
 /* Selects personnalisés (masque le rendu natif du navigateur, très daté). */
@@ -754,7 +819,7 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 .limpeed-app-table .limpeed-app-actions a {
 	margin-right: 12px;
 	font-size: 12px;
-	color: var(--limpeed-blue);
+	color: var(--limpeed-primary);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -778,9 +843,9 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 }
 
 .limpeed-app-pagination a.is-active {
-	background: var(--limpeed-blue);
+	background: var(--limpeed-primary);
 	color: #fff;
-	border-color: var(--limpeed-blue);
+	border-color: var(--limpeed-primary);
 }
 
 /* Forms */
@@ -827,8 +892,8 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 .limpeed-app-form select:focus,
 .limpeed-app-form textarea:focus {
 	outline: none;
-	border-color: var(--limpeed-blue);
-	box-shadow: 0 0 0 3px rgba(29, 78, 137, .12);
+	border-color: var(--limpeed-primary);
+	box-shadow: 0 0 0 3px rgba(var(--limpeed-primary-rgb), .15);
 }
 
 .limpeed-app-required { color: var(--limpeed-danger); }
@@ -841,7 +906,7 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 
 .limpeed-app-cross-nav {
 	background: var(--limpeed-bg);
-	border-left: 3px solid var(--limpeed-blue);
+	border-left: 3px solid var(--limpeed-primary);
 	border-radius: 0 var(--limpeed-radius-sm) var(--limpeed-radius-sm) 0;
 	padding: 12px 16px;
 	margin-bottom: 20px;
@@ -849,7 +914,7 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	color: var(--limpeed-text-muted);
 }
 
-.limpeed-app-cross-nav a { color: var(--limpeed-blue); font-weight: 600; text-decoration: none; }
+.limpeed-app-cross-nav a { color: var(--limpeed-primary); font-weight: 600; text-decoration: none; }
 .limpeed-app-cross-nav a:hover { text-decoration: underline; }
 
 /* Suivi des paiements (fiche locataire) */
@@ -918,7 +983,7 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 .limpeed-app-dossier-progress-bar span {
 	display: block;
 	height: 100%;
-	background: var(--limpeed-blue);
+	background: var(--limpeed-primary);
 	border-radius: 999px;
 }
 
@@ -989,7 +1054,7 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 
 a.limpeed-app-calendar-month-a_venir:hover,
 a.limpeed-app-calendar-month-retard:hover {
-	border-color: var(--limpeed-blue);
+	border-color: var(--limpeed-primary);
 }
 
 @media (max-width: 900px) {
@@ -1030,7 +1095,7 @@ a.limpeed-app-calendar-month-retard:hover {
 	padding: 0;
 	margin: 0;
 	font: inherit;
-	color: var(--limpeed-blue);
+	color: var(--limpeed-primary);
 	font-weight: 600;
 	cursor: pointer;
 	text-decoration: none;
@@ -1114,13 +1179,15 @@ a.limpeed-app-calendar-month-retard:hover {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 18px 22px;
+	padding: var(--space-4) var(--space-6);
 	border-bottom: 1px solid var(--limpeed-border);
 }
 
 .limpeed-app-modal-header h2 {
+	font-family: var(--font-heading);
 	margin: 0;
-	font-size: 17px;
+	font-size: 18px;
+	font-weight: 800;
 }
 
 .limpeed-app-modal-close {
@@ -1138,7 +1205,7 @@ a.limpeed-app-calendar-month-retard:hover {
 }
 
 .limpeed-app-modal-body {
-	padding: 22px;
+	padding: var(--space-6);
 	overflow-y: auto;
 	flex: 1 1 auto;
 	min-height: 0;
@@ -1147,8 +1214,8 @@ a.limpeed-app-calendar-month-retard:hover {
 .limpeed-app-modal-footer {
 	display: flex;
 	justify-content: flex-end;
-	gap: 10px;
-	padding: 16px 22px;
+	gap: var(--space-2);
+	padding: var(--space-4) var(--space-6);
 	border-top: 1px solid var(--limpeed-border);
 	flex: 0 0 auto;
 }
@@ -1211,8 +1278,10 @@ a.limpeed-app-calendar-month-retard:hover {
 }
 
 .limpeed-app-drawer-header h2 {
+	font-family: var(--font-heading);
 	margin: 0 0 4px;
-	font-size: 17px;
+	font-size: 18px;
+	font-weight: 800;
 }
 
 .limpeed-app-drawer-subtitle {
@@ -1238,8 +1307,8 @@ a.limpeed-app-calendar-month-retard:hover {
 }
 
 .limpeed-app-drawer-tab.is-active {
-	color: var(--limpeed-blue);
-	border-bottom-color: var(--limpeed-blue);
+	color: var(--limpeed-primary);
+	border-bottom-color: var(--limpeed-primary);
 }
 
 .limpeed-app-drawer-body {
