@@ -155,13 +155,12 @@ class Limpeed_Properties_List_Table extends WP_List_Table {
 				return sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html( $owner->full_name ) );
 
 			case 'type':
-				$types = Limpeed_Properties::get_types();
-				return isset( $types[ $item->type ] ) ? esc_html( $types[ $item->type ] ) : esc_html( $item->type );
+				return esc_html( Limpeed_Properties::get_type_label( $item->type ) );
 
 			case 'monthly_rent':
 			case 'charges':
 			case 'deposit_amount':
-				return esc_html( number_format_i18n( (float) $item->$column_name, 2 ) );
+				return esc_html( Limpeed_Payments::format_amount( $item->$column_name ) );
 
 			case 'status':
 				$statuses = Limpeed_Properties::get_statuses();

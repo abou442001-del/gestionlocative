@@ -142,7 +142,7 @@ class Limpeed_Tenants_List_Table extends WP_List_Table {
 
 			case 'rent_amount':
 			case 'deposit_paid':
-				return esc_html( number_format_i18n( (float) $item->$column_name, 2 ) );
+				return esc_html( Limpeed_Payments::format_amount( $item->$column_name ) );
 
 			case 'status':
 				$statuses = Limpeed_Tenants::get_statuses();

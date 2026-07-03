@@ -211,6 +211,7 @@ class Limpeed_Activator {
 			name VARCHAR(191) NOT NULL,
 			address TEXT NULL,
 			description TEXT NULL,
+			commission_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
 			created_by BIGINT UNSIGNED NULL,
 			updated_by BIGINT UNSIGNED NULL,
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

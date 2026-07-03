@@ -37,10 +37,11 @@ class Limpeed_Buildings_List_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		return array(
-			'name'       => __( 'Édifice', 'limpeed-immobilier' ),
-			'owner'      => __( 'Propriétaire', 'limpeed-immobilier' ),
-			'address'    => __( 'Adresse', 'limpeed-immobilier' ),
-			'properties' => __( 'Sous-édifices', 'limpeed-immobilier' ),
+			'name'            => __( 'Édifice', 'limpeed-immobilier' ),
+			'owner'           => __( 'Propriétaire', 'limpeed-immobilier' ),
+			'address'         => __( 'Adresse', 'limpeed-immobilier' ),
+			'commission_rate' => __( 'Commission', 'limpeed-immobilier' ),
+			'properties'      => __( 'Sous-édifices', 'limpeed-immobilier' ),
 		);
 	}
 
@@ -126,6 +127,9 @@ class Limpeed_Buildings_List_Table extends WP_List_Table {
 
 			case 'address':
 				return $item->address ? esc_html( $item->address ) : '&mdash;';
+
+			case 'commission_rate':
+				return esc_html( number_format_i18n( (float) $item->commission_rate, 2 ) ) . '%';
 
 			case 'properties':
 				$count = Limpeed_Properties::count( array( 'building_id' => $item->id ) );

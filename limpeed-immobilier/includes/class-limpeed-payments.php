@@ -10,6 +10,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Limpeed_Payments {
 
 	/**
+	 * Formate un montant en devise FCFA pour l'affichage.
+	 *
+	 * @param float $amount
+	 * @param int   $decimals
+	 * @return string
+	 */
+	public static function format_amount( $amount, $decimals = 0 ) {
+		/* translators: %s: montant formaté */
+		return sprintf( __( '%s FCFA', 'limpeed-immobilier' ), number_format_i18n( (float) $amount, $decimals ) );
+	}
+
+	/**
 	 * Statuts possibles d'un paiement.
 	 *
 	 * @return array
@@ -81,6 +93,7 @@ class Limpeed_Payments {
 		$table = self::table();
 
 		$defaults = array(
+			'search'      => '',
 			'tenant_id'   => 0,
 			'property_id' => 0,
 			'period'      => '',
@@ -98,6 +111,12 @@ class Limpeed_Payments {
 
 		$where  = 'WHERE 1=1';
 		$params = array();
+
+		if ( ! empty( $args['search'] ) ) {
+			$tenants_table = Limpeed_Tenants::table();
+			$where        .= " AND tenant_id IN ( SELECT id FROM {$tenants_table} WHERE full_name LIKE %s )";
+			$params[]      = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+		}
 
 		if ( ! empty( $args['tenant_id'] ) ) {
 			$where   .= ' AND tenant_id = %d';
@@ -142,6 +161,12 @@ class Limpeed_Payments {
 
 		$where  = 'WHERE 1=1';
 		$params = array();
+
+		if ( ! empty( $args['search'] ) ) {
+			$tenants_table = Limpeed_Tenants::table();
+			$where        .= " AND tenant_id IN ( SELECT id FROM {$tenants_table} WHERE full_name LIKE %s )";
+			$params[]      = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+		}
 
 		if ( ! empty( $args['tenant_id'] ) ) {
 			$where   .= ' AND tenant_id = %d';
@@ -256,6 +281,30 @@ class Limpeed_Payments {
 	}
 
 	/**
+	 * Calcule la commission agence pour un paiement : montant × taux de
+	 * commission de l'édifice auquel appartient le bien concerné. Chaque
+	 * édifice peut avoir un taux différent, défini par l'administrateur
+	 * sur sa fiche (voir Limpeed_Buildings).
+	 *
+	 * @param int   $property_id
+	 * @param float $amount
+	 * @return float
+	 */
+	private static function calculate_commission( $property_id, $amount ) {
+		$property = Limpeed_Properties::get( $property_id );
+		if ( ! $property ) {
+			return 0.0;
+		}
+
+		$building = Limpeed_Buildings::get( $property->building_id );
+		if ( ! $building ) {
+			return 0.0;
+		}
+
+		return round( $amount * ( (float) $building->commission_rate / 100 ), 2 );
+	}
+
+	/**
 	 * Insère un nouveau paiement.
 	 *
 	 * @param array $data
@@ -268,15 +317,17 @@ class Limpeed_Payments {
 		$statuses = array_keys( self::get_statuses() );
 		$methods  = array_keys( self::get_payment_methods() );
 
+		$amount = (float) ( $data['amount'] ?? 0 );
+
 		$record = array(
 			'tenant_id'          => (int) $data['tenant_id'],
 			'property_id'        => (int) $data['property_id'],
-			'amount'             => (float) ( $data['amount'] ?? 0 ),
+			'amount'             => $amount,
 			'payment_date'       => ! empty( $data['payment_date'] ) ? sanitize_text_field( $data['payment_date'] ) : null,
 			'period'             => sanitize_text_field( $data['period'] ),
 			'status'             => in_array( $data['status'] ?? '', $statuses, true ) ? $data['status'] : 'paye',
 			'payment_method'     => in_array( $data['payment_method'] ?? '', $methods, true ) ? $data['payment_method'] : 'especes',
-			'commission_amount'  => (float) ( $data['commission_amount'] ?? 0 ),
+			'commission_amount'  => self::calculate_commission( (int) $data['property_id'], $amount ),
 			'created_by'         => get_current_user_id(),
 			'created_at'         => current_time( 'mysql' ),
 		);
@@ -287,7 +338,7 @@ class Limpeed_Payments {
 
 		if ( $result ) {
 			$id = (int) $wpdb->insert_id;
-			Limpeed_Activity_Log::log( 'created', 'payment', $id, sprintf( 'Paiement enregistré : %s (%s)', number_format( $record['amount'], 2 ), $record['period'] ) );
+			Limpeed_Activity_Log::log( 'created', 'payment', $id, sprintf( 'Paiement enregistré : %s (%s)', self::format_amount( $record['amount'] ), $record['period'] ) );
 			return $id;
 		}
 
@@ -308,15 +359,17 @@ class Limpeed_Payments {
 		$statuses = array_keys( self::get_statuses() );
 		$methods  = array_keys( self::get_payment_methods() );
 
+		$amount = (float) ( $data['amount'] ?? 0 );
+
 		$record = array(
 			'tenant_id'         => (int) $data['tenant_id'],
 			'property_id'       => (int) $data['property_id'],
-			'amount'            => (float) ( $data['amount'] ?? 0 ),
+			'amount'            => $amount,
 			'payment_date'      => ! empty( $data['payment_date'] ) ? sanitize_text_field( $data['payment_date'] ) : null,
 			'period'            => sanitize_text_field( $data['period'] ),
 			'status'            => in_array( $data['status'] ?? '', $statuses, true ) ? $data['status'] : 'paye',
 			'payment_method'    => in_array( $data['payment_method'] ?? '', $methods, true ) ? $data['payment_method'] : 'especes',
-			'commission_amount' => (float) ( $data['commission_amount'] ?? 0 ),
+			'commission_amount' => self::calculate_commission( (int) $data['property_id'], $amount ),
 			'updated_by'        => get_current_user_id(),
 			'updated_at'        => current_time( 'mysql' ),
 		);
@@ -326,7 +379,7 @@ class Limpeed_Payments {
 		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
 
 		if ( $result ) {
-			Limpeed_Activity_Log::log( 'updated', 'payment', $id, sprintf( 'Paiement modifié : %s (%s)', number_format( $record['amount'], 2 ), $record['period'] ) );
+			Limpeed_Activity_Log::log( 'updated', 'payment', $id, sprintf( 'Paiement modifié : %s (%s)', self::format_amount( $record['amount'] ), $record['period'] ) );
 		}
 
 		return $result;

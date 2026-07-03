@@ -115,9 +115,9 @@ $properties_occupied_ratio = $properties_count > 0 ? round( ( $properties_occupi
 			?>
 			<div class="limpeed-chart-month">
 				<div class="limpeed-chart-bars">
-					<div class="limpeed-chart-bar limpeed-bar-blue" style="height: <?php echo esc_attr( $h_total ); ?>%" title="<?php echo esc_attr( number_format_i18n( $month['expected_total'], 0 ) ); ?>"></div>
-					<div class="limpeed-chart-bar limpeed-bar-green" style="height: <?php echo esc_attr( $h_paye ); ?>%" title="<?php echo esc_attr( number_format_i18n( $month['collected'], 0 ) ); ?>"></div>
-					<div class="limpeed-chart-bar limpeed-bar-red" style="height: <?php echo esc_attr( $h_impaye ); ?>%" title="<?php echo esc_attr( number_format_i18n( $impaye, 0 ) ); ?>"></div>
+					<div class="limpeed-chart-bar limpeed-bar-blue" style="height: <?php echo esc_attr( $h_total ); ?>%" title="<?php echo esc_attr( Limpeed_Payments::format_amount( $month['expected_total'] ) ); ?>"></div>
+					<div class="limpeed-chart-bar limpeed-bar-green" style="height: <?php echo esc_attr( $h_paye ); ?>%" title="<?php echo esc_attr( Limpeed_Payments::format_amount( $month['collected'] ) ); ?>"></div>
+					<div class="limpeed-chart-bar limpeed-bar-red" style="height: <?php echo esc_attr( $h_impaye ); ?>%" title="<?php echo esc_attr( Limpeed_Payments::format_amount( $impaye ) ); ?>"></div>
 				</div>
 				<div class="limpeed-chart-label"><?php echo esc_html( date_i18n( 'M-Y', strtotime( $month['period'] . '-01' ) ) ); ?></div>
 			</div>
@@ -153,7 +153,7 @@ $properties_occupied_ratio = $properties_count > 0 ? round( ( $properties_occupi
 							<small><?php echo esc_html( $recent_tenant->phone ); ?></small>
 						</td>
 						<td><span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $recent_tenant->status ); ?>"><?php echo esc_html( Limpeed_Tenants::get_statuses()[ $recent_tenant->status ] ?? $recent_tenant->status ); ?></span></td>
-						<td class="<?php echo $balance > 0 ? 'limpeed-text-danger' : ''; ?>"><?php echo esc_html( number_format_i18n( $balance, 0 ) ); ?></td>
+						<td class="<?php echo $balance > 0 ? 'limpeed-text-danger' : ''; ?>"><?php echo esc_html( Limpeed_Payments::format_amount( $balance ) ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>
@@ -204,7 +204,7 @@ $properties_occupied_ratio = $properties_count > 0 ? round( ( $properties_occupi
 					<tr>
 						<td><?php echo $payment_tenant ? esc_html( $payment_tenant->full_name ) : '&mdash;'; ?></td>
 						<td><?php echo esc_html( $payment->period ); ?></td>
-						<td><?php echo esc_html( number_format_i18n( (float) $payment->amount, 0 ) ); ?></td>
+						<td><?php echo esc_html( Limpeed_Payments::format_amount( $payment->amount ) ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>
@@ -229,7 +229,7 @@ $properties_occupied_ratio = $properties_count > 0 ? round( ( $properties_occupi
 					<tr>
 						<td><?php echo esc_html( $unpaid_tenant->full_name ); ?></td>
 						<td><?php echo esc_html( $current_period ); ?></td>
-						<td class="limpeed-text-danger"><?php echo esc_html( number_format_i18n( (float) $unpaid_tenant->rent_amount, 0 ) ); ?></td>
+						<td class="limpeed-text-danger"><?php echo esc_html( Limpeed_Payments::format_amount( $unpaid_tenant->rent_amount ) ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>

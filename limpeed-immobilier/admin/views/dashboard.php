@@ -52,12 +52,12 @@ $unpaid_count = count( $period_summary['unpaid_tenants'] );
 
 	<div class="limpeed-dashboard-cards">
 		<div class="limpeed-card">
-			<span class="limpeed-card-number"><?php echo esc_html( number_format_i18n( $period_summary['collected'], 2 ) ); ?></span>
+			<span class="limpeed-card-number"><?php echo esc_html( Limpeed_Payments::format_amount( $period_summary['collected'] ) ); ?></span>
 			<span class="limpeed-card-label"><?php esc_html_e( 'Loyers encaissés ce mois', 'limpeed-immobilier' ); ?></span>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-payments&period=' . $current_period ) ); ?>"><?php esc_html_e( 'Voir les paiements', 'limpeed-immobilier' ); ?></a>
 		</div>
 		<div class="limpeed-card">
-			<span class="limpeed-card-number"><?php echo esc_html( number_format_i18n( $period_summary['commission'], 2 ) ); ?></span>
+			<span class="limpeed-card-number"><?php echo esc_html( Limpeed_Payments::format_amount( $period_summary['commission'] ) ); ?></span>
 			<span class="limpeed-card-label"><?php esc_html_e( 'Commission agence ce mois', 'limpeed-immobilier' ); ?></span>
 		</div>
 		<div class="limpeed-card <?php echo $unpaid_count > 0 ? 'limpeed-card-alert' : ''; ?>">
@@ -84,7 +84,7 @@ $unpaid_count = count( $period_summary['unpaid_tenants'] );
 					<tr>
 						<td><?php echo esc_html( $tenant->full_name ); ?></td>
 						<td><?php echo $property ? esc_html( Limpeed_Properties::get_display_label( $property ) ) : '&mdash;'; ?></td>
-						<td><?php echo esc_html( number_format_i18n( (float) $tenant->rent_amount, 2 ) ); ?></td>
+						<td><?php echo esc_html( Limpeed_Payments::format_amount( $tenant->rent_amount ) ); ?></td>
 						<td>
 							<a href="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-payments&action=add&tenant_id=' . $tenant->id ) ); ?>">
 								<?php esc_html_e( 'Enregistrer le paiement', 'limpeed-immobilier' ); ?>

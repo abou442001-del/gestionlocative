@@ -104,6 +104,11 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<label for="description"><?php esc_html_e( 'Description', 'limpeed-immobilier' ); ?></label>
 				<textarea name="description" id="description" rows="3"><?php echo esc_textarea( $field( 'description' ) ); ?></textarea>
 			</div>
+			<div class="limpeed-form-row">
+				<label for="commission_rate"><?php esc_html_e( 'Taux de commission (%)', 'limpeed-immobilier' ); ?></label>
+				<input type="number" step="0.01" min="0" max="100" name="commission_rate" id="commission_rate" value="<?php echo esc_attr( $field( 'commission_rate', 0 ) ); ?>">
+				<p class="limpeed-app-description"><?php esc_html_e( 'Pourcentage prélevé par l\'agence sur les loyers encaissés pour cet édifice. Utilisé pour calculer automatiquement la commission de chaque paiement enregistré.', 'limpeed-immobilier' ); ?></p>
+			</div>
 
 			<h3><?php esc_html_e( 'Sous-édifices (biens)', 'limpeed-immobilier' ); ?></h3>
 			<p class="limpeed-app-description"><?php esc_html_e( 'Ajoutez ici directement les sous-édifices (biens) composant cet édifice. Vous pourrez toujours en ajouter ou en modifier plus tard depuis la section Biens.', 'limpeed-immobilier' ); ?></p>
@@ -129,7 +134,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 							<td>
 								<select name="sub_units[<?php echo esc_attr( $index ); ?>][type]">
 									<?php foreach ( $property_types as $key => $label ) : ?>
-										<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $sub_unit_field( $row, 'type', 'appartement' ), $key ); ?>><?php echo esc_html( $label ); ?></option>
+										<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $sub_unit_field( $row, 'type', 'studio' ), $key ); ?>><?php echo esc_html( $label ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</td>
@@ -162,7 +167,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<td>
 				<select name="sub_units[__INDEX__][type]">
 					<?php foreach ( $property_types as $key => $label ) : ?>
-						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( 'appartement', $key ); ?>><?php echo esc_html( $label ); ?></option>
+						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( 'studio', $key ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</td>
@@ -300,6 +305,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					<tr>
 						<th><?php esc_html_e( 'Édifice', 'limpeed-immobilier' ); ?></th>
 						<th><?php esc_html_e( 'Adresse', 'limpeed-immobilier' ); ?></th>
+						<th><?php esc_html_e( 'Commission', 'limpeed-immobilier' ); ?></th>
 						<th><?php esc_html_e( 'Sous-édifices', 'limpeed-immobilier' ); ?></th>
 						<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
 					</tr>
@@ -315,6 +321,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 						<tr>
 							<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( $building_row->name ); ?></a></td>
 							<td><?php echo $building_row->address ? esc_html( $building_row->address ) : '&mdash;'; ?></td>
+							<td><?php echo esc_html( number_format_i18n( (float) $building_row->commission_rate, 2 ) ); ?>%</td>
 							<td>
 								<?php if ( $properties_n > 0 ) : ?>
 									<a href="<?php echo esc_url( $properties_url ); ?>"><?php echo esc_html( $properties_n ); ?></a>

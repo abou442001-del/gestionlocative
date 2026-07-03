@@ -322,16 +322,16 @@ class Limpeed_Statements {
 					<?php foreach ( $data['properties'] as $row ) : ?>
 						<tr>
 							<td><?php echo esc_html( Limpeed_Properties::get_display_label( $row['property'] ) ); ?></td>
-							<td class="text-right"><?php echo esc_html( number_format( $row['collected'], 2 ) ); ?></td>
-							<td class="text-right"><?php echo esc_html( number_format( $row['commission'], 2 ) ); ?></td>
-							<td class="text-right"><?php echo esc_html( number_format( $row['net'], 2 ) ); ?></td>
+							<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $row['collected'] ) ); ?></td>
+							<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $row['commission'] ) ); ?></td>
+							<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $row['net'] ) ); ?></td>
 						</tr>
 					<?php endforeach; ?>
 					<tr class="totals">
 						<td>Total</td>
-						<td class="text-right"><?php echo esc_html( number_format( $data['total_collected'], 2 ) ); ?></td>
-						<td class="text-right"><?php echo esc_html( number_format( $data['total_commission'], 2 ) ); ?></td>
-						<td class="text-right"><?php echo esc_html( number_format( $data['net_amount'], 2 ) ); ?></td>
+						<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_collected'] ) ); ?></td>
+						<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['total_commission'] ) ); ?></td>
+						<td class="text-right"><?php echo esc_html( Limpeed_Payments::format_amount( $data['net_amount'] ) ); ?></td>
 					</tr>
 				</tbody>
 			</table>

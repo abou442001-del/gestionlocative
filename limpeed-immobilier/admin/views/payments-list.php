@@ -37,6 +37,7 @@ $message = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['m
 		<?php if ( isset( $_GET['tenant_id'] ) ) : ?>
 			<input type="hidden" name="tenant_id" value="<?php echo esc_attr( (int) $_GET['tenant_id'] ); ?>">
 		<?php endif; ?>
+		<?php $list_table->search_box( __( 'Rechercher un locataire', 'limpeed-immobilier' ), 'payment' ); ?>
 		<?php $list_table->display(); ?>
 	</form>
 </div>

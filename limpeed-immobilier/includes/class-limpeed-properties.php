@@ -35,11 +35,38 @@ class Limpeed_Properties {
 	 */
 	public static function get_types() {
 		return array(
+			'studio'          => __( 'Studio', 'limpeed-immobilier' ),
+			'2_pieces'        => __( '2 pièces', 'limpeed-immobilier' ),
+			'3_pieces'        => __( '3 pièces', 'limpeed-immobilier' ),
+			'4_pieces_et_plus' => __( '4 pièces et plus', 'limpeed-immobilier' ),
+		);
+	}
+
+	/**
+	 * Types de biens historiques, retirés du formulaire mais toujours reconnus
+	 * pour l'affichage des biens créés avant ce changement (non destructif :
+	 * aucune donnée existante n'est modifiée ni perdue).
+	 *
+	 * @return array
+	 */
+	public static function get_legacy_types() {
+		return array(
 			'appartement'      => __( 'Appartement', 'limpeed-immobilier' ),
 			'maison'           => __( 'Maison', 'limpeed-immobilier' ),
-			'studio'           => __( 'Studio', 'limpeed-immobilier' ),
 			'local_commercial' => __( 'Local commercial', 'limpeed-immobilier' ),
 		);
+	}
+
+	/**
+	 * Libellé d'un type de bien, qu'il s'agisse d'un type actuel ou d'un
+	 * ancien type historique encore présent en base sur des biens existants.
+	 *
+	 * @param string $type
+	 * @return string
+	 */
+	public static function get_type_label( $type ) {
+		$types = self::get_types() + self::get_legacy_types();
+		return isset( $types[ $type ] ) ? $types[ $type ] : $type;
 	}
 
 	/**
@@ -316,7 +343,7 @@ class Limpeed_Properties {
 			return false;
 		}
 
-		$types    = array_keys( self::get_types() );
+		$types    = array_keys( self::get_types() + self::get_legacy_types() );
 		$statuses = array_keys( self::get_statuses() );
 
 		$record = array(
@@ -324,7 +351,7 @@ class Limpeed_Properties {
 			'building_id'    => (int) $building->id,
 			'reference'      => sanitize_text_field( $data['reference'] ?? '' ),
 			'address'        => sanitize_textarea_field( $data['address'] ),
-			'type'           => in_array( $data['type'] ?? '', $types, true ) ? $data['type'] : 'appartement',
+			'type'           => in_array( $data['type'] ?? '', $types, true ) ? $data['type'] : 'studio',
 			'monthly_rent'   => (float) ( $data['monthly_rent'] ?? 0 ),
 			'charges'        => (float) ( $data['charges'] ?? 0 ),
 			'deposit_amount' => (float) ( $data['deposit_amount'] ?? 0 ),
@@ -362,7 +389,7 @@ class Limpeed_Properties {
 			return false;
 		}
 
-		$types    = array_keys( self::get_types() );
+		$types    = array_keys( self::get_types() + self::get_legacy_types() );
 		$statuses = array_keys( self::get_statuses() );
 
 		$record = array(
@@ -370,7 +397,7 @@ class Limpeed_Properties {
 			'building_id'    => (int) $building->id,
 			'reference'      => sanitize_text_field( $data['reference'] ?? '' ),
 			'address'        => sanitize_textarea_field( $data['address'] ),
-			'type'           => in_array( $data['type'] ?? '', $types, true ) ? $data['type'] : 'appartement',
+			'type'           => in_array( $data['type'] ?? '', $types, true ) ? $data['type'] : 'studio',
 			'monthly_rent'   => (float) ( $data['monthly_rent'] ?? 0 ),
 			'charges'        => (float) ( $data['charges'] ?? 0 ),
 			'deposit_amount' => (float) ( $data['deposit_amount'] ?? 0 ),

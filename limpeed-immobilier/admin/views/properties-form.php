@@ -180,9 +180,18 @@ $current_tenant = $is_edit ? Limpeed_Properties::get_current_tenant( $property->
 				<tr>
 					<th scope="row"><label for="type"><?php esc_html_e( 'Type de bien', 'limpeed-immobilier' ); ?></label></th>
 					<td>
+						<?php
+						$current_type  = $field( 'type', 'studio' );
+						$legacy_types  = Limpeed_Properties::get_legacy_types();
+						?>
 						<select name="type" id="type">
+							<?php if ( isset( $legacy_types[ $current_type ] ) ) : ?>
+								<option value="<?php echo esc_attr( $current_type ); ?>" selected='selected'>
+									<?php echo esc_html( $legacy_types[ $current_type ] ); ?> (<?php esc_html_e( 'ancien type', 'limpeed-immobilier' ); ?>)
+								</option>
+							<?php endif; ?>
 							<?php foreach ( Limpeed_Properties::get_types() as $key => $label ) : ?>
-								<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $field( 'type', 'appartement' ), $key ); ?>>
+								<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $current_type, $key ); ?>>
 									<?php echo esc_html( $label ); ?>
 								</option>
 							<?php endforeach; ?>

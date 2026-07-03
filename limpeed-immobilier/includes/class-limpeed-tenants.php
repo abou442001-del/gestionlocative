@@ -193,11 +193,61 @@ class Limpeed_Tenants {
 		if ( $result ) {
 			$id = (int) $wpdb->insert_id;
 			self::sync_property_status( $record['property_id'] );
+			self::generate_advance_payments( $id, $record );
 			Limpeed_Activity_Log::log( 'created', 'tenant', $id, sprintf( 'Locataire créé : %s', $record['full_name'] ) );
 			return $id;
 		}
 
 		return false;
+	}
+
+	/**
+	 * Crée automatiquement les paiements "payé" du mois d'avance à la création
+	 * d'un nouveau locataire : le nombre de mois d'avance réglé dans les
+	 * Réglages, à partir du mois de début de bail (ou du mois en cours si
+	 * aucune date de début n'est renseignée).
+	 *
+	 * @param int   $tenant_id
+	 * @param array $record Enregistrement locataire tel qu'inséré (property_id, lease_start, rent_amount).
+	 */
+	private static function generate_advance_payments( $tenant_id, $record ) {
+		if ( (float) $record['rent_amount'] <= 0 ) {
+			return;
+		}
+
+		$advance_months = max( 1, (int) get_option( 'limpeed_advance_months', 1 ) );
+		$start_period   = ! empty( $record['lease_start'] ) ? substr( $record['lease_start'], 0, 7 ) : Limpeed_Payments::get_current_period();
+
+		for ( $i = 0; $i < $advance_months; $i++ ) {
+			Limpeed_Payments::insert(
+				array(
+					'tenant_id'      => $tenant_id,
+					'property_id'    => $record['property_id'],
+					'amount'         => $record['rent_amount'],
+					'payment_date'   => current_time( 'mysql' ),
+					'period'         => self::add_months_to_period( $start_period, $i ),
+					'status'         => 'paye',
+					'payment_method' => 'especes',
+				)
+			);
+		}
+	}
+
+	/**
+	 * Ajoute un nombre de mois à une période YYYY-MM.
+	 *
+	 * @param string $period Format YYYY-MM.
+	 * @param int    $months_to_add
+	 * @return string
+	 */
+	private static function add_months_to_period( $period, $months_to_add ) {
+		list( $year, $month ) = array_map( 'intval', explode( '-', $period ) );
+
+		$month += $months_to_add;
+		$year  += intdiv( $month - 1, 12 );
+		$month  = ( ( $month - 1 ) % 12 ) + 1;
+
+		return sprintf( '%04d-%02d', $year, $month );
 	}
 
 	/**

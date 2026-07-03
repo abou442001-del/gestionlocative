@@ -154,7 +154,7 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 		<div class="limpeed-advance-panel">
 			<div class="limpeed-advance-stat">
 				<span class="limpeed-advance-stat-label"><?php esc_html_e( 'Avance requise', 'limpeed-immobilier' ); ?></span>
-				<span class="limpeed-advance-stat-value"><?php echo esc_html( number_format_i18n( $advance_status['advance_amount'], 2 ) ); ?> <small>(<?php echo esc_html( $advance_status['advance_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small></span>
+				<span class="limpeed-advance-stat-value"><?php echo esc_html( Limpeed_Payments::format_amount( $advance_status['advance_amount'] ) ); ?> <small>(<?php echo esc_html( $advance_status['advance_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small></span>
 			</div>
 			<div class="limpeed-advance-stat">
 				<span class="limpeed-advance-stat-label"><?php esc_html_e( 'Payé jusqu\'à', 'limpeed-immobilier' ); ?></span>
@@ -182,7 +182,7 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 			<div class="limpeed-advance-stat">
 				<span class="limpeed-advance-stat-label"><?php esc_html_e( 'Caution', 'limpeed-immobilier' ); ?></span>
 				<span class="limpeed-advance-stat-value">
-					<?php echo esc_html( number_format_i18n( $deposit_status['paid'], 2 ) ); ?> / <?php echo esc_html( number_format_i18n( $deposit_status['required'], 2 ) ); ?>
+					<?php echo esc_html( Limpeed_Payments::format_amount( $deposit_status['paid'] ) ); ?> / <?php echo esc_html( Limpeed_Payments::format_amount( $deposit_status['required'] ) ); ?>
 					<small>(<?php echo esc_html( $deposit_status['deposit_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small>
 					<span class="limpeed-badge limpeed-badge-<?php echo esc_attr( $deposit_status['status'] ); ?>"><?php echo esc_html( $deposit_labels[ $deposit_status['status'] ] ); ?></span>
 				</span>
@@ -215,7 +215,7 @@ $list_url = add_query_arg( array( 'page' => 'limpeed-tenants' ), admin_url( 'adm
 					?>
 					<a href="<?php echo esc_url( $payment_url ); ?>" class="<?php echo esc_attr( $css_class ); ?>">
 						<span class="limpeed-calendar-month-label"><?php echo esc_html( $month_label ); ?></span>
-						<span class="limpeed-calendar-month-amount"><?php echo esc_html( number_format_i18n( (float) $entry['payment']->amount, 0 ) ); ?></span>
+						<span class="limpeed-calendar-month-amount"><?php echo esc_html( Limpeed_Payments::format_amount( $entry['payment']->amount ) ); ?></span>
 					</a>
 					<?php
 				} else {

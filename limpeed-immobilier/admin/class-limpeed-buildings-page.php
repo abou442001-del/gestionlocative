@@ -65,10 +65,11 @@ class Limpeed_Buildings_Page {
 			check_admin_referer( 'limpeed_save_building', 'limpeed_building_nonce' );
 
 			$data = array(
-				'owner_id'    => isset( $_POST['owner_id'] ) ? (int) $_POST['owner_id'] : 0,
-				'name'        => isset( $_POST['name'] ) ? wp_unslash( $_POST['name'] ) : '',
-				'address'     => isset( $_POST['address'] ) ? wp_unslash( $_POST['address'] ) : '',
-				'description' => isset( $_POST['description'] ) ? wp_unslash( $_POST['description'] ) : '',
+				'owner_id'        => isset( $_POST['owner_id'] ) ? (int) $_POST['owner_id'] : 0,
+				'name'            => isset( $_POST['name'] ) ? wp_unslash( $_POST['name'] ) : '',
+				'address'         => isset( $_POST['address'] ) ? wp_unslash( $_POST['address'] ) : '',
+				'description'     => isset( $_POST['description'] ) ? wp_unslash( $_POST['description'] ) : '',
+				'commission_rate' => isset( $_POST['commission_rate'] ) ? wp_unslash( $_POST['commission_rate'] ) : '',
 			);
 
 			$sub_units = self::parse_sub_units_from_post();
@@ -145,6 +146,10 @@ class Limpeed_Buildings_Page {
 
 		if ( empty( trim( $data['name'] ) ) ) {
 			$errors[] = __( 'Le nom de l\'édifice est obligatoire.', 'limpeed-immobilier' );
+		}
+
+		if ( '' !== $data['commission_rate'] && ( ! is_numeric( $data['commission_rate'] ) || $data['commission_rate'] < 0 || $data['commission_rate'] > 100 ) ) {
+			$errors[] = __( 'Le taux de commission doit être un nombre entre 0 et 100.', 'limpeed-immobilier' );
 		}
 
 		return $errors;

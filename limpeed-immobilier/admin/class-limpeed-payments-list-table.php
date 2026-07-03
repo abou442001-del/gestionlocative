@@ -37,14 +37,15 @@ class Limpeed_Payments_List_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		return array(
-			'period'             => __( 'Mois concerné', 'limpeed-immobilier' ),
-			'tenant'             => __( 'Locataire', 'limpeed-immobilier' ),
-			'property'           => __( 'Bien', 'limpeed-immobilier' ),
-			'amount'             => __( 'Montant', 'limpeed-immobilier' ),
-			'payment_date'       => __( 'Date de paiement', 'limpeed-immobilier' ),
-			'payment_method'     => __( 'Mode de paiement', 'limpeed-immobilier' ),
-			'commission_amount'  => __( 'Commission', 'limpeed-immobilier' ),
-			'status'             => __( 'Statut', 'limpeed-immobilier' ),
+			'period'            => __( 'Mois concerné', 'limpeed-immobilier' ),
+			'tenant'            => __( 'Locataire', 'limpeed-immobilier' ),
+			'property'          => __( 'Bien', 'limpeed-immobilier' ),
+			'amount'            => __( 'Montant', 'limpeed-immobilier' ),
+			'payment_date'      => __( 'Date de paiement', 'limpeed-immobilier' ),
+			'payment_method'    => __( 'Mode de paiement', 'limpeed-immobilier' ),
+			'commission_amount' => __( 'Commission', 'limpeed-immobilier' ),
+			'status'            => __( 'Statut', 'limpeed-immobilier' ),
+			'created_by'        => __( 'Enregistré par', 'limpeed-immobilier' ),
 		);
 	}
 
@@ -148,7 +149,7 @@ class Limpeed_Payments_List_Table extends WP_List_Table {
 
 			case 'amount':
 			case 'commission_amount':
-				return esc_html( number_format_i18n( (float) $item->$column_name, 2 ) );
+				return esc_html( Limpeed_Payments::format_amount( $item->$column_name ) );
 
 			case 'payment_date':
 				return $item->payment_date ? esc_html( mysql2date( get_option( 'date_format' ), $item->payment_date ) ) : '&mdash;';
@@ -161,6 +162,10 @@ class Limpeed_Payments_List_Table extends WP_List_Table {
 				$statuses = Limpeed_Payments::get_statuses();
 				$label    = isset( $statuses[ $item->status ] ) ? $statuses[ $item->status ] : $item->status;
 				return sprintf( '<span class="limpeed-badge limpeed-badge-%s">%s</span>', esc_attr( $item->status ), esc_html( $label ) );
+
+			case 'created_by':
+				$agent = $item->created_by ? get_userdata( $item->created_by ) : false;
+				return $agent ? esc_html( $agent->display_name ) : '&mdash;';
 
 			default:
 				return '';
@@ -215,6 +220,7 @@ class Limpeed_Payments_List_Table extends WP_List_Table {
 
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 
+		$search      = isset( $_REQUEST['s'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) : '';
 		$tenant_id   = isset( $_REQUEST['tenant_id'] ) ? (int) $_REQUEST['tenant_id'] : 0;
 		$property_id = isset( $_REQUEST['property_id'] ) ? (int) $_REQUEST['property_id'] : 0;
 		$period      = isset( $_REQUEST['period'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['period'] ) ) : '';
@@ -224,6 +230,7 @@ class Limpeed_Payments_List_Table extends WP_List_Table {
 		$paged       = isset( $_REQUEST['paged'] ) ? max( 1, (int) $_REQUEST['paged'] ) : 1;
 
 		$args = array(
+			'search'      => $search,
 			'tenant_id'   => $tenant_id,
 			'property_id' => $property_id,
 			'period'      => $period,

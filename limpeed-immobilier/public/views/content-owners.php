@@ -178,7 +178,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 							<tr>
 								<td><?php echo esc_html( Limpeed_Properties::get_display_label( $building_property ) ); ?></td>
 								<td><?php echo isset( $property_types[ $building_property->type ] ) ? esc_html( $property_types[ $building_property->type ] ) : esc_html( $building_property->type ); ?></td>
-								<td><?php echo esc_html( number_format_i18n( (float) $building_property->monthly_rent, 2 ) ); ?></td>
+								<td><?php echo esc_html( Limpeed_Payments::format_amount( $building_property->monthly_rent ) ); ?></td>
 								<td><span class="limpeed-app-badge"><?php echo isset( $property_statuses[ $building_property->status ] ) ? esc_html( $property_statuses[ $building_property->status ] ) : esc_html( $building_property->status ); ?></span></td>
 								<td>
 									<?php if ( $current_tenant ) : ?>

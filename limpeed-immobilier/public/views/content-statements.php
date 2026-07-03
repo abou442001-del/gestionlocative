@@ -142,9 +142,9 @@ if ( 'add' === $action ) :
 					<tr>
 						<td><a href="<?php echo esc_url( $download_url ); ?>"><?php echo esc_html( $period_label ); ?></a></td>
 						<td><?php echo $owner ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'owners', array( 'action' => 'edit', 'id' => $owner->id ) ) ) . '">' . esc_html( $owner->full_name ) . '</a>' : '&mdash;'; ?></td>
-						<td><?php echo esc_html( number_format_i18n( (float) $statement_row->total_collected, 2 ) ); ?></td>
-						<td><?php echo esc_html( number_format_i18n( (float) $statement_row->total_commission, 2 ) ); ?></td>
-						<td><?php echo esc_html( number_format_i18n( (float) $statement_row->net_amount, 2 ) ); ?></td>
+						<td><?php echo esc_html( Limpeed_Payments::format_amount( $statement_row->total_collected ) ); ?></td>
+						<td><?php echo esc_html( Limpeed_Payments::format_amount( $statement_row->total_commission ) ); ?></td>
+						<td><?php echo esc_html( Limpeed_Payments::format_amount( $statement_row->net_amount ) ); ?></td>
 						<td><?php echo esc_html( mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $statement_row->created_at ) ); ?></td>
 						<td><?php echo $user ? esc_html( $user->display_name ) : '&mdash;'; ?></td>
 						<td class="limpeed-app-actions">

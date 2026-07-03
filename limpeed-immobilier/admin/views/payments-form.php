@@ -106,8 +106,13 @@ $form_action = add_query_arg(
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="commission_amount"><?php esc_html_e( 'Commission agence prélevée', 'limpeed-immobilier' ); ?></label></th>
-					<td><input name="commission_amount" type="number" step="0.01" min="0" id="commission_amount" class="regular-text" value="<?php echo esc_attr( $field( 'commission_amount', 0 ) ); ?>"></td>
+					<th scope="row"><?php esc_html_e( 'Commission agence', 'limpeed-immobilier' ); ?></th>
+					<td>
+						<?php if ( $is_edit ) : ?>
+							<strong><?php echo esc_html( Limpeed_Payments::format_amount( $payment->commission_amount ) ); ?></strong>
+						<?php endif; ?>
+						<p class="description"><?php esc_html_e( 'Calculée automatiquement selon le taux de commission défini sur l\'édifice du bien concerné (voir Édifices).', 'limpeed-immobilier' ); ?></p>
+					</td>
 				</tr>
 				<tr>
 					<th scope="row"><label for="status"><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></label></th>

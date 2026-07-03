@@ -124,7 +124,7 @@ class Limpeed_Statements_List_Table extends WP_List_Table {
 			case 'total_collected':
 			case 'total_commission':
 			case 'net_amount':
-				return esc_html( number_format_i18n( (float) $item->$column_name, 2 ) );
+				return esc_html( Limpeed_Payments::format_amount( $item->$column_name ) );
 
 			case 'created_at':
 				return esc_html( mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $item->created_at ) );

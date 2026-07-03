@@ -128,15 +128,16 @@ class Limpeed_Buildings {
 		$table = self::table();
 
 		$record = array(
-			'owner_id'    => (int) $data['owner_id'],
-			'name'        => sanitize_text_field( $data['name'] ),
-			'address'     => sanitize_textarea_field( $data['address'] ?? '' ),
-			'description' => sanitize_textarea_field( $data['description'] ?? '' ),
-			'created_by'  => get_current_user_id(),
-			'created_at'  => current_time( 'mysql' ),
+			'owner_id'        => (int) $data['owner_id'],
+			'name'            => sanitize_text_field( $data['name'] ),
+			'address'         => sanitize_textarea_field( $data['address'] ?? '' ),
+			'description'     => sanitize_textarea_field( $data['description'] ?? '' ),
+			'commission_rate' => max( 0, min( 100, (float) ( $data['commission_rate'] ?? 0 ) ) ),
+			'created_by'      => get_current_user_id(),
+			'created_at'      => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%s', '%s', '%s', '%d', '%s' );
+		$formats = array( '%d', '%s', '%s', '%s', '%f', '%d', '%s' );
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
@@ -161,15 +162,16 @@ class Limpeed_Buildings {
 		$table = self::table();
 
 		$record = array(
-			'owner_id'    => (int) $data['owner_id'],
-			'name'        => sanitize_text_field( $data['name'] ),
-			'address'     => sanitize_textarea_field( $data['address'] ?? '' ),
-			'description' => sanitize_textarea_field( $data['description'] ?? '' ),
-			'updated_by'  => get_current_user_id(),
-			'updated_at'  => current_time( 'mysql' ),
+			'owner_id'        => (int) $data['owner_id'],
+			'name'            => sanitize_text_field( $data['name'] ),
+			'address'         => sanitize_textarea_field( $data['address'] ?? '' ),
+			'description'     => sanitize_textarea_field( $data['description'] ?? '' ),
+			'commission_rate' => max( 0, min( 100, (float) ( $data['commission_rate'] ?? 0 ) ) ),
+			'updated_by'      => get_current_user_id(),
+			'updated_at'      => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%s', '%s', '%s', '%d', '%s' );
+		$formats = array( '%d', '%s', '%s', '%s', '%f', '%d', '%s' );
 
 		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
 

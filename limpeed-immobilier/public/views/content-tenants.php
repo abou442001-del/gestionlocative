@@ -149,7 +149,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<div class="limpeed-app-advance-panel">
 				<div class="limpeed-app-advance-stat">
 					<span class="limpeed-app-advance-label"><?php esc_html_e( 'Avance requise', 'limpeed-immobilier' ); ?></span>
-					<span class="limpeed-app-advance-value"><?php echo esc_html( number_format_i18n( $advance_status['advance_amount'], 2 ) ); ?> <small>(<?php echo esc_html( $advance_status['advance_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small></span>
+					<span class="limpeed-app-advance-value"><?php echo esc_html( Limpeed_Payments::format_amount( $advance_status['advance_amount'] ) ); ?> <small>(<?php echo esc_html( $advance_status['advance_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small></span>
 				</div>
 				<div class="limpeed-app-advance-stat">
 					<span class="limpeed-app-advance-label"><?php esc_html_e( 'Payé jusqu\'à', 'limpeed-immobilier' ); ?></span>
@@ -177,7 +177,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<div class="limpeed-app-advance-stat">
 					<span class="limpeed-app-advance-label"><?php esc_html_e( 'Caution', 'limpeed-immobilier' ); ?></span>
 					<span class="limpeed-app-advance-value">
-						<?php echo esc_html( number_format_i18n( $deposit_status['paid'], 2 ) ); ?> / <?php echo esc_html( number_format_i18n( $deposit_status['required'], 2 ) ); ?>
+						<?php echo esc_html( Limpeed_Payments::format_amount( $deposit_status['paid'] ) ); ?> / <?php echo esc_html( Limpeed_Payments::format_amount( $deposit_status['required'] ) ); ?>
 						<small>(<?php echo esc_html( $deposit_status['deposit_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small>
 						<span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $deposit_status['status'] ); ?>"><?php echo esc_html( $deposit_labels[ $deposit_status['status'] ] ); ?></span>
 					</span>
@@ -207,7 +207,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 						?>
 						<a href="<?php echo esc_url( $payment_url ); ?>" class="<?php echo esc_attr( $css_class ); ?>">
 							<span class="limpeed-app-calendar-month-label"><?php echo esc_html( $month_label ); ?></span>
-							<span class="limpeed-app-calendar-month-amount"><?php echo esc_html( number_format_i18n( (float) $entry['payment']->amount, 0 ) ); ?></span>
+							<span class="limpeed-app-calendar-month-amount"><?php echo esc_html( Limpeed_Payments::format_amount( $entry['payment']->amount ) ); ?></span>
 						</a>
 						<?php
 					} else {
@@ -539,7 +539,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 							<td><?php echo $tenant_row->phone ? esc_html( $tenant_row->phone ) : '&mdash;'; ?></td>
 							<td><?php echo $tenant_row->lease_start ? esc_html( mysql2date( get_option( 'date_format' ), $tenant_row->lease_start ) ) : '&mdash;'; ?></td>
 							<td><?php echo $tenant_row->lease_end ? esc_html( mysql2date( get_option( 'date_format' ), $tenant_row->lease_end ) ) : '&mdash;'; ?></td>
-							<td><?php echo esc_html( number_format_i18n( (float) $tenant_row->rent_amount, 2 ) ); ?></td>
+							<td><?php echo esc_html( Limpeed_Payments::format_amount( $tenant_row->rent_amount ) ); ?></td>
 							<td><span class="limpeed-app-badge"><?php echo isset( $statuses[ $tenant_row->status ] ) ? esc_html( $statuses[ $tenant_row->status ] ) : esc_html( $tenant_row->status ); ?></span></td>
 							<td class="limpeed-app-actions">
 								<a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></a>

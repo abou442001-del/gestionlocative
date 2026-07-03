@@ -95,8 +95,11 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				</select>
 			</div>
 			<div class="limpeed-form-row">
-				<label for="commission_amount"><?php esc_html_e( 'Commission agence prélevée', 'limpeed-immobilier' ); ?></label>
-				<input type="number" step="0.01" min="0" name="commission_amount" id="commission_amount" value="<?php echo esc_attr( $field( 'commission_amount', 0 ) ); ?>">
+				<label><?php esc_html_e( 'Commission agence', 'limpeed-immobilier' ); ?></label>
+				<?php if ( $is_edit ) : ?>
+					<p><strong><?php echo esc_html( Limpeed_Payments::format_amount( $payment->commission_amount ) ); ?></strong></p>
+				<?php endif; ?>
+				<p class="limpeed-app-description"><?php esc_html_e( 'Calculée automatiquement selon le taux de commission défini sur l\'édifice du bien concerné (voir Édifices).', 'limpeed-immobilier' ); ?></p>
 			</div>
 			<div class="limpeed-form-row">
 				<label for="status"><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></label>
@@ -119,6 +122,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	// -----------------------------------------------------------------
 	// Liste.
 	// -----------------------------------------------------------------
+	$search      = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : '';
 	$tenant_id   = isset( $_GET['tenant_id'] ) ? (int) $_GET['tenant_id'] : 0;
 	$property_id = isset( $_GET['property_id'] ) ? (int) $_GET['property_id'] : 0;
 	$period      = isset( $_GET['period'] ) ? sanitize_text_field( wp_unslash( $_GET['period'] ) ) : '';
@@ -127,6 +131,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	$per_page    = 20;
 
 	$args = array(
+		'search'      => $search,
 		'tenant_id'   => $tenant_id,
 		'property_id' => $property_id,
 		'period'      => $period,
@@ -146,6 +151,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<input type="hidden" name="page_id" value="<?php echo (int) Limpeed_Frontend::dashboard_page_id(); ?>">
 				<input type="hidden" name="limpeed_view" value="payments">
 				<?php if ( $tenant_id ) : ?><input type="hidden" name="tenant_id" value="<?php echo esc_attr( $tenant_id ); ?>"><?php endif; ?>
+				<input type="text" name="q" placeholder="<?php esc_attr_e( 'Rechercher un locataire...', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $search ); ?>">
 				<select name="property_id">
 					<option value=""><?php esc_html_e( 'Tous les biens', 'limpeed-immobilier' ); ?></option>
 					<?php foreach ( $filter_properties as $property_option ) : ?>
@@ -186,15 +192,17 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					<th><?php esc_html_e( 'Locataire', 'limpeed-immobilier' ); ?></th>
 					<th><?php esc_html_e( 'Bien', 'limpeed-immobilier' ); ?></th>
 					<th><?php esc_html_e( 'Montant', 'limpeed-immobilier' ); ?></th>
+					<th><?php esc_html_e( 'Commission', 'limpeed-immobilier' ); ?></th>
 					<th><?php esc_html_e( 'Date de paiement', 'limpeed-immobilier' ); ?></th>
 					<th><?php esc_html_e( 'Mode de paiement', 'limpeed-immobilier' ); ?></th>
 					<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
+					<th><?php esc_html_e( 'Enregistré par', 'limpeed-immobilier' ); ?></th>
 					<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php if ( empty( $payments ) ) : ?>
-					<tr><td colspan="8"><?php esc_html_e( 'Aucun paiement pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
+					<tr><td colspan="10"><?php esc_html_e( 'Aucun paiement pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
 				<?php endif; ?>
 				<?php
 				$statuses = Limpeed_Payments::get_statuses();
@@ -204,15 +212,18 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					$delete_url = wp_nonce_url( Limpeed_Frontend::app_url( 'payments', array( 'action' => 'delete', 'id' => $payment_row->id ) ), 'limpeed_delete_payment_' . $payment_row->id );
 					$tenant     = Limpeed_Tenants::get( $payment_row->tenant_id );
 					$property   = Limpeed_Properties::get( $payment_row->property_id );
+					$agent      = $payment_row->created_by ? get_userdata( $payment_row->created_by ) : false;
 					?>
 					<tr>
 						<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( $payment_row->period ); ?></a></td>
 						<td><?php echo $tenant ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $tenant->id ) ) ) . '">' . esc_html( $tenant->full_name ) . '</a>' : '&mdash;'; ?></td>
 						<td><?php echo $property ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $property->id ) ) ) . '">' . esc_html( Limpeed_Properties::get_display_label( $property ) ) . '</a>' : '&mdash;'; ?></td>
-						<td><?php echo esc_html( number_format_i18n( (float) $payment_row->amount, 2 ) ); ?></td>
+						<td><?php echo esc_html( Limpeed_Payments::format_amount( $payment_row->amount ) ); ?></td>
+						<td><?php echo esc_html( Limpeed_Payments::format_amount( $payment_row->commission_amount ) ); ?></td>
 						<td><?php echo $payment_row->payment_date ? esc_html( mysql2date( get_option( 'date_format' ), $payment_row->payment_date ) ) : '&mdash;'; ?></td>
 						<td><?php echo isset( $methods[ $payment_row->payment_method ] ) ? esc_html( $methods[ $payment_row->payment_method ] ) : esc_html( $payment_row->payment_method ); ?></td>
 						<td><span class="limpeed-app-badge"><?php echo isset( $statuses[ $payment_row->status ] ) ? esc_html( $statuses[ $payment_row->status ] ) : esc_html( $payment_row->status ); ?></span></td>
+						<td><?php echo $agent ? esc_html( $agent->display_name ) : '&mdash;'; ?></td>
 						<td class="limpeed-app-actions">
 							<a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></a>
 							<a href="<?php echo esc_url( $delete_url ); ?>" class="limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous la suppression de ce paiement ?', 'limpeed-immobilier' ); ?>"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></a>
@@ -222,6 +233,6 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			</tbody>
 		</table>
 
-		<?php Limpeed_Frontend::render_pagination( $total_items, $per_page, $paged, array( 'tenant_id' => $tenant_id, 'property_id' => $property_id, 'period' => $period, 'status' => $status ) ); ?>
+		<?php Limpeed_Frontend::render_pagination( $total_items, $per_page, $paged, array( 'q' => $search, 'tenant_id' => $tenant_id, 'property_id' => $property_id, 'period' => $period, 'status' => $status ) ); ?>
 	</div>
 <?php endif; ?>

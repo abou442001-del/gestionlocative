@@ -55,14 +55,13 @@ class Limpeed_Frontend_Payments {
 			$tenant    = $tenant_id ? Limpeed_Tenants::get( $tenant_id ) : null;
 
 			$data = array(
-				'tenant_id'         => $tenant_id,
-				'property_id'       => $tenant ? (int) $tenant->property_id : 0,
-				'amount'            => isset( $_POST['amount'] ) ? wp_unslash( $_POST['amount'] ) : '',
-				'payment_date'      => isset( $_POST['payment_date'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_date'] ) ) : '',
-				'period'            => isset( $_POST['period'] ) ? sanitize_text_field( wp_unslash( $_POST['period'] ) ) : '',
-				'status'            => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
-				'payment_method'    => isset( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : '',
-				'commission_amount' => isset( $_POST['commission_amount'] ) ? wp_unslash( $_POST['commission_amount'] ) : '',
+				'tenant_id'      => $tenant_id,
+				'property_id'    => $tenant ? (int) $tenant->property_id : 0,
+				'amount'         => isset( $_POST['amount'] ) ? wp_unslash( $_POST['amount'] ) : '',
+				'payment_date'   => isset( $_POST['payment_date'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_date'] ) ) : '',
+				'period'         => isset( $_POST['period'] ) ? sanitize_text_field( wp_unslash( $_POST['period'] ) ) : '',
+				'status'         => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
+				'payment_method' => isset( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : '',
 			);
 
 			$errors = self::validate( $data, $tenant );
@@ -105,10 +104,6 @@ class Limpeed_Frontend_Payments {
 
 		if ( '' === $data['amount'] || ! is_numeric( $data['amount'] ) ) {
 			$errors[] = __( 'Le montant du paiement doit être un nombre.', 'limpeed-immobilier' );
-		}
-
-		if ( '' !== $data['commission_amount'] && ! is_numeric( $data['commission_amount'] ) ) {
-			$errors[] = __( 'La commission doit être un nombre.', 'limpeed-immobilier' );
 		}
 
 		if ( ! array_key_exists( $data['status'], Limpeed_Payments::get_statuses() ) ) {

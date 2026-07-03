@@ -135,9 +135,18 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			</div>
 			<div class="limpeed-form-row">
 				<label for="type"><?php esc_html_e( 'Type de bien', 'limpeed-immobilier' ); ?></label>
+				<?php
+				$current_type = $field( 'type', 'studio' );
+				$legacy_types = Limpeed_Properties::get_legacy_types();
+				?>
 				<select name="type" id="type">
+					<?php if ( isset( $legacy_types[ $current_type ] ) ) : ?>
+						<option value="<?php echo esc_attr( $current_type ); ?>" selected='selected'>
+							<?php echo esc_html( $legacy_types[ $current_type ] ); ?> (<?php esc_html_e( 'ancien type', 'limpeed-immobilier' ); ?>)
+						</option>
+					<?php endif; ?>
 					<?php foreach ( Limpeed_Properties::get_types() as $key => $label ) : ?>
-						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $field( 'type', 'appartement' ), $key ); ?>>
+						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $current_type, $key ); ?>>
 							<?php echo esc_html( $label ); ?>
 						</option>
 					<?php endforeach; ?>
@@ -296,7 +305,6 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 
 		<?php
 		$statuses = Limpeed_Properties::get_statuses();
-		$types    = Limpeed_Properties::get_types();
 		foreach ( $properties_by_owner as $group_owner_id => $owner_properties ) :
 			$group_owner = $owners_by_id[ $group_owner_id ] ?? null;
 			?>
@@ -332,8 +340,8 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 							<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo $property_row->reference ? esc_html( $property_row->reference ) : '&mdash;'; ?></a></td>
 							<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( $property_row->address ); ?></a></td>
 							<td><?php echo $building ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'buildings', array( 'action' => 'edit', 'id' => $building->id ) ) ) . '">' . esc_html( $building->name ) . '</a>' : '&mdash;'; ?></td>
-							<td><?php echo isset( $types[ $property_row->type ] ) ? esc_html( $types[ $property_row->type ] ) : esc_html( $property_row->type ); ?></td>
-							<td><?php echo esc_html( number_format_i18n( (float) $property_row->monthly_rent, 2 ) ); ?></td>
+							<td><?php echo esc_html( Limpeed_Properties::get_type_label( $property_row->type ) ); ?></td>
+							<td><?php echo esc_html( Limpeed_Payments::format_amount( $property_row->monthly_rent ) ); ?></td>
 							<td><span class="limpeed-app-badge"><?php echo isset( $statuses[ $property_row->status ] ) ? esc_html( $statuses[ $property_row->status ] ) : esc_html( $property_row->status ); ?></span></td>
 							<td><?php echo $tenant ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $tenant->id ) ) ) . '">' . esc_html( $tenant->full_name ) . '</a>' : '&mdash;'; ?></td>
 							<td class="limpeed-app-actions">

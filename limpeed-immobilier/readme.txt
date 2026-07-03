@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.15.0
+Stable tag: 1.16.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,14 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.16.0 =
+* Paiements : ajout d'un champ de recherche par nom de locataire dans la liste des paiements (admin et frontend).
+* Commission : la commission n'est plus saisie manuellement paiement par paiement, elle est calculée automatiquement selon le taux de commission (%) défini sur l'édifice du bien concerné. Chaque édifice peut avoir son propre taux, réglable depuis sa fiche.
+* Toutes les sommes affichées dans le plugin (loyers, charges, dépôts, commissions, montants nets, avances, cautions) sont désormais exprimées en FCFA.
+* Locataires : à la création d'un nouveau locataire, les mois d'avance configurés dans les réglages sont désormais automatiquement générés comme paiements "payés" dans son calendrier, à partir du mois de début de bail.
+* Paiements : le nom de l'agent ayant enregistré ou modifié chaque paiement est désormais affiché dans les listes de paiements (admin et frontend).
+* Biens : les types de biens sont remplacés par Studio, 2 pièces, 3 pièces et 4 pièces et plus. Les biens existants utilisant les anciens types (Appartement, Maison, Local commercial) restent valides et continuent de s'afficher correctement.
 
 = 1.15.0 =
 * Les sections Édifices, Biens et Locataires sont désormais rangées par propriétaire : chaque propriétaire apparaît comme un groupe distinct (avec un lien direct vers sa fiche), au lieu d'une liste plate mélangeant tout le monde. Les filtres de recherche existants continuent de fonctionner normalement au sein de cette nouvelle présentation.

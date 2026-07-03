@@ -140,6 +140,13 @@ $form_action = add_query_arg(
 					<th scope="row"><label for="description"><?php esc_html_e( 'Description', 'limpeed-immobilier' ); ?></label></th>
 					<td><textarea name="description" id="description" class="large-text" rows="3"><?php echo esc_textarea( $field( 'description' ) ); ?></textarea></td>
 				</tr>
+				<tr>
+					<th scope="row"><label for="commission_rate"><?php esc_html_e( 'Taux de commission (%)', 'limpeed-immobilier' ); ?></label></th>
+					<td>
+						<input name="commission_rate" type="number" step="0.01" min="0" max="100" id="commission_rate" class="regular-text" value="<?php echo esc_attr( $field( 'commission_rate', 0 ) ); ?>">
+						<p class="description"><?php esc_html_e( 'Pourcentage prélevé par l\'agence sur les loyers encaissés pour cet édifice. Utilisé pour calculer automatiquement la commission de chaque paiement enregistré.', 'limpeed-immobilier' ); ?></p>
+					</td>
+				</tr>
 			</tbody>
 		</table>
 
@@ -167,7 +174,7 @@ $form_action = add_query_arg(
 						<td>
 							<select name="sub_units[<?php echo esc_attr( $index ); ?>][type]">
 								<?php foreach ( $property_types as $key => $label ) : ?>
-									<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $sub_unit_field( $row, 'type', 'appartement' ), $key ); ?>><?php echo esc_html( $label ); ?></option>
+									<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $sub_unit_field( $row, 'type', 'studio' ), $key ); ?>><?php echo esc_html( $label ); ?></option>
 								<?php endforeach; ?>
 							</select>
 						</td>
@@ -200,7 +207,7 @@ $form_action = add_query_arg(
 		<td>
 			<select name="sub_units[__INDEX__][type]">
 				<?php foreach ( $property_types as $key => $label ) : ?>
-					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( 'appartement', $key ); ?>><?php echo esc_html( $label ); ?></option>
+					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( 'studio', $key ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php endforeach; ?>
 			</select>
 		</td>
