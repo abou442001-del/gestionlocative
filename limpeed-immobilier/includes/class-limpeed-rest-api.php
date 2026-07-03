@@ -54,7 +54,7 @@ class Limpeed_Rest_Api {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_tenants' ),
-					'permission_callback' => array( $this, 'can_manage_tenants' ),
+					'permission_callback' => array( $this, 'can_view_lookups' ),
 					'args'                => array(
 						'search'      => array( 'sanitize_callback' => 'sanitize_text_field' ),
 						'property_id' => array( 'sanitize_callback' => 'absint' ),
@@ -259,6 +259,68 @@ class Limpeed_Rest_Api {
 				'args'                => $id_arg,
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/payments',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_payments' ),
+					'permission_callback' => array( $this, 'can_manage_payments' ),
+					'args'                => array(
+						'search'      => array( 'sanitize_callback' => 'sanitize_text_field' ),
+						'tenant_id'   => array( 'sanitize_callback' => 'absint' ),
+						'property_id' => array( 'sanitize_callback' => 'absint' ),
+						'period'      => array( 'sanitize_callback' => 'sanitize_text_field' ),
+						'status'      => array( 'sanitize_callback' => 'sanitize_key' ),
+						'paged'       => array( 'sanitize_callback' => 'absint' ),
+						'per_page'    => array( 'sanitize_callback' => 'absint' ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_payment' ),
+					'permission_callback' => array( $this, 'can_manage_payments' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/payments/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_payment' ),
+					'permission_callback' => array( $this, 'can_manage_payments' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_payment' ),
+					'permission_callback' => array( $this, 'can_manage_payments' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_payment' ),
+					'permission_callback' => array( $this, 'can_manage_payments' ),
+					'args'                => $id_arg,
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/payments/(?P<id>\d+)/history',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_payment_history' ),
+				'permission_callback' => array( $this, 'can_manage_payments' ),
+				'args'                => $id_arg,
+			)
+		);
 	}
 
 	/**
@@ -283,14 +345,26 @@ class Limpeed_Rest_Api {
 	}
 
 	/**
+	 * Capacité requise pour les routes de la section Paiements.
+	 *
+	 * @return bool
+	 */
+	public function can_manage_payments() {
+		return current_user_can( 'manage_limpeed_payments' );
+	}
+
+	/**
 	 * Capacité requise pour les routes de consultation partagées (propriétaires,
-	 * édifices, biens) : utilisées à la fois comme cascade de sélection par la
-	 * section Locataires et comme listes propres à leurs sections dédiées.
+	 * édifices, biens, locataires) : utilisées à la fois comme cascade de
+	 * sélection par les sections Locataires/Paiements et comme listes propres
+	 * à leurs sections dédiées.
 	 *
 	 * @return bool
 	 */
 	public function can_view_lookups() {
-		return current_user_can( 'manage_limpeed_tenants' ) || current_user_can( 'manage_limpeed_properties' );
+		return current_user_can( 'manage_limpeed_tenants' )
+			|| current_user_can( 'manage_limpeed_properties' )
+			|| current_user_can( 'manage_limpeed_payments' );
 	}
 
 	/**
@@ -982,6 +1056,266 @@ class Limpeed_Rest_Api {
 		);
 
 		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * GET /payments?search=&tenant_id=&property_id=&period=&status=&paged=&per_page= :
+	 * liste filtrée + paginée.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_payments( WP_REST_Request $request ) {
+		$args = array(
+			'search'      => (string) $request->get_param( 'search' ),
+			'tenant_id'   => (int) $request->get_param( 'tenant_id' ),
+			'property_id' => (int) $request->get_param( 'property_id' ),
+			'period'      => (string) $request->get_param( 'period' ),
+			'status'      => (string) $request->get_param( 'status' ),
+			'paged'       => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page'    => min( 100, max( 1, (int) $request->get_param( 'per_page' ) ?: 20 ) ),
+		);
+
+		$payments = Limpeed_Payments::get_all( $args );
+		$total    = Limpeed_Payments::count( $args );
+
+		$items = array_map( array( $this, 'format_payment_row' ), $payments );
+
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+			)
+		);
+	}
+
+	/**
+	 * GET /payments/{id} : fiche complète (onglet Infos du panneau de détail).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_payment( WP_REST_Request $request ) {
+		$payment = Limpeed_Payments::get( (int) $request['id'] );
+		if ( ! $payment ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Paiement introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		return new WP_REST_Response( $this->format_payment_detail( $payment ) );
+	}
+
+	/**
+	 * POST /payments : création.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_payment( WP_REST_Request $request ) {
+		$data   = $this->extract_payment_data( $request );
+		$errors = $this->validate_payment( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$id = Limpeed_Payments::insert( $data );
+		if ( ! $id ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible d\'enregistrer le paiement.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_payment_detail( Limpeed_Payments::get( $id ) ), 201 );
+	}
+
+	/**
+	 * PUT/PATCH /payments/{id} : modification.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function update_payment( WP_REST_Request $request ) {
+		$id      = (int) $request['id'];
+		$payment = Limpeed_Payments::get( $id );
+		if ( ! $payment ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Paiement introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$data   = $this->extract_payment_data( $request );
+		$errors = $this->validate_payment( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$result = Limpeed_Payments::update( $id, $data );
+		if ( ! $result ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible de mettre à jour le paiement.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_payment_detail( Limpeed_Payments::get( $id ) ) );
+	}
+
+	/**
+	 * DELETE /payments/{id}.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_payment( WP_REST_Request $request ) {
+		$id      = (int) $request['id'];
+		$payment = Limpeed_Payments::get( $id );
+		if ( ! $payment ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Paiement introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		Limpeed_Payments::delete( $id );
+
+		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
+	}
+
+	/**
+	 * GET /payments/{id}/history : journal d'activité lié à ce paiement.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_payment_history( WP_REST_Request $request ) {
+		$id      = (int) $request['id'];
+		$payment = Limpeed_Payments::get( $id );
+		if ( ! $payment ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Paiement introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$entries = Limpeed_Activity_Log::get_all(
+			array(
+				'object_type' => 'payment',
+				'object_id'   => $id,
+				'per_page'    => 50,
+			)
+		);
+
+		$actions = Limpeed_Activity_Log::get_actions();
+
+		$items = array_map(
+			function ( $entry ) use ( $actions ) {
+				$user = $entry->user_id ? get_userdata( $entry->user_id ) : false;
+				return array(
+					'id'           => (int) $entry->id,
+					'action'       => $entry->action,
+					'action_label' => $actions[ $entry->action ] ?? $entry->action,
+					'description'  => $entry->description,
+					'agent_name'   => $user ? $user->display_name : __( 'Inconnu', 'limpeed-immobilier' ),
+					'created_at'   => $entry->created_at,
+				);
+			},
+			$entries
+		);
+
+		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * Extrait et pré-nettoie les données paiement d'une requête REST, mêmes
+	 * champs que Limpeed_Frontend_Payments::handle_request() (le bien est
+	 * déterminé automatiquement à partir du locataire sélectionné).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return array
+	 */
+	private function extract_payment_data( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_body_params();
+		}
+
+		$tenant_id = isset( $params['tenant_id'] ) ? (int) $params['tenant_id'] : 0;
+		$tenant    = $tenant_id ? Limpeed_Tenants::get( $tenant_id ) : null;
+
+		return array(
+			'tenant_id'      => $tenant_id,
+			'property_id'    => $tenant ? (int) $tenant->property_id : 0,
+			'amount'         => isset( $params['amount'] ) ? wp_unslash( $params['amount'] ) : '',
+			'payment_date'   => isset( $params['payment_date'] ) ? sanitize_text_field( $params['payment_date'] ) : '',
+			'period'         => isset( $params['period'] ) ? sanitize_text_field( $params['period'] ) : '',
+			'status'         => isset( $params['status'] ) ? sanitize_text_field( $params['status'] ) : '',
+			'payment_method' => isset( $params['payment_method'] ) ? sanitize_text_field( $params['payment_method'] ) : '',
+		);
+	}
+
+	/**
+	 * Règles de validation métier, identiques à Limpeed_Frontend_Payments::validate().
+	 *
+	 * @param array $data
+	 * @return array Liste de messages d'erreur (vide si valide).
+	 */
+	private function validate_payment( $data ) {
+		$errors = array();
+
+		if ( empty( $data['tenant_id'] ) || ! Limpeed_Tenants::get( $data['tenant_id'] ) ) {
+			$errors[] = __( 'Veuillez sélectionner un locataire valide.', 'limpeed-immobilier' );
+		}
+
+		if ( empty( $data['period'] ) || ! preg_match( '/^\d{4}-\d{2}$/', $data['period'] ) ) {
+			$errors[] = __( 'Veuillez indiquer un mois concerné valide (format AAAA-MM).', 'limpeed-immobilier' );
+		}
+
+		if ( '' === $data['amount'] || ! is_numeric( $data['amount'] ) ) {
+			$errors[] = __( 'Le montant du paiement doit être un nombre.', 'limpeed-immobilier' );
+		}
+
+		if ( ! array_key_exists( $data['status'], Limpeed_Payments::get_statuses() ) ) {
+			$errors[] = __( 'Le statut sélectionné n\'est pas valide.', 'limpeed-immobilier' );
+		}
+
+		if ( ! array_key_exists( $data['payment_method'], Limpeed_Payments::get_payment_methods() ) ) {
+			$errors[] = __( 'Le mode de paiement sélectionné n\'est pas valide.', 'limpeed-immobilier' );
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Formate une ligne de la liste (colonnes affichées dans le tableau Paiements).
+	 *
+	 * @param object $payment
+	 * @return array
+	 */
+	private function format_payment_row( $payment ) {
+		$tenant   = Limpeed_Tenants::get( $payment->tenant_id );
+		$property = Limpeed_Properties::get( $payment->property_id );
+		$agent    = $payment->created_by ? get_userdata( $payment->created_by ) : false;
+		$statuses = Limpeed_Payments::get_statuses();
+		$methods  = Limpeed_Payments::get_payment_methods();
+
+		return array(
+			'id'                    => (int) $payment->id,
+			'period'                => $payment->period,
+			'tenant_id'             => (int) $payment->tenant_id,
+			'tenant_label'          => $tenant ? $tenant->full_name : '',
+			'property_id'           => (int) $payment->property_id,
+			'property_label'        => $property ? Limpeed_Properties::get_display_label( $property ) : '',
+			'amount'                => (float) $payment->amount,
+			'amount_formatted'      => Limpeed_Payments::format_amount( $payment->amount ),
+			'commission_amount'     => (float) $payment->commission_amount,
+			'commission_formatted'  => Limpeed_Payments::format_amount( $payment->commission_amount ),
+			'payment_date'          => $payment->payment_date,
+			'payment_method'        => $payment->payment_method,
+			'payment_method_label'  => $methods[ $payment->payment_method ] ?? $payment->payment_method,
+			'status'                => $payment->status,
+			'status_label'          => $statuses[ $payment->status ] ?? $payment->status,
+			'agent_name'            => $agent ? $agent->display_name : '',
+		);
+	}
+
+	/**
+	 * Formate la fiche complète d'un paiement (onglet Infos du panneau de détail).
+	 *
+	 * @param object $payment
+	 * @return array
+	 */
+	private function format_payment_detail( $payment ) {
+		return $this->format_payment_row( $payment );
 	}
 
 	/**
