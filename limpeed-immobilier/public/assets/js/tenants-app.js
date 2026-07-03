@@ -50,8 +50,11 @@ document.addEventListener( 'alpine:init', function () {
 				tab: 'infos',
 				tenant: null,
 				payments: [],
+				amendments: [],
 				history: [],
 			},
+
+			amendmentForm: createDefaultAmendmentForm(),
 
 			toasts: [],
 			toastSeq: 0,
@@ -283,17 +286,21 @@ document.addEventListener( 'alpine:init', function () {
 				self.drawer.loading = true;
 				self.drawer.tenant = null;
 				self.drawer.payments = [];
+				self.drawer.amendments = [];
 				self.drawer.history = [];
+				self.amendmentForm = createDefaultAmendmentForm();
 
 				Promise.all( [
 					self.apiFetch( 'tenants/' + row.id ),
 					self.apiFetch( 'tenants/' + row.id + '/payments' ),
+					self.apiFetch( 'tenants/' + row.id + '/amendments' ),
 					self.apiFetch( 'tenants/' + row.id + '/history' ),
 				] )
 					.then( function ( results ) {
 						self.drawer.tenant = results[0];
 						self.drawer.payments = results[1].items || [];
-						self.drawer.history = results[2].items || [];
+						self.drawer.amendments = results[2].items || [];
+						self.drawer.history = results[3].items || [];
 					} )
 					.catch( function ( error ) {
 						self.toast( 'error', error.message );
@@ -306,6 +313,58 @@ document.addEventListener( 'alpine:init', function () {
 
 			closeDrawer: function () {
 				this.drawer.open = false;
+			},
+
+			// -----------------------------------------------------------
+			// Avenants au bail.
+			// -----------------------------------------------------------
+			addAmendment: function () {
+				var self = this;
+				if ( ! self.drawer.tenant || self.amendmentForm.saving ) {
+					return;
+				}
+
+				self.amendmentForm.saving = true;
+
+				self.apiFetch( 'tenants/' + self.drawer.tenant.id + '/amendments', {
+					method: 'POST',
+					body: JSON.stringify( self.amendmentForm ),
+				} )
+					.then( function () {
+						self.amendmentForm = createDefaultAmendmentForm();
+						return Promise.all( [
+							self.apiFetch( 'tenants/' + self.drawer.tenant.id + '/amendments' ),
+							self.apiFetch( 'tenants/' + self.drawer.tenant.id ),
+						] );
+					} )
+					.then( function ( results ) {
+						self.drawer.amendments = results[0].items || [];
+						self.drawer.tenant = results[1];
+						self.toast( 'success', self.i18n.amendmentAdded || 'Avenant ajouté.' );
+					} )
+					.catch( function ( error ) {
+						self.toast( 'error', error.message );
+					} )
+					.finally( function () {
+						self.amendmentForm.saving = false;
+					} );
+			},
+
+			deleteAmendment: function ( amendment ) {
+				var self = this;
+				if ( ! self.drawer.tenant || ! window.confirm( self.i18n.confirmDeleteAmendment || 'Confirmez-vous la suppression de cet avenant ?' ) ) {
+					return;
+				}
+
+				self.apiFetch( 'tenants/' + self.drawer.tenant.id + '/amendments/' + amendment.id, { method: 'DELETE' } )
+					.then( function () {
+						self.drawer.amendments = self.drawer.amendments.filter( function ( a ) {
+							return a.id !== amendment.id;
+						} );
+					} )
+					.catch( function ( error ) {
+						self.toast( 'error', error.message );
+					} );
 			},
 
 			switchDrawerTab: function ( tab ) {
@@ -350,6 +409,16 @@ document.addEventListener( 'alpine:init', function () {
 				dependents_count: 0,
 				guarantor_name: '',
 				guarantor_phone: '',
+			};
+		}
+
+		function createDefaultAmendmentForm() {
+			return {
+				amendment_date: new Date().toISOString().slice( 0, 10 ),
+				description: '',
+				new_rent_amount: '',
+				new_lease_end: '',
+				saving: false,
 			};
 		}
 	} );

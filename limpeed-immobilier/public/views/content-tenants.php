@@ -444,10 +444,12 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		'idDocumentTypes'  => $id_document_types,
 		'propertyOptions'  => $property_options,
 		'i18n'             => array(
-			'created'       => __( 'Locataire ajouté avec succès.', 'limpeed-immobilier' ),
-			'updated'       => __( 'Locataire mis à jour avec succès.', 'limpeed-immobilier' ),
-			'deleted'       => __( 'Locataire supprimé avec succès.', 'limpeed-immobilier' ),
-			'confirmDelete' => __( 'Confirmez-vous la suppression de ce locataire ?', 'limpeed-immobilier' ),
+			'created'                => __( 'Locataire ajouté avec succès.', 'limpeed-immobilier' ),
+			'updated'                => __( 'Locataire mis à jour avec succès.', 'limpeed-immobilier' ),
+			'deleted'                => __( 'Locataire supprimé avec succès.', 'limpeed-immobilier' ),
+			'confirmDelete'          => __( 'Confirmez-vous la suppression de ce locataire ?', 'limpeed-immobilier' ),
+			'amendmentAdded'         => __( 'Avenant ajouté avec succès.', 'limpeed-immobilier' ),
+			'confirmDeleteAmendment' => __( 'Confirmez-vous la suppression de cet avenant ?', 'limpeed-immobilier' ),
 		),
 	);
 
@@ -679,6 +681,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 					<div class="limpeed-app-drawer-tabs">
 						<button type="button" class="limpeed-app-drawer-tab" :class="{ 'is-active': drawer.tab === 'infos' }" @click="switchDrawerTab('infos')"><?php esc_html_e( 'Infos', 'limpeed-immobilier' ); ?></button>
 						<button type="button" class="limpeed-app-drawer-tab" :class="{ 'is-active': drawer.tab === 'paiements' }" @click="switchDrawerTab('paiements')"><?php esc_html_e( 'Paiements', 'limpeed-immobilier' ); ?></button>
+						<button type="button" class="limpeed-app-drawer-tab" :class="{ 'is-active': drawer.tab === 'avenants' }" @click="switchDrawerTab('avenants')"><?php esc_html_e( 'Avenants', 'limpeed-immobilier' ); ?></button>
 						<button type="button" class="limpeed-app-drawer-tab" :class="{ 'is-active': drawer.tab === 'historique' }" @click="switchDrawerTab('historique')"><?php esc_html_e( 'Historique du bail', 'limpeed-immobilier' ); ?></button>
 					</div>
 					<div class="limpeed-app-drawer-body">
@@ -719,6 +722,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 									</div>
 								</div>
 								<p><a :href="'<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => '' ) ) ); ?>' + drawer.tenant.id"><?php esc_html_e( 'Voir la fiche complète (dossier, calendrier de paiement)', 'limpeed-immobilier' ); ?> &rarr;</a></p>
+								<p><a :href="drawer.tenant.contract_url" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Générer le contrat de bail (PDF)', 'limpeed-immobilier' ); ?></a></p>
 							</div>
 						</template>
 
@@ -732,6 +736,43 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 										<span class="limpeed-app-badge" :class="'limpeed-app-badge-' + payment.status" x-text="payment.status_label"></span>
 									</div>
 								</template>
+							</div>
+						</template>
+
+						<template x-if="! drawer.loading && drawer.tab === 'avenants'">
+							<div>
+								<p x-show="drawer.amendments.length === 0"><?php esc_html_e( 'Aucun avenant enregistré.', 'limpeed-immobilier' ); ?></p>
+								<template x-for="amendment in drawer.amendments" :key="amendment.id">
+									<div class="limpeed-app-drawer-list-item">
+										<span>
+											<span x-text="amendment.amendment_date"></span> — <span x-text="amendment.description"></span>
+											<template x-if="amendment.new_rent_formatted"><span> (<?php esc_html_e( 'nouveau loyer', 'limpeed-immobilier' ); ?> : <span x-text="amendment.new_rent_formatted"></span>)</span></template>
+										</span>
+										<button type="button" class="limpeed-app-link-btn is-danger" @click="deleteAmendment(amendment)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
+									</div>
+								</template>
+
+								<form @submit.prevent="addAmendment()" style="margin-top: 16px;">
+									<div class="limpeed-form-row">
+										<label><?php esc_html_e( 'Date', 'limpeed-immobilier' ); ?></label>
+										<input type="date" x-model="amendmentForm.amendment_date" required>
+									</div>
+									<div class="limpeed-form-row">
+										<label><?php esc_html_e( 'Description', 'limpeed-immobilier' ); ?> <span class="limpeed-app-required">*</span></label>
+										<textarea x-model="amendmentForm.description" rows="2" placeholder="<?php esc_attr_e( 'Ex : révision annuelle du loyer', 'limpeed-immobilier' ); ?>" required></textarea>
+									</div>
+									<div class="limpeed-app-modal-grid">
+										<div class="limpeed-form-row">
+											<label><?php esc_html_e( 'Nouveau loyer (optionnel)', 'limpeed-immobilier' ); ?></label>
+											<input type="number" step="0.01" min="0" x-model="amendmentForm.new_rent_amount">
+										</div>
+										<div class="limpeed-form-row">
+											<label><?php esc_html_e( 'Nouvelle date de fin de bail (optionnel)', 'limpeed-immobilier' ); ?></label>
+											<input type="date" x-model="amendmentForm.new_lease_end">
+										</div>
+									</div>
+									<button type="submit" class="limpeed-app-btn" :disabled="amendmentForm.saving"><?php esc_html_e( 'Ajouter l\'avenant', 'limpeed-immobilier' ); ?></button>
+								</form>
 							</div>
 						</template>
 

@@ -356,6 +356,96 @@ class Limpeed_Rest_Api {
 				),
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/mandates',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_mandates' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+					'args'                => array(
+						'search'      => array( 'sanitize_callback' => 'sanitize_text_field' ),
+						'building_id' => array( 'sanitize_callback' => 'absint' ),
+						'status'      => array( 'sanitize_callback' => 'sanitize_key' ),
+						'paged'       => array( 'sanitize_callback' => 'absint' ),
+						'per_page'    => array( 'sanitize_callback' => 'absint' ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_mandate' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/mandates/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_mandate' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_mandate' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_mandate' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+					'args'                => $id_arg,
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/mandates/(?P<id>\d+)/history',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_mandate_history' ),
+				'permission_callback' => array( $this, 'can_manage_properties' ),
+				'args'                => $id_arg,
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/tenants/(?P<id>\d+)/amendments',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_tenant_amendments' ),
+					'permission_callback' => array( $this, 'can_manage_tenants' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_tenant_amendment' ),
+					'permission_callback' => array( $this, 'can_manage_tenants' ),
+					'args'                => $id_arg,
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/tenants/(?P<id>\d+)/amendments/(?P<amendment_id>\d+)',
+			array(
+				'methods'             => WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'delete_tenant_amendment' ),
+				'permission_callback' => array( $this, 'can_manage_tenants' ),
+				'args'                => $id_arg,
+			)
+		);
 	}
 
 	/**
@@ -1804,6 +1894,362 @@ class Limpeed_Rest_Api {
 				'paid'     => $deposit_status['paid'],
 				'required' => $deposit_status['required'],
 			),
+			'contract_url'       => Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'download_contract', 'id' => $tenant->id, '_wpnonce' => wp_create_nonce( 'limpeed_download_lease_contract_' . $tenant->id ) ) ),
 		);
+	}
+
+	/**
+	 * GET /mandates?search=&building_id=&status=&paged=&per_page= : liste
+	 * filtrée + paginée des mandats de gestion.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_mandates( WP_REST_Request $request ) {
+		$args = array(
+			'search'      => (string) $request->get_param( 'search' ),
+			'building_id' => (int) $request->get_param( 'building_id' ),
+			'status'      => (string) $request->get_param( 'status' ),
+			'paged'       => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page'    => min( 100, max( 1, (int) $request->get_param( 'per_page' ) ?: 20 ) ),
+		);
+
+		$mandates = Limpeed_Mandates::get_all( $args );
+		$total    = Limpeed_Mandates::count( $args );
+
+		$items = array_map( array( $this, 'format_mandate_row' ), $mandates );
+
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+			)
+		);
+	}
+
+	/**
+	 * GET /mandates/{id} : fiche complète (onglet Infos du panneau de détail).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_mandate( WP_REST_Request $request ) {
+		$mandate = Limpeed_Mandates::get( (int) $request['id'] );
+		if ( ! $mandate ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Mandat introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		return new WP_REST_Response( $this->format_mandate_detail( $mandate ) );
+	}
+
+	/**
+	 * POST /mandates : création.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_mandate( WP_REST_Request $request ) {
+		$data   = $this->extract_mandate_data( $request );
+		$errors = $this->validate_mandate( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$id = Limpeed_Mandates::insert( $data );
+		if ( ! $id ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible d\'enregistrer le mandat.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_mandate_detail( Limpeed_Mandates::get( $id ) ), 201 );
+	}
+
+	/**
+	 * PUT/PATCH /mandates/{id} : modification.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function update_mandate( WP_REST_Request $request ) {
+		$id      = (int) $request['id'];
+		$mandate = Limpeed_Mandates::get( $id );
+		if ( ! $mandate ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Mandat introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$data   = $this->extract_mandate_data( $request );
+		$errors = $this->validate_mandate( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$result = Limpeed_Mandates::update( $id, $data );
+		if ( ! $result ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible de mettre à jour le mandat.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_mandate_detail( Limpeed_Mandates::get( $id ) ) );
+	}
+
+	/**
+	 * DELETE /mandates/{id}.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_mandate( WP_REST_Request $request ) {
+		$id      = (int) $request['id'];
+		$mandate = Limpeed_Mandates::get( $id );
+		if ( ! $mandate ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Mandat introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		Limpeed_Mandates::delete( $id );
+
+		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
+	}
+
+	/**
+	 * GET /mandates/{id}/history.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_mandate_history( WP_REST_Request $request ) {
+		$id      = (int) $request['id'];
+		$mandate = Limpeed_Mandates::get( $id );
+		if ( ! $mandate ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Mandat introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$entries = Limpeed_Activity_Log::get_all(
+			array(
+				'object_type' => 'mandate',
+				'object_id'   => $id,
+				'per_page'    => 50,
+			)
+		);
+
+		$actions = Limpeed_Activity_Log::get_actions();
+
+		$items = array_map(
+			function ( $entry ) use ( $actions ) {
+				$user = $entry->user_id ? get_userdata( $entry->user_id ) : false;
+				return array(
+					'id'           => (int) $entry->id,
+					'action'       => $entry->action,
+					'action_label' => $actions[ $entry->action ] ?? $entry->action,
+					'description'  => $entry->description,
+					'agent_name'   => $user ? $user->display_name : __( 'Agent supprimé', 'limpeed-immobilier' ),
+					'created_at'   => date_i18n( 'd/m/Y H:i', strtotime( $entry->created_at ) ),
+				);
+			},
+			$entries
+		);
+
+		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * Formate une ligne de mandat pour la liste.
+	 *
+	 * @param object $mandate
+	 * @return array
+	 */
+	private function format_mandate_row( $mandate ) {
+		$building = Limpeed_Buildings::get( $mandate->building_id );
+		$owner    = $building ? Limpeed_Owners::get( $building->owner_id ) : null;
+		$statuses = Limpeed_Mandates::get_statuses();
+		$status   = Limpeed_Mandates::get_display_status( $mandate );
+
+		return array(
+			'id'                    => (int) $mandate->id,
+			'building_id'           => (int) $mandate->building_id,
+			'building_label'        => $building ? $building->name : '',
+			'owner_label'           => $owner ? $owner->full_name : '',
+			'start_date'            => $mandate->start_date,
+			'end_date'              => $mandate->end_date,
+			'commission_rate'       => (float) $mandate->commission_rate,
+			'commission_rate_label' => number_format_i18n( (float) $mandate->commission_rate, 2 ) . '%',
+			'status'                => $status,
+			'status_label'          => $statuses[ $status ] ?? $status,
+		);
+	}
+
+	/**
+	 * Formate la fiche complète d'un mandat.
+	 *
+	 * @param object $mandate
+	 * @return array
+	 */
+	private function format_mandate_detail( $mandate ) {
+		$building = Limpeed_Buildings::get( $mandate->building_id );
+		$owner    = $building ? Limpeed_Owners::get( $building->owner_id ) : null;
+		$statuses = Limpeed_Mandates::get_statuses();
+		$status   = Limpeed_Mandates::get_display_status( $mandate );
+
+		return array(
+			'id'                    => (int) $mandate->id,
+			'building_id'           => (int) $mandate->building_id,
+			'building_label'        => $building ? $building->name : '',
+			'owner_label'           => $owner ? $owner->full_name : '',
+			'start_date'            => $mandate->start_date,
+			'end_date'              => $mandate->end_date,
+			'commission_rate'       => (float) $mandate->commission_rate,
+			'commission_rate_label' => number_format_i18n( (float) $mandate->commission_rate, 2 ) . '%',
+			'status'                => $mandate->status,
+			'status_label'          => $statuses[ $mandate->status ] ?? $mandate->status,
+			'display_status'        => $status,
+			'display_status_label'  => $statuses[ $status ] ?? $status,
+			'signed_date'           => $mandate->signed_date,
+			'notes'                 => $mandate->notes,
+			'contract_url'          => $building ? Limpeed_Frontend::app_url( 'mandates', array( 'action' => 'download_contract', 'id' => $mandate->id, '_wpnonce' => wp_create_nonce( 'limpeed_download_mandate_contract_' . $mandate->id ) ) ) : '',
+		);
+	}
+
+	/**
+	 * Extrait et pré-nettoie les données d'un mandat depuis une requête REST.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return array
+	 */
+	private function extract_mandate_data( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_body_params();
+		}
+
+		return array(
+			'building_id'     => isset( $params['building_id'] ) ? (int) $params['building_id'] : 0,
+			'start_date'      => isset( $params['start_date'] ) ? sanitize_text_field( $params['start_date'] ) : '',
+			'end_date'        => isset( $params['end_date'] ) ? sanitize_text_field( $params['end_date'] ) : '',
+			'commission_rate' => isset( $params['commission_rate'] ) ? wp_unslash( $params['commission_rate'] ) : '',
+			'status'          => isset( $params['status'] ) ? sanitize_key( $params['status'] ) : 'actif',
+			'signed_date'     => isset( $params['signed_date'] ) ? sanitize_text_field( $params['signed_date'] ) : '',
+			'notes'           => isset( $params['notes'] ) ? wp_unslash( $params['notes'] ) : '',
+		);
+	}
+
+	/**
+	 * Règles de validation métier d'un mandat.
+	 *
+	 * @param array $data
+	 * @return array Liste de messages d'erreur (vide si valide).
+	 */
+	private function validate_mandate( $data ) {
+		$errors = array();
+
+		if ( empty( $data['building_id'] ) || ! Limpeed_Buildings::get( $data['building_id'] ) ) {
+			$errors[] = __( 'Veuillez sélectionner un édifice valide.', 'limpeed-immobilier' );
+		}
+
+		if ( empty( $data['start_date'] ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $data['start_date'] ) ) {
+			$errors[] = __( 'La date de début est obligatoire et doit être une date valide.', 'limpeed-immobilier' );
+		}
+
+		if ( ! empty( $data['end_date'] ) && ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $data['end_date'] ) ) {
+			$errors[] = __( 'La date de fin doit être une date valide.', 'limpeed-immobilier' );
+		}
+
+		if ( empty( $errors ) && ! empty( $data['end_date'] ) && $data['end_date'] < $data['start_date'] ) {
+			$errors[] = __( 'La date de fin doit être postérieure à la date de début.', 'limpeed-immobilier' );
+		}
+
+		if ( '' !== $data['commission_rate'] && ( ! is_numeric( $data['commission_rate'] ) || $data['commission_rate'] < 0 || $data['commission_rate'] > 100 ) ) {
+			$errors[] = __( 'Le taux de commission doit être un nombre entre 0 et 100.', 'limpeed-immobilier' );
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * GET /tenants/{id}/amendments : liste des avenants au bail.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_tenant_amendments( WP_REST_Request $request ) {
+		$tenant_id = (int) $request['id'];
+		$tenant    = Limpeed_Tenants::get( $tenant_id );
+		if ( ! $tenant ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Locataire introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$amendments = Limpeed_Lease_Amendments::get_for_tenant( $tenant_id );
+
+		$items = array_map(
+			function ( $amendment ) {
+				return array(
+					'id'                     => (int) $amendment->id,
+					'amendment_date'         => $amendment->amendment_date,
+					'description'            => $amendment->description,
+					'new_rent_amount'        => null !== $amendment->new_rent_amount ? (float) $amendment->new_rent_amount : null,
+					'new_rent_formatted'     => null !== $amendment->new_rent_amount ? Limpeed_Payments::format_amount( $amendment->new_rent_amount ) : '',
+					'new_lease_end'          => $amendment->new_lease_end,
+				);
+			},
+			$amendments
+		);
+
+		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * POST /tenants/{id}/amendments : enregistrement d'un avenant.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_tenant_amendment( WP_REST_Request $request ) {
+		$tenant_id = (int) $request['id'];
+		$tenant    = Limpeed_Tenants::get( $tenant_id );
+		if ( ! $tenant ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Locataire introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_body_params();
+		}
+
+		$description = isset( $params['description'] ) ? trim( wp_unslash( $params['description'] ) ) : '';
+		if ( '' === $description ) {
+			return new WP_Error( 'limpeed_invalid', __( 'La description de l\'avenant est obligatoire.', 'limpeed-immobilier' ), array( 'status' => 400 ) );
+		}
+
+		$data = array(
+			'tenant_id'       => $tenant_id,
+			'amendment_date'  => isset( $params['amendment_date'] ) ? sanitize_text_field( $params['amendment_date'] ) : current_time( 'Y-m-d' ),
+			'description'     => $description,
+			'new_rent_amount' => isset( $params['new_rent_amount'] ) ? wp_unslash( $params['new_rent_amount'] ) : '',
+			'new_lease_end'   => isset( $params['new_lease_end'] ) ? sanitize_text_field( $params['new_lease_end'] ) : '',
+		);
+
+		$id = Limpeed_Lease_Amendments::insert( $data );
+		if ( ! $id ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible d\'enregistrer l\'avenant.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( array( 'id' => $id ), 201 );
+	}
+
+	/**
+	 * DELETE /tenants/{id}/amendments/{amendment_id}.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_tenant_amendment( WP_REST_Request $request ) {
+		$amendment = Limpeed_Lease_Amendments::get( (int) $request['amendment_id'] );
+		if ( ! $amendment || (int) $amendment->tenant_id !== (int) $request['id'] ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Avenant introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		Limpeed_Lease_Amendments::delete( $amendment->id );
+
+		return new WP_REST_Response( array( 'deleted' => true ) );
 	}
 }

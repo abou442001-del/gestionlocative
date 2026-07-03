@@ -36,6 +36,7 @@ class Limpeed_Activity_Log {
 			'payment'   => __( 'Paiement', 'limpeed-immobilier' ),
 			'statement' => __( 'Bordereau', 'limpeed-immobilier' ),
 			'agent'     => __( 'Agent', 'limpeed-immobilier' ),
+			'mandate'   => __( 'Mandat de gestion', 'limpeed-immobilier' ),
 		);
 	}
 

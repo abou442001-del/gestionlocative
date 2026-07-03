@@ -325,6 +325,42 @@ class Limpeed_Activator {
 			KEY created_at (created_at)
 		) {$charset_collate};";
 
+		$mandates_table = $wpdb->prefix . 'limpeed_mandates';
+
+		$sql_mandates = "CREATE TABLE {$mandates_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			building_id BIGINT UNSIGNED NOT NULL,
+			start_date DATE NOT NULL,
+			end_date DATE NULL,
+			commission_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
+			status VARCHAR(20) NOT NULL DEFAULT 'actif',
+			signed_date DATE NULL,
+			notes TEXT NULL,
+			created_by BIGINT UNSIGNED NULL,
+			updated_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NULL,
+			PRIMARY KEY  (id),
+			KEY building_id (building_id),
+			KEY status (status),
+			KEY end_date (end_date)
+		) {$charset_collate};";
+
+		$amendments_table = $wpdb->prefix . 'limpeed_lease_amendments';
+
+		$sql_amendments = "CREATE TABLE {$amendments_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			tenant_id BIGINT UNSIGNED NOT NULL,
+			amendment_date DATE NOT NULL,
+			description TEXT NOT NULL,
+			new_rent_amount DECIMAL(12,2) NULL,
+			new_lease_end DATE NULL,
+			created_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY tenant_id (tenant_id)
+		) {$charset_collate};";
+
 		dbDelta( $sql_owners );
 		dbDelta( $sql_buildings );
 		dbDelta( $sql_properties );
@@ -332,5 +368,7 @@ class Limpeed_Activator {
 		dbDelta( $sql_payments );
 		dbDelta( $sql_statements );
 		dbDelta( $sql_activity_log );
+		dbDelta( $sql_mandates );
+		dbDelta( $sql_amendments );
 	}
 }

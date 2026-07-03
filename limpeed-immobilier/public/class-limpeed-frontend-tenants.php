@@ -38,6 +38,13 @@ class Limpeed_Frontend_Tenants {
 			return;
 		}
 
+		// Téléchargement du contrat de bail (PDF généré à la volée, non stocké).
+		if ( isset( $_GET['action'], $_GET['id'] ) && 'download_contract' === $_GET['action'] ) {
+			$id = (int) $_GET['id'];
+			check_admin_referer( 'limpeed_download_lease_contract_' . $id );
+			Limpeed_Contracts::stream_lease_contract( $id );
+		}
+
 		// Suppression.
 		if ( isset( $_GET['action'], $_GET['id'] ) && 'delete' === $_GET['action'] ) {
 			$id = (int) $_GET['id'];

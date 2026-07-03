@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.24.0
+Stable tag: 1.25.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,13 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.25.0 =
+* Nouveau module "Contrats & Mandats" :
+  * Nouvelle section "Mandats" (menu Gestion) : mandats de gestion locative par édifice (période, taux de commission propre au mandat, statut actif/expiré/résilié dérivé automatiquement de la date de fin), avec recherche, filtres et historique.
+  * Génération à la volée (PDF, non stocké) du contrat de bail à partir de la fiche locataire, et du mandat de gestion à partir de sa fiche — boutons "Générer le contrat de bail (PDF)" / "Télécharger le mandat (PDF)".
+  * Nouvel onglet "Avenants" sur la fiche locataire : journal des avenants au bail (révision de loyer, prolongation) avec mise à jour automatique du loyer/de la date de fin du bail lorsque l'avenant les modifie.
+  * Nouvelles tables `wp_limpeed_mandates` et `wp_limpeed_lease_amendments`, nouveaux endpoints REST `/mandates`, `/mandates/{id}`, `/mandates/{id}/history`, `/tenants/{id}/amendments`.
 
 = 1.24.0 =
 * Tableau de bord : les 4 listes ("Derniers locataires", "Derniers propriétaires", "Quittances soldées", "Quittances en attente de paiement") sont désormais des widgets Ajax avec recherche et pagination réelles ("Afficher X / Rechercher", boutons Premier/Précédent/numéros de page/Suivant/Dernier), au lieu d'un instantané statique limité aux 10 derniers éléments.

@@ -697,9 +697,11 @@ h2.limpeed-panel-title-blue { background: var(--limpeed-blue); }
 .limpeed-app-badge-termine,
 .limpeed-app-badge-aucun,
 .limpeed-app-badge-vacant,
+.limpeed-app-badge-resilie,
 .limpeed-app-badge-aucun_paiement { background: var(--limpeed-bg); color: var(--limpeed-text-muted); }
 
 .limpeed-app-badge-partiel,
+.limpeed-app-badge-expire,
 .limpeed-app-badge-travaux { background: var(--limpeed-warning-light); color: var(--limpeed-warning); }
 .limpeed-app-badge-en_retard,
 .limpeed-app-badge-insuffisant { background: var(--limpeed-danger-light); color: var(--limpeed-danger); }
