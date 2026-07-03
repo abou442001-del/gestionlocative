@@ -418,137 +418,351 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 <?php else : ?>
 	<?php
 	// -----------------------------------------------------------------
-	// Liste.
+	// Liste dynamique (Alpine.js) : recherche/filtres en direct, modale
+	// d'ajout/modification, actions Ajax, panneau de détail. Toutes les
+	// données transitent par l'API REST limpeed/v1 (voir
+	// includes/class-limpeed-rest-api.php) ; ce fichier ne fait que fournir
+	// le balisage et la configuration initiale (statuts, biens pour le
+	// filtre, textes traduits, URL + nonce REST).
 	// -----------------------------------------------------------------
-	$search      = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : '';
-	$property_id = isset( $_GET['property_id'] ) ? (int) $_GET['property_id'] : 0;
-	$status      = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '';
+	$statuses           = Limpeed_Tenants::get_statuses();
+	$id_document_types  = Limpeed_Tenants::get_id_document_types();
+	$filter_properties  = Limpeed_Properties::get_all( array( 'per_page' => 9999 ) );
 
-	$args = array(
-		'search'      => $search,
-		'property_id' => $property_id,
-		'status'      => $status,
-		'per_page'    => 9999,
+	$property_options = array_map(
+		function ( $property ) {
+			return array(
+				'id'    => (int) $property->id,
+				'label' => Limpeed_Properties::get_display_label( $property ),
+			);
+		},
+		$filter_properties
 	);
 
-	$tenants           = Limpeed_Tenants::get_all( $args );
-	$filter_properties = Limpeed_Properties::get_all( array( 'per_page' => 9999 ) );
-	$filter_owners     = Limpeed_Owners::get_all( array( 'per_page' => 9999 ) );
+	$app_config = array(
+		'statuses'         => $statuses,
+		'idDocumentTypes'  => $id_document_types,
+		'propertyOptions'  => $property_options,
+		'i18n'             => array(
+			'created'       => __( 'Locataire ajouté avec succès.', 'limpeed-immobilier' ),
+			'updated'       => __( 'Locataire mis à jour avec succès.', 'limpeed-immobilier' ),
+			'deleted'       => __( 'Locataire supprimé avec succès.', 'limpeed-immobilier' ),
+			'confirmDelete' => __( 'Confirmez-vous la suppression de ce locataire ?', 'limpeed-immobilier' ),
+		),
+	);
 
-	// Regroupe les locataires par propriétaire (résolu via leur bien), pour
-	// une navigation rangée par propriétaire plutôt qu'une liste plate.
-	$owners_by_id = array();
-	foreach ( $filter_owners as $filter_owner ) {
-		$owners_by_id[ (int) $filter_owner->id ] = $filter_owner;
-	}
-
-	$tenants_by_owner = array();
-	foreach ( $tenants as $tenant_row ) {
-		$tenant_property = Limpeed_Properties::get( $tenant_row->property_id );
-		$tenant_owner_id = $tenant_property ? (int) $tenant_property->owner_id : 0;
-		$tenants_by_owner[ $tenant_owner_id ][] = $tenant_row;
-	}
-
-	uksort(
-		$tenants_by_owner,
-		function ( $a, $b ) use ( $owners_by_id ) {
-			$name_a = isset( $owners_by_id[ $a ] ) ? $owners_by_id[ $a ]->full_name : '';
-			$name_b = isset( $owners_by_id[ $b ] ) ? $owners_by_id[ $b ]->full_name : '';
-			return strcasecmp( $name_a, $name_b );
-		}
+	$rest_config = array(
+		'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
+		'nonce' => wp_create_nonce( 'wp_rest' ),
 	);
 	?>
 
-	<div class="limpeed-app-panel">
+	<div class="limpeed-app-panel" x-data="limpeedTenantsApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
 		<div class="limpeed-app-toolbar">
-			<form method="get" class="limpeed-app-search">
-				<input type="hidden" name="page_id" value="<?php echo (int) Limpeed_Frontend::dashboard_page_id(); ?>">
-				<input type="hidden" name="limpeed_view" value="tenants">
-				<input type="text" name="q" placeholder="<?php esc_attr_e( 'Rechercher un locataire...', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $search ); ?>">
-				<select name="property_id">
+			<div class="limpeed-app-search">
+				<input type="text" x-model="search" @input="onSearchInput()" placeholder="<?php esc_attr_e( 'Rechercher un locataire...', 'limpeed-immobilier' ); ?>">
+				<select x-model="filterPropertyId" @change="onFilterChange()">
 					<option value=""><?php esc_html_e( 'Tous les biens', 'limpeed-immobilier' ); ?></option>
-					<?php foreach ( $filter_properties as $property_option ) : ?>
-						<option value="<?php echo esc_attr( $property_option->id ); ?>" <?php selected( $property_id, $property_option->id ); ?>>
-							<?php echo esc_html( Limpeed_Properties::get_display_label( $property_option ) ); ?>
-						</option>
-					<?php endforeach; ?>
+					<template x-for="option in propertyOptions" :key="option.id">
+						<option :value="option.id" x-text="option.label"></option>
+					</template>
 				</select>
-				<select name="status">
+				<select x-model="filterStatus" @change="onFilterChange()">
 					<option value=""><?php esc_html_e( 'Tous les statuts', 'limpeed-immobilier' ); ?></option>
-					<?php foreach ( Limpeed_Tenants::get_statuses() as $key => $label ) : ?>
-						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $status, $key ); ?>>
-							<?php echo esc_html( $label ); ?>
-						</option>
-					<?php endforeach; ?>
+					<template x-for="[key, label] in Object.entries(statuses)" :key="key">
+						<option :value="key" x-text="label"></option>
+					</template>
 				</select>
-				<button type="submit" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Filtrer', 'limpeed-immobilier' ); ?></button>
-			</form>
-			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'add' ) ) ); ?>" class="limpeed-app-btn"><?php esc_html_e( 'Ajouter un locataire', 'limpeed-immobilier' ); ?></a>
+			</div>
+			<button type="button" class="limpeed-app-btn" @click="openAddModal()"><?php esc_html_e( 'Ajouter un locataire', 'limpeed-immobilier' ); ?></button>
 		</div>
 
-		<?php
-		Limpeed_Frontend::render_notice(
-			$message,
-			array(
-				'created' => __( 'Locataire ajouté avec succès.', 'limpeed-immobilier' ),
-				'updated' => __( 'Locataire mis à jour avec succès.', 'limpeed-immobilier' ),
-				'deleted' => __( 'Locataire supprimé avec succès.', 'limpeed-immobilier' ),
-			)
-		);
-		?>
-
-		<?php if ( empty( $tenants_by_owner ) ) : ?>
-			<p><?php esc_html_e( 'Aucun locataire pour le moment.', 'limpeed-immobilier' ); ?></p>
-		<?php endif; ?>
-
-		<?php
-		$statuses = Limpeed_Tenants::get_statuses();
-		foreach ( $tenants_by_owner as $group_owner_id => $owner_tenants ) :
-			$group_owner = $owners_by_id[ $group_owner_id ] ?? null;
-			?>
-			<h3>
-				<?php if ( $group_owner ) : ?>
-					<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'owners', array( 'action' => 'view', 'id' => $group_owner->id ) ) ); ?>"><?php echo esc_html( $group_owner->full_name ); ?></a>
-				<?php else : ?>
-					<?php esc_html_e( 'Sans propriétaire', 'limpeed-immobilier' ); ?>
-				<?php endif; ?>
-			</h3>
-			<table class="limpeed-app-table">
-				<thead>
-					<tr>
-						<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
-						<th><?php esc_html_e( 'Bien loué', 'limpeed-immobilier' ); ?></th>
-						<th><?php esc_html_e( 'Téléphone', 'limpeed-immobilier' ); ?></th>
-						<th><?php esc_html_e( 'Début bail', 'limpeed-immobilier' ); ?></th>
-						<th><?php esc_html_e( 'Fin bail', 'limpeed-immobilier' ); ?></th>
-						<th><?php esc_html_e( 'Loyer', 'limpeed-immobilier' ); ?></th>
-						<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
-						<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $owner_tenants as $tenant_row ) : ?>
-						<?php
-						$edit_url   = Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $tenant_row->id ) );
-						$delete_url = wp_nonce_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'delete', 'id' => $tenant_row->id ) ), 'limpeed_delete_tenant_' . $tenant_row->id );
-						$property   = Limpeed_Properties::get( $tenant_row->property_id );
-						?>
-						<tr>
-							<td><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( $tenant_row->full_name ); ?></a></td>
-							<td><?php echo $property ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $property->id ) ) ) . '">' . esc_html( Limpeed_Properties::get_display_label( $property ) ) . '</a>' : '&mdash;'; ?></td>
-							<td><?php echo $tenant_row->phone ? esc_html( $tenant_row->phone ) : '&mdash;'; ?></td>
-							<td><?php echo $tenant_row->lease_start ? esc_html( mysql2date( get_option( 'date_format' ), $tenant_row->lease_start ) ) : '&mdash;'; ?></td>
-							<td><?php echo $tenant_row->lease_end ? esc_html( mysql2date( get_option( 'date_format' ), $tenant_row->lease_end ) ) : '&mdash;'; ?></td>
-							<td><?php echo esc_html( Limpeed_Payments::format_amount( $tenant_row->rent_amount ) ); ?></td>
-							<td><span class="limpeed-app-badge"><?php echo isset( $statuses[ $tenant_row->status ] ) ? esc_html( $statuses[ $tenant_row->status ] ) : esc_html( $tenant_row->status ); ?></span></td>
-							<td class="limpeed-app-actions">
-								<a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></a>
-								<a href="<?php echo esc_url( $delete_url ); ?>" class="limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous la suppression de ce locataire ?', 'limpeed-immobilier' ); ?>"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></a>
-							</td>
+		<table class="limpeed-app-table">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
+					<th><?php esc_html_e( 'Propriétaire', 'limpeed-immobilier' ); ?></th>
+					<th><?php esc_html_e( 'Bien loué', 'limpeed-immobilier' ); ?></th>
+					<th><?php esc_html_e( 'Téléphone', 'limpeed-immobilier' ); ?></th>
+					<th><?php esc_html_e( 'Loyer', 'limpeed-immobilier' ); ?></th>
+					<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
+					<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<template x-if="loading">
+					<template x-for="n in 5" :key="n">
+						<tr class="limpeed-app-skeleton-row">
+							<td><div class="limpeed-app-skeleton-bar" style="width:70%"></div></td>
+							<td><div class="limpeed-app-skeleton-bar" style="width:60%"></div></td>
+							<td><div class="limpeed-app-skeleton-bar" style="width:60%"></div></td>
+							<td><div class="limpeed-app-skeleton-bar" style="width:50%"></div></td>
+							<td><div class="limpeed-app-skeleton-bar" style="width:40%"></div></td>
+							<td><div class="limpeed-app-skeleton-bar" style="width:50%"></div></td>
+							<td><div class="limpeed-app-skeleton-bar" style="width:60%"></div></td>
 						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		<?php endforeach; ?>
+					</template>
+				</template>
+				<tr x-show="!loading && items.length === 0">
+					<td colspan="7" class="limpeed-app-empty-state"><?php esc_html_e( 'Aucun locataire pour le moment.', 'limpeed-immobilier' ); ?></td>
+				</tr>
+				<template x-for="row in items" :key="row.id">
+					<tr>
+						<td><button type="button" class="limpeed-app-link-btn" @click="openDrawer(row)" x-text="row.full_name"></button></td>
+						<td x-text="row.owner_label || '—'"></td>
+						<td x-text="row.property_label || '—'"></td>
+						<td x-text="row.phone || '—'"></td>
+						<td x-text="row.rent_formatted"></td>
+						<td><span class="limpeed-app-badge" :class="'limpeed-app-badge-' + row.status" x-text="row.status_label"></span></td>
+						<td class="limpeed-app-actions">
+							<button type="button" class="limpeed-app-link-btn" @click="openEditModal(row)"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></button>
+							<button type="button" class="limpeed-app-link-btn is-danger" @click="deleteTenant(row)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
+						</td>
+					</tr>
+				</template>
+			</tbody>
+		</table>
+
+		<div class="limpeed-app-pagination" x-show="totalPages > 1" x-cloak>
+			<template x-for="p in totalPages" :key="p">
+				<a href="#" @click.prevent="goToPage(p)" :class="{ 'is-active': p === paged }" x-text="p"></a>
+			</template>
+		</div>
+
+		<!-- Modale ajout / modification -->
+		<div class="limpeed-app-modal-overlay" x-show="modal.open" x-cloak @keydown.escape.window="closeModal()">
+			<div class="limpeed-app-modal" @click.outside="closeModal()" x-show="modal.open" x-transition>
+				<div class="limpeed-app-modal-header">
+					<h2 x-text="modal.mode === 'edit' ? '<?php echo esc_js( __( 'Modifier le locataire', 'limpeed-immobilier' ) ); ?>' : '<?php echo esc_js( __( 'Ajouter un locataire', 'limpeed-immobilier' ) ); ?>'"></h2>
+					<button type="button" class="limpeed-app-modal-close" @click="closeModal()" aria-label="<?php esc_attr_e( 'Fermer', 'limpeed-immobilier' ); ?>">&times;</button>
+				</div>
+				<form class="limpeed-app-form" @submit.prevent="saveTenant()">
+					<div class="limpeed-app-modal-body">
+						<div class="limpeed-app-notice limpeed-app-notice-error" x-show="modal.errors.length">
+							<ul>
+								<template x-for="(error, index) in modal.errors" :key="index">
+									<li x-text="error"></li>
+								</template>
+							</ul>
+						</div>
+
+						<div class="limpeed-form-row">
+							<label><?php esc_html_e( 'Propriétaire', 'limpeed-immobilier' ); ?> <span class="limpeed-app-required">*</span></label>
+							<select x-model="modal.data.owner_id" @change="onModalOwnerChange()" :disabled="modal.loadingCascade">
+								<option value=""><?php esc_html_e( '— Choisir un propriétaire —', 'limpeed-immobilier' ); ?></option>
+								<template x-for="owner in modal.owners" :key="owner.id">
+									<option :value="owner.id" x-text="owner.label"></option>
+								</template>
+							</select>
+						</div>
+						<div class="limpeed-form-row">
+							<label><?php esc_html_e( 'Édifice', 'limpeed-immobilier' ); ?> <span class="limpeed-app-required">*</span></label>
+							<select x-model="modal.data.building_id" @change="onModalBuildingChange()" :disabled="! modal.data.owner_id || modal.loadingCascade">
+								<option value=""><?php esc_html_e( '— Choisir un édifice —', 'limpeed-immobilier' ); ?></option>
+								<template x-for="building in modal.buildings" :key="building.id">
+									<option :value="building.id" x-text="building.label"></option>
+								</template>
+							</select>
+						</div>
+						<div class="limpeed-form-row">
+							<label><?php esc_html_e( 'Sous-édifice (bien loué)', 'limpeed-immobilier' ); ?> <span class="limpeed-app-required">*</span></label>
+							<select x-model="modal.data.property_id" :disabled="! modal.data.building_id || modal.loadingCascade">
+								<option value=""><?php esc_html_e( '— Choisir un sous-édifice —', 'limpeed-immobilier' ); ?></option>
+								<template x-for="property in modal.properties" :key="property.id">
+									<option :value="property.id" :disabled="property.occupied" x-text="property.label + (property.occupied ? ' (<?php echo esc_js( __( 'occupé', 'limpeed-immobilier' ) ); ?>)' : '')"></option>
+								</template>
+							</select>
+							<p class="limpeed-app-form-hint"><?php esc_html_e( 'Choisissez d\'abord le propriétaire, puis l\'édifice, pour afficher ses sous-édifices disponibles.', 'limpeed-immobilier' ); ?></p>
+						</div>
+
+						<div class="limpeed-app-modal-grid">
+							<div class="limpeed-form-row is-full">
+								<label><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?> <span class="limpeed-app-required">*</span></label>
+								<input type="text" x-model="modal.data.full_name" required>
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Téléphone', 'limpeed-immobilier' ); ?></label>
+								<input type="text" x-model="modal.data.phone">
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Email', 'limpeed-immobilier' ); ?></label>
+								<input type="email" x-model="modal.data.email">
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Date début bail', 'limpeed-immobilier' ); ?></label>
+								<input type="date" x-model="modal.data.lease_start">
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Date fin bail', 'limpeed-immobilier' ); ?></label>
+								<input type="date" x-model="modal.data.lease_end">
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Montant du loyer', 'limpeed-immobilier' ); ?></label>
+								<input type="number" step="0.01" min="0" x-model="modal.data.rent_amount">
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Dépôt versé', 'limpeed-immobilier' ); ?></label>
+								<input type="number" step="0.01" min="0" x-model="modal.data.deposit_paid">
+							</div>
+							<div class="limpeed-form-row is-full">
+								<label><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></label>
+								<select x-model="modal.data.status">
+									<template x-for="[key, label] in Object.entries(statuses)" :key="key">
+										<option :value="key" x-text="label"></option>
+									</template>
+								</select>
+							</div>
+						</div>
+
+						<h3><?php esc_html_e( 'Informations complémentaires', 'limpeed-immobilier' ); ?></h3>
+
+						<div class="limpeed-app-modal-grid">
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Pièce d\'identité', 'limpeed-immobilier' ); ?></label>
+								<select x-model="modal.data.id_document_type">
+									<option value=""><?php esc_html_e( '— Non renseigné —', 'limpeed-immobilier' ); ?></option>
+									<template x-for="[key, label] in Object.entries(idDocumentTypes)" :key="key">
+										<option :value="key" x-text="label"></option>
+									</template>
+								</select>
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Numéro du document', 'limpeed-immobilier' ); ?></label>
+								<input type="text" x-model="modal.data.id_document_number">
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Date de naissance', 'limpeed-immobilier' ); ?></label>
+								<input type="date" x-model="modal.data.date_of_birth">
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Profession', 'limpeed-immobilier' ); ?></label>
+								<input type="text" x-model="modal.data.profession">
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Personnes à charge', 'limpeed-immobilier' ); ?></label>
+								<input type="number" min="0" step="1" x-model="modal.data.dependents_count">
+							</div>
+							<div class="limpeed-form-row">
+								<label><?php esc_html_e( 'Garant', 'limpeed-immobilier' ); ?></label>
+								<input type="text" x-model="modal.data.guarantor_name" placeholder="<?php esc_attr_e( 'Nom complet du garant', 'limpeed-immobilier' ); ?>">
+							</div>
+							<div class="limpeed-form-row">
+								<label>&nbsp;</label>
+								<input type="text" x-model="modal.data.guarantor_phone" placeholder="<?php esc_attr_e( 'Téléphone du garant', 'limpeed-immobilier' ); ?>">
+							</div>
+						</div>
+					</div>
+					<div class="limpeed-app-modal-footer">
+						<button type="button" class="limpeed-app-btn limpeed-app-btn-secondary" @click="closeModal()"><?php esc_html_e( 'Annuler', 'limpeed-immobilier' ); ?></button>
+						<button type="submit" class="limpeed-app-btn" :disabled="modal.saving">
+							<span x-text="modal.saving ? '<?php echo esc_js( __( 'Enregistrement...', 'limpeed-immobilier' ) ); ?>' : (modal.mode === 'edit' ? '<?php echo esc_js( __( 'Mettre à jour', 'limpeed-immobilier' ) ); ?>' : '<?php echo esc_js( __( 'Ajouter', 'limpeed-immobilier' ) ); ?>')"></span>
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<!-- Panneau de détail (drawer) -->
+		<template x-if="drawer.open">
+			<div>
+				<div class="limpeed-app-drawer-overlay" @click="closeDrawer()"></div>
+				<div class="limpeed-app-drawer" @keydown.escape.window="closeDrawer()">
+					<div class="limpeed-app-drawer-header">
+						<div>
+							<h2 x-text="drawer.tenant ? drawer.tenant.full_name : ''"></h2>
+							<div class="limpeed-app-drawer-subtitle" x-text="drawer.tenant ? drawer.tenant.property_label : ''"></div>
+						</div>
+						<button type="button" class="limpeed-app-modal-close" @click="closeDrawer()" aria-label="<?php esc_attr_e( 'Fermer', 'limpeed-immobilier' ); ?>">&times;</button>
+					</div>
+					<div class="limpeed-app-drawer-tabs">
+						<button type="button" class="limpeed-app-drawer-tab" :class="{ 'is-active': drawer.tab === 'infos' }" @click="switchDrawerTab('infos')"><?php esc_html_e( 'Infos', 'limpeed-immobilier' ); ?></button>
+						<button type="button" class="limpeed-app-drawer-tab" :class="{ 'is-active': drawer.tab === 'paiements' }" @click="switchDrawerTab('paiements')"><?php esc_html_e( 'Paiements', 'limpeed-immobilier' ); ?></button>
+						<button type="button" class="limpeed-app-drawer-tab" :class="{ 'is-active': drawer.tab === 'historique' }" @click="switchDrawerTab('historique')"><?php esc_html_e( 'Historique du bail', 'limpeed-immobilier' ); ?></button>
+					</div>
+					<div class="limpeed-app-drawer-body">
+						<p x-show="drawer.loading"><?php esc_html_e( 'Chargement...', 'limpeed-immobilier' ); ?></p>
+
+						<template x-if="! drawer.loading && drawer.tab === 'infos' && drawer.tenant">
+							<div>
+								<div class="limpeed-app-drawer-field">
+									<span class="limpeed-app-drawer-field-label"><?php esc_html_e( 'Propriétaire', 'limpeed-immobilier' ); ?></span>
+									<div class="limpeed-app-drawer-field-value" x-text="drawer.tenant.owner_label || '—'"></div>
+								</div>
+								<div class="limpeed-app-drawer-field">
+									<span class="limpeed-app-drawer-field-label"><?php esc_html_e( 'Édifice', 'limpeed-immobilier' ); ?></span>
+									<div class="limpeed-app-drawer-field-value" x-text="drawer.tenant.building_label || '—'"></div>
+								</div>
+								<div class="limpeed-app-drawer-field">
+									<span class="limpeed-app-drawer-field-label"><?php esc_html_e( 'Téléphone', 'limpeed-immobilier' ); ?></span>
+									<div class="limpeed-app-drawer-field-value" x-text="drawer.tenant.phone || '—'"></div>
+								</div>
+								<div class="limpeed-app-drawer-field">
+									<span class="limpeed-app-drawer-field-label"><?php esc_html_e( 'Email', 'limpeed-immobilier' ); ?></span>
+									<div class="limpeed-app-drawer-field-value" x-text="drawer.tenant.email || '—'"></div>
+								</div>
+								<div class="limpeed-app-drawer-field">
+									<span class="limpeed-app-drawer-field-label"><?php esc_html_e( 'Loyer', 'limpeed-immobilier' ); ?></span>
+									<div class="limpeed-app-drawer-field-value" x-text="drawer.tenant.rent_formatted"></div>
+								</div>
+								<div class="limpeed-app-drawer-field">
+									<span class="limpeed-app-drawer-field-label"><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></span>
+									<div class="limpeed-app-drawer-field-value">
+										<span class="limpeed-app-badge" :class="'limpeed-app-badge-' + drawer.tenant.status" x-text="drawer.tenant.status_label"></span>
+									</div>
+								</div>
+								<div class="limpeed-app-drawer-field">
+									<span class="limpeed-app-drawer-field-label"><?php esc_html_e( 'Bail', 'limpeed-immobilier' ); ?></span>
+									<div class="limpeed-app-drawer-field-value">
+										<span x-text="drawer.tenant.lease_start || '—'"></span> &rarr; <span x-text="drawer.tenant.lease_end || '—'"></span>
+									</div>
+								</div>
+								<p><a :href="'<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => '' ) ) ); ?>' + drawer.tenant.id"><?php esc_html_e( 'Voir la fiche complète (dossier, calendrier de paiement)', 'limpeed-immobilier' ); ?> &rarr;</a></p>
+							</div>
+						</template>
+
+						<template x-if="! drawer.loading && drawer.tab === 'paiements'">
+							<div>
+								<p x-show="drawer.payments.length === 0"><?php esc_html_e( 'Aucun paiement enregistré.', 'limpeed-immobilier' ); ?></p>
+								<template x-for="payment in drawer.payments" :key="payment.id">
+									<div class="limpeed-app-drawer-list-item">
+										<span x-text="payment.period"></span>
+										<span x-text="payment.amount_formatted"></span>
+										<span class="limpeed-app-badge" :class="'limpeed-app-badge-' + payment.status" x-text="payment.status_label"></span>
+									</div>
+								</template>
+							</div>
+						</template>
+
+						<template x-if="! drawer.loading && drawer.tab === 'historique'">
+							<div>
+								<p x-show="drawer.history.length === 0"><?php esc_html_e( 'Aucun historique disponible.', 'limpeed-immobilier' ); ?></p>
+								<template x-for="entry in drawer.history" :key="entry.id">
+									<div class="limpeed-app-drawer-list-item">
+										<span x-text="entry.action_label + ' — ' + entry.agent_name"></span>
+										<span x-text="entry.created_at"></span>
+									</div>
+								</template>
+							</div>
+						</template>
+					</div>
+				</div>
+			</div>
+		</template>
+
+		<!-- Notifications toast -->
+		<div class="limpeed-app-toast-container">
+			<template x-for="t in toasts" :key="t.id">
+				<div class="limpeed-app-toast" :class="'limpeed-app-toast-' + t.type" x-text="t.message"></div>
+			</template>
+		</div>
 	</div>
+
+	<noscript><p><?php esc_html_e( 'Cette section nécessite JavaScript pour afficher la liste des locataires.', 'limpeed-immobilier' ); ?></p></noscript>
+
+	<script>
+	window.limpeedRest = <?php echo wp_json_encode( $rest_config ); ?>;
+	</script>
+	<?php /* tenants-app.js enregistre son composant via l'événement "alpine:init", déclenché de façon synchrone dès l'exécution du script Alpine ci-dessous : il doit donc être chargé (et son listener attaché) AVANT le script Alpine, pas après. */ ?>
+	<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/tenants-app.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
+	<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/vendor/alpinejs/alpine.min.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
 <?php endif; ?>

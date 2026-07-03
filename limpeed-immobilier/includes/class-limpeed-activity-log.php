@@ -88,6 +88,7 @@ class Limpeed_Activity_Log {
 		$defaults = array(
 			'user_id'     => 0,
 			'object_type' => '',
+			'object_id'   => 0,
 			'action'      => '',
 			'per_page'    => 20,
 			'paged'       => 1,
@@ -105,6 +106,11 @@ class Limpeed_Activity_Log {
 		if ( ! empty( $args['object_type'] ) ) {
 			$where   .= ' AND object_type = %s';
 			$params[] = sanitize_text_field( $args['object_type'] );
+		}
+
+		if ( ! empty( $args['object_id'] ) ) {
+			$where   .= ' AND object_id = %d';
+			$params[] = (int) $args['object_id'];
 		}
 
 		if ( ! empty( $args['action'] ) ) {
@@ -144,6 +150,11 @@ class Limpeed_Activity_Log {
 		if ( ! empty( $args['object_type'] ) ) {
 			$where   .= ' AND object_type = %s';
 			$params[] = sanitize_text_field( $args['object_type'] );
+		}
+
+		if ( ! empty( $args['object_id'] ) ) {
+			$where   .= ' AND object_id = %d';
+			$params[] = (int) $args['object_id'];
 		}
 
 		if ( ! empty( $args['action'] ) ) {

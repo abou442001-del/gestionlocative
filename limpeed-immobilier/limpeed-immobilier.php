@@ -3,7 +3,7 @@
  * Plugin Name: Limpeed Immobilier - Gestion Locative
  * Plugin URI: https://limpeed-immobilier.com
  * Description: Plugin de gestion locative pour Limpeed Immobilier : biens, propriétaires, locataires, paiements et bordereaux PDF.
- * Version: 1.16.0
+ * Version: 1.17.0
  * Author: Limpeed Immobilier
  * Text Domain: limpeed-immobilier
  * Domain Path: /languages
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes du plugin.
-define( 'LIMPEED_VERSION', '1.16.0' );
+define( 'LIMPEED_VERSION', '1.17.0' );
 define( 'LIMPEED_DB_VERSION', '1.9.0' );
 define( 'LIMPEED_PLUGIN_FILE', __FILE__ );
 define( 'LIMPEED_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -35,6 +35,7 @@ require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-activity-log.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-statements.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-agents.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-branding.php';
+require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-rest-api.php';
 
 if ( is_admin() ) {
 	require_once LIMPEED_PLUGIN_DIR . 'admin/class-limpeed-admin.php';
@@ -85,6 +86,16 @@ function limpeed_check_db_version() {
 	}
 }
 add_action( 'init', 'limpeed_check_db_version', 5 );
+
+/**
+ * Initialise l'API REST (limpeed/v1), indépendamment du contexte admin/frontend
+ * puisque les requêtes REST ne passent pas par is_admin().
+ */
+function limpeed_init_rest_api() {
+	$rest_api = new Limpeed_Rest_Api();
+	$rest_api->init();
+}
+add_action( 'plugins_loaded', 'limpeed_init_rest_api' );
 
 /**
  * Initialise les pages d'administration.

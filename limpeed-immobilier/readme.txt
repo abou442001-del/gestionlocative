@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.16.0
+Stable tag: 1.17.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,13 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.17.0 =
+* Nouvelle API REST (`limpeed/v1`) sécurisée par les capacités du plugin et le nonce standard de l'API REST WordPress (`X-WP-Nonce`).
+* Section Locataires (application frontend) entièrement dynamique : recherche et filtres (bien, statut) en direct sans rechargement de page, ajout/modification dans une fenêtre modale avec la cascade Propriétaire → Édifice → Sous-édifice peuplée en Ajax, suppression avec confirmation, notifications de succès/erreur, indicateurs de chargement (squelettes).
+* Nouveau panneau de détail (clic sur le nom d'un locataire) avec trois onglets : Infos, Paiements, Historique du bail.
+* Alpine.js est désormais embarqué localement dans le plugin (aucune dépendance à un CDN externe).
+* La fiche complète d'un locataire (dossier, calendrier de paiement annuel) reste accessible depuis le panneau de détail pour une consultation approfondie.
 
 = 1.16.0 =
 * Paiements : ajout d'un champ de recherche par nom de locataire dans la liste des paiements (admin et frontend).

@@ -53,6 +53,10 @@
 	box-sizing: border-box;
 }
 
+[x-cloak] {
+	display: none !important;
+}
+
 body.limpeed-app {
 	margin: 0;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -949,5 +953,277 @@ a.limpeed-app-calendar-month-retard:hover {
 
 	.limpeed-app-nav-item {
 		justify-content: center;
+	}
+}
+
+/* ---------------------------------------------------------------------
+ * Section Locataires dynamique (Alpine.js) : liens, skeleton, modale,
+ * panneau de détail (drawer) et notifications toast.
+ * ------------------------------------------------------------------- */
+
+.limpeed-app-link-btn {
+	background: none;
+	border: none;
+	padding: 0;
+	margin: 0;
+	font: inherit;
+	color: var(--limpeed-blue);
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.limpeed-app-link-btn:hover {
+	text-decoration: underline;
+}
+
+.limpeed-app-table .limpeed-app-actions button.limpeed-app-link-btn {
+	margin-right: 12px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.limpeed-app-table .limpeed-app-actions button.limpeed-app-link-btn.is-danger {
+	color: var(--limpeed-danger);
+}
+
+/* Skeleton loader */
+.limpeed-app-skeleton-row td {
+	padding: 12px 10px;
+}
+
+.limpeed-app-skeleton-bar {
+	height: 14px;
+	border-radius: 4px;
+	background: linear-gradient(90deg, var(--limpeed-border) 25%, var(--limpeed-bg) 37%, var(--limpeed-border) 63%);
+	background-size: 400% 100%;
+	animation: limpeed-skeleton-pulse 1.4s ease infinite;
+}
+
+@keyframes limpeed-skeleton-pulse {
+	0% { background-position: 100% 50%; }
+	100% { background-position: 0 50%; }
+}
+
+.limpeed-app-empty-state {
+	padding: 32px 16px;
+	text-align: center;
+	color: var(--limpeed-text-muted);
+}
+
+/* Modale */
+.limpeed-app-modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(16, 24, 40, .5);
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 40px 16px;
+	overflow-y: auto;
+	z-index: 1000;
+}
+
+.limpeed-app-modal {
+	background: var(--limpeed-surface);
+	border-radius: var(--limpeed-radius);
+	box-shadow: var(--limpeed-shadow);
+	width: 100%;
+	max-width: 640px;
+	max-height: calc(100vh - 80px);
+	display: flex;
+	flex-direction: column;
+}
+
+.limpeed-app-modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 18px 22px;
+	border-bottom: 1px solid var(--limpeed-border);
+}
+
+.limpeed-app-modal-header h2 {
+	margin: 0;
+	font-size: 17px;
+}
+
+.limpeed-app-modal-close {
+	background: none;
+	border: none;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+	color: var(--limpeed-text-muted);
+	padding: 4px;
+}
+
+.limpeed-app-modal-close:hover {
+	color: var(--limpeed-text);
+}
+
+.limpeed-app-modal-body {
+	padding: 22px;
+	overflow-y: auto;
+}
+
+.limpeed-app-modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 16px 22px;
+	border-top: 1px solid var(--limpeed-border);
+}
+
+.limpeed-app-modal-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0 16px;
+}
+
+.limpeed-app-modal-grid .limpeed-form-row.is-full {
+	grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+	.limpeed-app-modal-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.limpeed-app-form select:disabled {
+	opacity: .6;
+	cursor: not-allowed;
+}
+
+.limpeed-app-form-hint {
+	font-size: 12px;
+	color: var(--limpeed-text-muted);
+	margin: -10px 0 14px;
+}
+
+/* Drawer de détail */
+.limpeed-app-drawer-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(16, 24, 40, .35);
+	z-index: 1000;
+}
+
+.limpeed-app-drawer {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	max-width: 440px;
+	background: var(--limpeed-surface);
+	box-shadow: -4px 0 16px rgba(16, 24, 40, .12);
+	z-index: 1001;
+	display: flex;
+	flex-direction: column;
+}
+
+.limpeed-app-drawer-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	padding: 20px 22px;
+	border-bottom: 1px solid var(--limpeed-border);
+}
+
+.limpeed-app-drawer-header h2 {
+	margin: 0 0 4px;
+	font-size: 17px;
+}
+
+.limpeed-app-drawer-subtitle {
+	color: var(--limpeed-text-muted);
+	font-size: 13px;
+}
+
+.limpeed-app-drawer-tabs {
+	display: flex;
+	border-bottom: 1px solid var(--limpeed-border);
+	padding: 0 22px;
+}
+
+.limpeed-app-drawer-tab {
+	background: none;
+	border: none;
+	padding: 12px 14px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--limpeed-text-muted);
+	cursor: pointer;
+	border-bottom: 2px solid transparent;
+}
+
+.limpeed-app-drawer-tab.is-active {
+	color: var(--limpeed-blue);
+	border-bottom-color: var(--limpeed-blue);
+}
+
+.limpeed-app-drawer-body {
+	padding: 20px 22px;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.limpeed-app-drawer-field {
+	margin-bottom: 14px;
+}
+
+.limpeed-app-drawer-field-label {
+	display: block;
+	font-size: 12px;
+	color: var(--limpeed-text-muted);
+	margin-bottom: 2px;
+}
+
+.limpeed-app-drawer-field-value {
+	font-size: 14px;
+}
+
+.limpeed-app-drawer-list-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 0;
+	border-bottom: 1px solid var(--limpeed-border);
+	font-size: 13px;
+}
+
+.limpeed-app-drawer-list-item:last-child {
+	border-bottom: none;
+}
+
+/* Toasts */
+.limpeed-app-toast-container {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	z-index: 1100;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	max-width: 340px;
+}
+
+.limpeed-app-toast {
+	padding: 12px 16px;
+	border-radius: var(--limpeed-radius-sm);
+	box-shadow: var(--limpeed-shadow);
+	font-size: 13px;
+	font-weight: 600;
+	color: #fff;
+}
+
+.limpeed-app-toast-success { background: var(--limpeed-green-dark); }
+.limpeed-app-toast-error { background: var(--limpeed-danger); }
+
+@media (max-width: 480px) {
+	.limpeed-app-drawer {
+		max-width: 100%;
 	}
 }
