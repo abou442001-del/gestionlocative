@@ -288,43 +288,39 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		);
 		?>
 
-		<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Téléphone', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Email', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Édifices', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php if ( empty( $owners ) ) : ?>
-					<tr><td colspan="5"><?php esc_html_e( 'Aucun propriétaire pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
-				<?php endif; ?>
-				<?php foreach ( $owners as $owner_row ) : ?>
-					<?php
-					$view_url    = Limpeed_Frontend::app_url( 'owners', array( 'action' => 'view', 'id' => $owner_row->id ) );
-					$edit_url    = Limpeed_Frontend::app_url( 'owners', array( 'action' => 'edit', 'id' => $owner_row->id ) );
-					$delete_url  = wp_nonce_url( Limpeed_Frontend::app_url( 'owners', array( 'action' => 'delete', 'id' => $owner_row->id ) ), 'limpeed_delete_owner_' . $owner_row->id );
-					$buildings_n = Limpeed_Buildings::count( array( 'owner_id' => $owner_row->id ) );
-					?>
-					<tr>
-						<td><a href="<?php echo esc_url( $view_url ); ?>"><?php echo esc_html( $owner_row->full_name ); ?></a></td>
-						<td><?php echo $owner_row->phone ? esc_html( $owner_row->phone ) : '&mdash;'; ?></td>
-						<td><?php echo $owner_row->email ? esc_html( $owner_row->email ) : '&mdash;'; ?></td>
-						<td><?php echo esc_html( $buildings_n ); ?></td>
-						<td class="limpeed-app-actions">
-							<a href="<?php echo esc_url( $view_url ); ?>"><?php esc_html_e( 'Voir', 'limpeed-immobilier' ); ?></a>
-							<a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></a>
-							<a href="<?php echo esc_url( $delete_url ); ?>" class="limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous la suppression de ce propriétaire ?', 'limpeed-immobilier' ); ?>"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></a>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-</div>
+		<div class="limpeed-entity-grid">
+			<?php if ( empty( $owners ) ) : ?>
+				<p class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun propriétaire pour le moment.', 'limpeed-immobilier' ); ?></p>
+			<?php endif; ?>
+			<?php foreach ( $owners as $owner_row ) : ?>
+				<?php
+				$view_url    = Limpeed_Frontend::app_url( 'owners', array( 'action' => 'view', 'id' => $owner_row->id ) );
+				$edit_url    = Limpeed_Frontend::app_url( 'owners', array( 'action' => 'edit', 'id' => $owner_row->id ) );
+				$delete_url  = wp_nonce_url( Limpeed_Frontend::app_url( 'owners', array( 'action' => 'delete', 'id' => $owner_row->id ) ), 'limpeed_delete_owner_' . $owner_row->id );
+				$buildings_n = Limpeed_Buildings::count( array( 'owner_id' => $owner_row->id ) );
+				?>
+				<div class="limpeed-entity-card" data-href="<?php echo esc_url( $view_url ); ?>" role="link" tabindex="0">
+					<div class="limpeed-entity-card-header">
+						<div class="limpeed-entity-card-title"><?php echo esc_html( $owner_row->full_name ); ?></div>
+						<span class="limpeed-app-badge"><?php echo esc_html( number_format_i18n( $buildings_n ) ); ?> <?php echo esc_html( _n( 'édifice', 'édifices', $buildings_n, 'limpeed-immobilier' ) ); ?></span>
+					</div>
+					<div class="limpeed-entity-card-meta">
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-phone"></span>
+							<span><?php echo $owner_row->phone ? esc_html( $owner_row->phone ) : '—'; ?></span>
+						</div>
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-email"></span>
+							<span><?php echo $owner_row->email ? esc_html( $owner_row->email ) : '—'; ?></span>
+						</div>
+					</div>
+					<div class="limpeed-entity-card-footer">
+						<a href="<?php echo esc_url( $edit_url ); ?>" class="limpeed-app-link-btn" onclick="event.stopPropagation();"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></a>
+						<a href="<?php echo esc_url( $delete_url ); ?>" class="limpeed-app-link-btn is-danger limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous la suppression de ce propriétaire ?', 'limpeed-immobilier' ); ?>" onclick="event.stopPropagation();"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></a>
+					</div>
+				</div>
+			<?php endforeach; ?>
+		</div>
 
 		<?php Limpeed_Frontend::render_pagination( $total_items, $per_page, $paged, array( 'q' => $search ) ); ?>
 	</div>

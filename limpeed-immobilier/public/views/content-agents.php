@@ -253,53 +253,52 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 			<button type="submit" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Rechercher', 'limpeed-immobilier' ); ?></button>
 		</form>
 
-		<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Nom', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Identifiant', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Email', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Rôle', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php if ( empty( $agents ) ) : ?>
-					<tr><td colspan="5"><?php esc_html_e( 'Aucun agent pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
-				<?php endif; ?>
-				<?php
-				$roles = Limpeed_Agents::get_available_roles();
-				foreach ( $agents as $agent_row ) :
-					$edit_url    = Limpeed_Frontend::app_url( 'agents', array( 'action' => 'edit', 'id' => $agent_row->ID ) );
-					$revoke_url  = wp_nonce_url( Limpeed_Frontend::app_url( 'agents', array( 'action' => 'revoke', 'id' => $agent_row->ID ) ), 'limpeed_revoke_agent_' . $agent_row->ID );
-					$user_roles  = array_intersect( $agent_row->roles, array_keys( $roles ) );
-					$role_labels = array_map(
-						function ( $role ) use ( $roles ) {
-							return $roles[ $role ];
-						},
-						$user_roles
-					);
-					$is_self = get_current_user_id() === $agent_row->ID;
-					?>
-					<tr>
-						<td><?php echo esc_html( $agent_row->display_name ); ?></td>
-						<td><?php echo esc_html( $agent_row->user_login ); ?></td>
-						<td><?php echo esc_html( $agent_row->user_email ); ?></td>
-						<td><?php echo esc_html( implode( ', ', $role_labels ) ); ?></td>
-						<td class="limpeed-app-actions">
-							<?php if ( ! $is_self ) : ?>
-								<a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( 'Modifier le rôle', 'limpeed-immobilier' ); ?></a>
-								<a href="<?php echo esc_url( $revoke_url ); ?>" class="limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous la révocation de l\'accès de cet agent ?', 'limpeed-immobilier' ); ?>"><?php esc_html_e( 'Révoquer l\'accès', 'limpeed-immobilier' ); ?></a>
-							<?php else : ?>
-								&mdash;
-							<?php endif; ?>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-</div>
+		<div class="limpeed-entity-grid">
+			<?php if ( empty( $agents ) ) : ?>
+				<p class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun agent pour le moment.', 'limpeed-immobilier' ); ?></p>
+			<?php endif; ?>
+			<?php
+			$roles = Limpeed_Agents::get_available_roles();
+			foreach ( $agents as $agent_row ) :
+				$edit_url    = Limpeed_Frontend::app_url( 'agents', array( 'action' => 'edit', 'id' => $agent_row->ID ) );
+				$revoke_url  = wp_nonce_url( Limpeed_Frontend::app_url( 'agents', array( 'action' => 'revoke', 'id' => $agent_row->ID ) ), 'limpeed_revoke_agent_' . $agent_row->ID );
+				$user_roles  = array_intersect( $agent_row->roles, array_keys( $roles ) );
+				$role_labels = array_map(
+					function ( $role ) use ( $roles ) {
+						return $roles[ $role ];
+					},
+					$user_roles
+				);
+				$is_self = get_current_user_id() === $agent_row->ID;
+				?>
+				<div class="limpeed-entity-card" <?php echo $is_self ? '' : 'data-href="' . esc_url( $edit_url ) . '" role="link" tabindex="0"'; ?>>
+					<div class="limpeed-entity-card-header">
+						<div class="limpeed-entity-card-title"><?php echo esc_html( $agent_row->display_name ); ?></div>
+						<?php if ( $is_self ) : ?>
+							<span class="limpeed-app-badge limpeed-app-badge-actif"><?php esc_html_e( 'Vous', 'limpeed-immobilier' ); ?></span>
+						<?php else : ?>
+							<span class="limpeed-app-badge"><?php echo esc_html( implode( ', ', $role_labels ) ); ?></span>
+						<?php endif; ?>
+					</div>
+					<div class="limpeed-entity-card-meta">
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-admin-users"></span>
+							<span><?php echo esc_html( $agent_row->user_login ); ?></span>
+						</div>
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-email"></span>
+							<span><?php echo esc_html( $agent_row->user_email ); ?></span>
+						</div>
+					</div>
+					<?php if ( ! $is_self ) : ?>
+						<div class="limpeed-entity-card-footer">
+							<a href="<?php echo esc_url( $edit_url ); ?>" class="limpeed-app-link-btn" onclick="event.stopPropagation();"><?php esc_html_e( 'Modifier le rôle', 'limpeed-immobilier' ); ?></a>
+							<a href="<?php echo esc_url( $revoke_url ); ?>" class="limpeed-app-link-btn is-danger limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous la révocation de l\'accès de cet agent ?', 'limpeed-immobilier' ); ?>" onclick="event.stopPropagation();"><?php esc_html_e( 'Révoquer l\'accès', 'limpeed-immobilier' ); ?></a>
+						</div>
+					<?php endif; ?>
+				</div>
+			<?php endforeach; ?>
+		</div>
 
 		<?php Limpeed_Frontend::render_pagination( $total_items, $per_page, $paged, array( 'q' => $search ) ); ?>
 	</div>

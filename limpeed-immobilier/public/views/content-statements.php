@@ -162,49 +162,44 @@ if ( 'add' === $action ) :
 		);
 		?>
 
-		<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Période', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Propriétaire', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Loyers encaissés', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Commission', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Net reversé', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Généré le', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Généré par', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php if ( empty( $statements ) ) : ?>
-					<tr><td colspan="8"><?php esc_html_e( 'Aucun bordereau pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
-				<?php endif; ?>
-				<?php foreach ( $statements as $statement_row ) : ?>
-					<?php
-					$download_url = wp_nonce_url( Limpeed_Frontend::app_url( 'statements', array( 'action' => 'download', 'id' => $statement_row->id ) ), 'limpeed_download_statement_' . $statement_row->id );
-					$delete_url   = wp_nonce_url( Limpeed_Frontend::app_url( 'statements', array( 'action' => 'delete', 'id' => $statement_row->id ) ), 'limpeed_delete_statement_' . $statement_row->id );
-					$owner        = Limpeed_Owners::get( $statement_row->owner_id );
-					$user         = $statement_row->generated_by ? get_userdata( $statement_row->generated_by ) : false;
-					$period_label = ( $statement_row->period_start === $statement_row->period_end ) ? $statement_row->period_start : sprintf( '%s — %s', $statement_row->period_start, $statement_row->period_end );
-					?>
-					<tr>
-						<td><a href="<?php echo esc_url( $download_url ); ?>"><?php echo esc_html( $period_label ); ?></a></td>
-						<td><?php echo $owner ? '<a href="' . esc_url( Limpeed_Frontend::app_url( 'owners', array( 'action' => 'edit', 'id' => $owner->id ) ) ) . '">' . esc_html( $owner->full_name ) . '</a>' : '&mdash;'; ?></td>
-						<td><?php echo esc_html( Limpeed_Payments::format_amount( $statement_row->total_collected ) ); ?></td>
-						<td><?php echo esc_html( Limpeed_Payments::format_amount( $statement_row->total_commission ) ); ?></td>
-						<td><?php echo esc_html( Limpeed_Payments::format_amount( $statement_row->net_amount ) ); ?></td>
-						<td><?php echo esc_html( mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $statement_row->created_at ) ); ?></td>
-						<td><?php echo $user ? esc_html( $user->display_name ) : '&mdash;'; ?></td>
-						<td class="limpeed-app-actions">
-							<a href="<?php echo esc_url( $download_url ); ?>"><?php esc_html_e( 'Télécharger', 'limpeed-immobilier' ); ?></a>
-							<a href="<?php echo esc_url( $delete_url ); ?>" class="limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous la suppression de ce bordereau ?', 'limpeed-immobilier' ); ?>"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></a>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-</div>
+		<div class="limpeed-entity-grid">
+			<?php if ( empty( $statements ) ) : ?>
+				<p class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun bordereau pour le moment.', 'limpeed-immobilier' ); ?></p>
+			<?php endif; ?>
+			<?php foreach ( $statements as $statement_row ) : ?>
+				<?php
+				$download_url = wp_nonce_url( Limpeed_Frontend::app_url( 'statements', array( 'action' => 'download', 'id' => $statement_row->id ) ), 'limpeed_download_statement_' . $statement_row->id );
+				$delete_url   = wp_nonce_url( Limpeed_Frontend::app_url( 'statements', array( 'action' => 'delete', 'id' => $statement_row->id ) ), 'limpeed_delete_statement_' . $statement_row->id );
+				$owner        = Limpeed_Owners::get( $statement_row->owner_id );
+				$user         = $statement_row->generated_by ? get_userdata( $statement_row->generated_by ) : false;
+				$period_label = ( $statement_row->period_start === $statement_row->period_end ) ? $statement_row->period_start : sprintf( '%s — %s', $statement_row->period_start, $statement_row->period_end );
+				?>
+				<div class="limpeed-entity-card" data-href="<?php echo esc_url( $download_url ); ?>" role="link" tabindex="0">
+					<div class="limpeed-entity-card-header">
+						<div class="limpeed-entity-card-title"><?php echo esc_html( $period_label ); ?></div>
+						<span class="limpeed-app-badge limpeed-app-badge-paye"><?php echo esc_html( Limpeed_Payments::format_amount( $statement_row->net_amount ) ); ?></span>
+					</div>
+					<div class="limpeed-entity-card-meta">
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-groups"></span>
+							<span><?php echo $owner ? esc_html( $owner->full_name ) : '—'; ?></span>
+						</div>
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-money-alt"></span>
+							<span><?php printf( esc_html__( '%1$s encaissés, %2$s de commission', 'limpeed-immobilier' ), esc_html( Limpeed_Payments::format_amount( $statement_row->total_collected ) ), esc_html( Limpeed_Payments::format_amount( $statement_row->total_commission ) ) ); ?></span>
+						</div>
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-clock"></span>
+							<span><?php echo esc_html( mysql2date( get_option( 'date_format' ), $statement_row->created_at ) ); ?> — <?php echo $user ? esc_html( $user->display_name ) : '—'; ?></span>
+						</div>
+					</div>
+					<div class="limpeed-entity-card-footer">
+						<a href="<?php echo esc_url( $download_url ); ?>" class="limpeed-app-link-btn" onclick="event.stopPropagation();"><?php esc_html_e( 'Télécharger', 'limpeed-immobilier' ); ?></a>
+						<a href="<?php echo esc_url( $delete_url ); ?>" class="limpeed-app-link-btn is-danger limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous la suppression de ce bordereau ?', 'limpeed-immobilier' ); ?>" onclick="event.stopPropagation();"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></a>
+					</div>
+				</div>
+			<?php endforeach; ?>
+		</div>
 
 		<?php Limpeed_Frontend::render_pagination( $total_items, $per_page, $paged, array( 'owner_id' => $owner_id ) ); ?>
 	</div>

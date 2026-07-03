@@ -102,53 +102,40 @@ $mandates_expiring = count( Limpeed_Mandates::get_expiring( 30 ) );
 		<button type="button" class="limpeed-app-btn" @click="openAddModal()"><?php esc_html_e( 'Ajouter un mandat', 'limpeed-immobilier' ); ?></button>
 	</div>
 
-	<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-		<thead>
-			<tr>
-				<th><?php esc_html_e( 'Édifice', 'limpeed-immobilier' ); ?></th>
-				<th><?php esc_html_e( 'Propriétaire', 'limpeed-immobilier' ); ?></th>
-				<th><?php esc_html_e( 'Début', 'limpeed-immobilier' ); ?></th>
-				<th><?php esc_html_e( 'Fin', 'limpeed-immobilier' ); ?></th>
-				<th><?php esc_html_e( 'Commission', 'limpeed-immobilier' ); ?></th>
-				<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
-				<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
-			</tr>
-		</thead>
-		<tbody>
-			<template x-if="loading">
-				<template x-for="n in 5" :key="n">
-					<tr class="limpeed-app-skeleton-row">
-						<td><div class="limpeed-app-skeleton-bar" style="width:70%"></div></td>
-						<td><div class="limpeed-app-skeleton-bar" style="width:60%"></div></td>
-						<td><div class="limpeed-app-skeleton-bar" style="width:50%"></div></td>
-						<td><div class="limpeed-app-skeleton-bar" style="width:50%"></div></td>
-						<td><div class="limpeed-app-skeleton-bar" style="width:30%"></div></td>
-						<td><div class="limpeed-app-skeleton-bar" style="width:40%"></div></td>
-						<td><div class="limpeed-app-skeleton-bar" style="width:50%"></div></td>
-					</tr>
-				</template>
+	<div class="limpeed-entity-grid">
+		<template x-if="loading">
+			<template x-for="n in 6" :key="n">
+				<div class="limpeed-entity-card-skeleton"></div>
 			</template>
-			<tr x-show="!loading && items.length === 0">
-				<td colspan="7" class="limpeed-app-empty-state"><?php esc_html_e( 'Aucun mandat pour le moment.', 'limpeed-immobilier' ); ?></td>
-			</tr>
-			<template x-for="row in items" :key="row.id">
-				<tr>
-					<td><button type="button" class="limpeed-app-link-btn" @click="openDrawer(row)" x-text="row.building_label"></button></td>
-					<td x-text="row.owner_label || '—'"></td>
-					<td x-text="row.start_date"></td>
-					<td x-text="row.end_date || '—'"></td>
-					<td x-text="row.commission_rate_label"></td>
-					<td><span class="limpeed-app-badge" :class="'limpeed-app-badge-' + row.status" x-text="row.status_label"></span></td>
-					<td class="limpeed-app-actions">
-						<button type="button" class="limpeed-app-link-btn" @click="openEditModal(row)"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></button>
-						<button type="button" class="limpeed-app-link-btn is-danger" @click="deleteMandate(row)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
-					</td>
-				</tr>
-			</template>
-		</tbody>
-	</table>
-</div>
+		</template>
+		<p x-show="!loading && items.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun mandat pour le moment.', 'limpeed-immobilier' ); ?></p>
+		<template x-for="row in items" :key="row.id">
+			<div class="limpeed-entity-card" @click="openDrawer(row)">
+				<div class="limpeed-entity-card-header">
+					<div class="limpeed-entity-card-title" x-text="row.building_label"></div>
+					<span class="limpeed-app-badge" :class="'limpeed-app-badge-' + row.status" x-text="row.status_label"></span>
+				</div>
+				<div class="limpeed-entity-card-meta">
+					<div class="limpeed-entity-card-meta-row">
+						<span class="dashicons dashicons-groups"></span>
+						<span x-text="row.owner_label || '—'"></span>
+					</div>
+					<div class="limpeed-entity-card-meta-row">
+						<span class="dashicons dashicons-calendar-alt"></span>
+						<span x-text="row.start_date + ' — ' + (row.end_date || '<?php echo esc_js( __( 'indéterminée', 'limpeed-immobilier' ) ); ?>')"></span>
+					</div>
+					<div class="limpeed-entity-card-meta-row">
+						<span class="dashicons dashicons-chart-bar"></span>
+						<span x-text="row.commission_rate_label"></span>
+					</div>
+				</div>
+				<div class="limpeed-entity-card-footer">
+					<button type="button" class="limpeed-app-link-btn" @click.stop="openEditModal(row)"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></button>
+					<button type="button" class="limpeed-app-link-btn is-danger" @click.stop="deleteMandate(row)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
+				</div>
+			</div>
+		</template>
+	</div>
 
 	<div class="limpeed-app-pagination" x-show="totalPages > 1" x-cloak>
 		<template x-for="p in totalPages" :key="p">

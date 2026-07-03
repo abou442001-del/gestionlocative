@@ -8,6 +8,24 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 	} );
 
+	// Cartes de liste cliquables (grilles Propriétaires/Bordereaux/Agents...) :
+	// navigue vers data-href sauf si le clic provient d'un lien/bouton imbriqué
+	// dans le pied de carte (Modifier/Supprimer), qui doit garder son propre
+	// comportement plutôt que déclencher aussi la navigation de la carte.
+	document.querySelectorAll( '.limpeed-entity-card[data-href]' ).forEach( function ( card ) {
+		card.addEventListener( 'click', function ( event ) {
+			if ( event.target.closest( 'a, button' ) ) {
+				return;
+			}
+			window.location.href = card.getAttribute( 'data-href' );
+		} );
+		card.addEventListener( 'keydown', function ( event ) {
+			if ( 'Enter' === event.key && ! event.target.closest( 'a, button' ) ) {
+				window.location.href = card.getAttribute( 'data-href' );
+			}
+		} );
+	} );
+
 	var themeToggle = document.getElementById( 'limpeed-theme-toggle' );
 	if ( themeToggle ) {
 		themeToggle.addEventListener( 'click', function () {

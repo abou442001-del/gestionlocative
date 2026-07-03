@@ -81,19 +81,17 @@ $documents_this_month = Limpeed_Documents::count_added_this_month();
 	</div>
 
 	<div x-show="entityType && entityOptions.length > 0" x-cloak style="margin-top: 10px;">
-		<div class="limpeed-app-table-wrap">
-			<table class="limpeed-app-table">
-				<tbody>
-					<template x-for="option in entityOptions" :key="option.id">
-						<tr>
-							<td x-text="option.label"></td>
-							<td class="limpeed-app-actions">
-								<button type="button" class="limpeed-app-link-btn" @click="selectEntity(option.id)"><?php esc_html_e( 'Voir les documents', 'limpeed-immobilier' ); ?></button>
-							</td>
-						</tr>
-					</template>
-				</tbody>
-			</table>
+		<div class="limpeed-entity-grid">
+			<template x-for="option in entityOptions" :key="option.id">
+				<div class="limpeed-entity-card" @click="selectEntity(option.id)">
+					<div class="limpeed-entity-card-header">
+						<div class="limpeed-entity-card-title" x-text="option.label"></div>
+					</div>
+					<div class="limpeed-entity-card-footer">
+						<span class="limpeed-app-link-btn"><?php esc_html_e( 'Voir les documents', 'limpeed-immobilier' ); ?></span>
+					</div>
+				</div>
+			</template>
 		</div>
 	</div>
 
@@ -101,36 +99,35 @@ $documents_this_month = Limpeed_Documents::count_added_this_month();
 		<div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--limpeed-border);">
 			<h2><?php esc_html_e( 'Documents', 'limpeed-immobilier' ); ?></h2>
 
-			<div class="limpeed-app-table-wrap">
-				<table class="limpeed-app-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Titre', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Fichier', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Taille', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Ajouté le', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr x-show="loadingDocuments"><td colspan="5"><div class="limpeed-app-skeleton-bar"></div></td></tr>
-						<tr x-show="!loadingDocuments && documents.length === 0">
-							<td colspan="5" class="limpeed-app-empty-state"><?php esc_html_e( 'Aucun document pour le moment.', 'limpeed-immobilier' ); ?></td>
-						</tr>
-						<template x-for="doc in documents" :key="doc.id">
-							<tr>
-								<td x-text="doc.title"></td>
-								<td x-text="doc.file_name"></td>
-								<td x-text="doc.file_size_label"></td>
-								<td x-text="doc.created_at"></td>
-								<td class="limpeed-app-actions">
-									<a :href="doc.download_url" class="limpeed-app-link-btn"><?php esc_html_e( 'Télécharger', 'limpeed-immobilier' ); ?></a>
-									<button type="button" class="limpeed-app-link-btn is-danger" @click="deleteDocument(doc)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
-								</td>
-							</tr>
-						</template>
-					</tbody>
-				</table>
+			<div class="limpeed-entity-grid">
+				<template x-if="loadingDocuments">
+					<template x-for="n in 3" :key="n">
+						<div class="limpeed-entity-card-skeleton"></div>
+					</template>
+				</template>
+				<p x-show="!loadingDocuments && documents.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun document pour le moment.', 'limpeed-immobilier' ); ?></p>
+				<template x-for="doc in documents" :key="doc.id">
+					<div class="limpeed-entity-card" @click="window.location.href = doc.download_url">
+						<div class="limpeed-entity-card-header">
+							<div class="limpeed-entity-card-title" x-text="doc.title"></div>
+							<span class="limpeed-app-badge" x-text="doc.file_size_label"></span>
+						</div>
+						<div class="limpeed-entity-card-meta">
+							<div class="limpeed-entity-card-meta-row">
+								<span class="dashicons dashicons-media-default"></span>
+								<span x-text="doc.file_name"></span>
+							</div>
+							<div class="limpeed-entity-card-meta-row">
+								<span class="dashicons dashicons-clock"></span>
+								<span x-text="doc.created_at"></span>
+							</div>
+						</div>
+						<div class="limpeed-entity-card-footer">
+							<a :href="doc.download_url" class="limpeed-app-link-btn" @click.stop><?php esc_html_e( 'Télécharger', 'limpeed-immobilier' ); ?></a>
+							<button type="button" class="limpeed-app-link-btn is-danger" @click.stop="deleteDocument(doc)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
+						</div>
+					</div>
+				</template>
 			</div>
 
 			<form @submit.prevent="uploadDocument()" class="limpeed-app-modal-grid" style="margin-top: 16px; align-items: end;">

@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.33.0
+Stable tag: 1.34.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.34.0 =
+* Refonte visuelle de toutes les listes de l'application : les tableaux denses (Propriétaires, Locataires, Biens, Édifices, Mandats, États des lieux, Paiements, Bordereaux, Agents, Documents, Charges) sont remplacés par des grilles de cartes cliquables, dans le même esprit que les cartes KPI du tableau de bord.
+* Chaque carte affiche le nom/titre, un badge de statut et les informations clés (avec icône) ; cliquer n'importe où sur la carte ouvre le panneau de détail (ou déclenche l'action principale : téléchargement pour un bordereau ou un document), les actions secondaires (Modifier/Supprimer) restant accessibles en pied de carte sans déclencher le clic principal.
+* Nouveau module CSS réutilisable `.limpeed-entity-grid`/`.limpeed-entity-card` (mode sombre inclus) et gestionnaire de clic générique dans `app.js` pour les listes rendues côté serveur (Propriétaires, Bordereaux, Agents).
+* Le grand livre de la Comptabilité et le journal d'activité restent des tableaux : ce sont des relevés chronologiques en lecture seule, sans fiche de détail à afficher au clic.
 
 = 1.33.0 =
 * Bordereau ("Décompte propriétaire") aligné plus fidèlement sur le modèle fourni par le client :

@@ -310,50 +310,40 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<button type="button" class="limpeed-app-btn" @click="openAddModal()"><?php esc_html_e( 'Ajouter un édifice', 'limpeed-immobilier' ); ?></button>
 		</div>
 
-		<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Édifice', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Propriétaire', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Adresse', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Commission', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Sous-édifices', 'limpeed-immobilier' ); ?></th>
-					<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<template x-if="loading">
-					<template x-for="n in 5" :key="n">
-						<tr class="limpeed-app-skeleton-row">
-							<td><div class="limpeed-app-skeleton-bar" style="width:70%"></div></td>
-							<td><div class="limpeed-app-skeleton-bar" style="width:60%"></div></td>
-							<td><div class="limpeed-app-skeleton-bar" style="width:60%"></div></td>
-							<td><div class="limpeed-app-skeleton-bar" style="width:40%"></div></td>
-							<td><div class="limpeed-app-skeleton-bar" style="width:30%"></div></td>
-							<td><div class="limpeed-app-skeleton-bar" style="width:50%"></div></td>
-						</tr>
-					</template>
+		<div class="limpeed-entity-grid">
+			<template x-if="loading">
+				<template x-for="n in 6" :key="n">
+					<div class="limpeed-entity-card-skeleton"></div>
 				</template>
-				<tr x-show="!loading && items.length === 0">
-					<td colspan="6" class="limpeed-app-empty-state"><?php esc_html_e( 'Aucun édifice pour le moment.', 'limpeed-immobilier' ); ?></td>
-				</tr>
-				<template x-for="row in items" :key="row.id">
-					<tr>
-						<td><button type="button" class="limpeed-app-link-btn" @click="openDrawer(row)" x-text="row.name"></button></td>
-						<td x-text="row.owner_label || '—'"></td>
-						<td x-text="row.address || '—'"></td>
-						<td x-text="row.commission_rate_label"></td>
-						<td x-text="row.properties_count"></td>
-						<td class="limpeed-app-actions">
-							<button type="button" class="limpeed-app-link-btn" @click="openEditModal(row)"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></button>
-							<button type="button" class="limpeed-app-link-btn is-danger" @click="deleteBuilding(row)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
-						</td>
-					</tr>
-				</template>
-			</tbody>
-		</table>
-</div>
+			</template>
+			<p x-show="!loading && items.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun édifice pour le moment.', 'limpeed-immobilier' ); ?></p>
+			<template x-for="row in items" :key="row.id">
+				<div class="limpeed-entity-card" @click="openDrawer(row)">
+					<div class="limpeed-entity-card-header">
+						<div class="limpeed-entity-card-title" x-text="row.name"></div>
+						<span class="limpeed-app-badge" x-text="row.commission_rate_label"></span>
+					</div>
+					<div class="limpeed-entity-card-meta">
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-groups"></span>
+							<span x-text="row.owner_label || '—'"></span>
+						</div>
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-location"></span>
+							<span x-text="row.address || '—'"></span>
+						</div>
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-building"></span>
+							<span x-text="row.properties_count + ' sous-édifices'"></span>
+						</div>
+					</div>
+					<div class="limpeed-entity-card-footer">
+						<button type="button" class="limpeed-app-link-btn" @click.stop="openEditModal(row)"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></button>
+						<button type="button" class="limpeed-app-link-btn is-danger" @click.stop="deleteBuilding(row)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
+					</div>
+				</div>
+			</template>
+		</div>
 
 		<div class="limpeed-app-pagination" x-show="totalPages > 1" x-cloak>
 			<template x-for="p in totalPages" :key="p">
