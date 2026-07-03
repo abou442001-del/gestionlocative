@@ -1,0 +1,133 @@
+<?php
+/**
+ * Contenu frontend de la section "Documents" : sélection d'une entité
+ * (propriétaire / édifice / bien / locataire) puis liste + upload de ses
+ * documents. Le CRUD transite par l'API REST (voir includes/class-limpeed-rest-api.php).
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+$app_config = array(
+	'entityTypes' => Limpeed_Documents::get_entity_types(),
+	'i18n'        => array(
+		'uploaded'      => __( 'Document ajouté avec succès.', 'limpeed-immobilier' ),
+		'deleted'       => __( 'Document supprimé avec succès.', 'limpeed-immobilier' ),
+		'confirmDelete' => __( 'Confirmez-vous la suppression de ce document ?', 'limpeed-immobilier' ),
+	),
+);
+
+$rest_config = array(
+	'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
+	'nonce' => wp_create_nonce( 'wp_rest' ),
+);
+?>
+
+<div class="limpeed-app-panel" x-data="limpeedDocumentsApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
+	<h2><?php esc_html_e( 'Rechercher une fiche', 'limpeed-immobilier' ); ?></h2>
+	<div class="limpeed-app-modal-grid">
+		<div class="limpeed-form-row">
+			<label><?php esc_html_e( 'Type de fiche', 'limpeed-immobilier' ); ?></label>
+			<select x-model="entityType" @change="onEntityTypeChange()">
+				<option value=""><?php esc_html_e( '— Choisir un type —', 'limpeed-immobilier' ); ?></option>
+				<template x-for="(label, key) in entityTypes" :key="key">
+					<option :value="key" x-text="label"></option>
+				</template>
+			</select>
+		</div>
+		<div class="limpeed-form-row" x-show="entityType">
+			<label><?php esc_html_e( 'Rechercher', 'limpeed-immobilier' ); ?></label>
+			<input type="text" x-model="entitySearch" @input="onEntitySearchInput()" placeholder="<?php esc_attr_e( 'Nom...', 'limpeed-immobilier' ); ?>">
+		</div>
+	</div>
+
+	<div x-show="entityType && entityOptions.length > 0" x-cloak style="margin-top: 10px;">
+		<div class="limpeed-app-table-wrap">
+			<table class="limpeed-app-table">
+				<tbody>
+					<template x-for="option in entityOptions" :key="option.id">
+						<tr>
+							<td x-text="option.label"></td>
+							<td class="limpeed-app-actions">
+								<button type="button" class="limpeed-app-link-btn" @click="selectEntity(option.id)"><?php esc_html_e( 'Voir les documents', 'limpeed-immobilier' ); ?></button>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<template x-if="entityId">
+		<div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--limpeed-border);">
+			<h2><?php esc_html_e( 'Documents', 'limpeed-immobilier' ); ?></h2>
+
+			<div class="limpeed-app-table-wrap">
+				<table class="limpeed-app-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Titre', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Fichier', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Taille', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Ajouté le', 'limpeed-immobilier' ); ?></th>
+							<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr x-show="loadingDocuments"><td colspan="5"><div class="limpeed-app-skeleton-bar"></div></td></tr>
+						<tr x-show="!loadingDocuments && documents.length === 0">
+							<td colspan="5" class="limpeed-app-empty-state"><?php esc_html_e( 'Aucun document pour le moment.', 'limpeed-immobilier' ); ?></td>
+						</tr>
+						<template x-for="doc in documents" :key="doc.id">
+							<tr>
+								<td x-text="doc.title"></td>
+								<td x-text="doc.file_name"></td>
+								<td x-text="doc.file_size_label"></td>
+								<td x-text="doc.created_at"></td>
+								<td class="limpeed-app-actions">
+									<a :href="doc.download_url" class="limpeed-app-link-btn"><?php esc_html_e( 'Télécharger', 'limpeed-immobilier' ); ?></a>
+									<button type="button" class="limpeed-app-link-btn is-danger" @click="deleteDocument(doc)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
+								</td>
+							</tr>
+						</template>
+					</tbody>
+				</table>
+			</div>
+
+			<form @submit.prevent="uploadDocument()" class="limpeed-app-modal-grid" style="margin-top: 16px; align-items: end;">
+				<div class="limpeed-form-row">
+					<label><?php esc_html_e( 'Titre du document', 'limpeed-immobilier' ); ?></label>
+					<input type="text" x-model="uploadForm.title" placeholder="<?php esc_attr_e( 'Ex : Pièce d\'identité', 'limpeed-immobilier' ); ?>">
+				</div>
+				<div class="limpeed-form-row">
+					<label><?php esc_html_e( 'Fichier', 'limpeed-immobilier' ); ?> <span class="limpeed-app-required">*</span></label>
+					<input type="file" id="limpeed-document-file-input" @change="onFileChange($event)" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx">
+					<p class="limpeed-app-form-hint"><?php esc_html_e( 'PDF, image ou document Word, 5 Mo maximum.', 'limpeed-immobilier' ); ?></p>
+				</div>
+				<div class="limpeed-form-row is-full">
+					<button type="submit" class="limpeed-app-btn" :disabled="uploadForm.uploading || !uploadForm.file">
+						<span x-text="uploadForm.uploading ? '<?php echo esc_js( __( 'Envoi...', 'limpeed-immobilier' ) ); ?>' : '<?php echo esc_js( __( 'Ajouter le document', 'limpeed-immobilier' ) ); ?>'"></span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</template>
+
+	<!-- Notifications toast -->
+	<div class="limpeed-app-toast-container">
+		<template x-for="t in toasts" :key="t.id">
+			<div class="limpeed-app-toast" :class="'limpeed-app-toast-' + t.type" x-text="t.message"></div>
+		</template>
+	</div>
+</div>
+
+<noscript><p><?php esc_html_e( 'Cette section nécessite JavaScript.', 'limpeed-immobilier' ); ?></p></noscript>
+
+<script>
+window.limpeedRest = <?php echo wp_json_encode( $rest_config ); ?>;
+</script>
+<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/limpeed-rest-client.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
+<?php /* documents-app.js enregistre son composant via l'événement "alpine:init", déclenché de façon synchrone dès l'exécution du script Alpine ci-dessous : il doit donc être chargé (et son listener attaché) AVANT le script Alpine, pas après. */ ?>
+<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/documents-app.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
+<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/vendor/alpinejs/alpine.min.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>

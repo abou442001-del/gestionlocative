@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.27.0
+Stable tag: 1.28.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.28.0 =
+* Nouveau module "Documents" (menu Gestion) : gestion documentaire centralisée pour tout type de pièce administrative (bail, quittance, pièce d'identité, etc.).
+  * Sélecteur d'entité (propriétaire, édifice, bien ou locataire) avec recherche, réutilisant les listes existantes ; documents rattachés par un couple entity_type/entity_id.
+  * Téléversement (PDF, images, Word) jusqu'à 5 Mo, stockage hors accès web direct (dossier protégé par .htaccess, comme les bordereaux), téléchargement sécurisé par capacité + nonce.
+  * Nouvelle table `wp_limpeed_documents`, nouveaux endpoints REST `GET/POST /documents`, `DELETE /documents/{id}`.
 
 = 1.27.0 =
 * Nouveau module "Trésorerie" (menu Finances), en lecture seule :

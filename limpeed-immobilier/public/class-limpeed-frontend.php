@@ -156,6 +156,12 @@ class Limpeed_Frontend {
 				'icon'  => 'dashicons-media-document',
 				'group' => __( 'Gestion', 'limpeed-immobilier' ),
 			),
+			'documents'    => array(
+				'label' => __( 'Documents', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_tenants',
+				'icon'  => 'dashicons-portfolio',
+				'group' => __( 'Gestion', 'limpeed-immobilier' ),
+			),
 			'payments'     => array(
 				'label' => __( 'Paiements', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_payments',

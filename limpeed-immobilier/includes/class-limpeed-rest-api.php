@@ -517,6 +517,38 @@ class Limpeed_Rest_Api {
 				'args'                => $id_arg,
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/documents',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_documents' ),
+					'permission_callback' => array( $this, 'can_view_lookups' ),
+					'args'                => array(
+						'entity_type' => array( 'sanitize_callback' => 'sanitize_key' ),
+						'entity_id'   => array( 'sanitize_callback' => 'absint' ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_document' ),
+					'permission_callback' => array( $this, 'can_view_lookups' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/documents/(?P<id>\d+)',
+			array(
+				'methods'             => WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'delete_document' ),
+				'permission_callback' => array( $this, 'can_view_lookups' ),
+				'args'                => $id_arg,
+			)
+		);
 	}
 
 	/**
@@ -2627,5 +2659,90 @@ class Limpeed_Rest_Api {
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * GET /documents?entity_type=&entity_id= : liste des documents d'une entité.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_documents( WP_REST_Request $request ) {
+		$entity_type = (string) $request->get_param( 'entity_type' );
+		$entity_id   = (int) $request->get_param( 'entity_id' );
+
+		if ( empty( $entity_type ) || empty( $entity_id ) || ! array_key_exists( $entity_type, Limpeed_Documents::get_entity_types() ) ) {
+			return new WP_Error( 'limpeed_invalid', __( 'Type et identifiant d\'entité requis.', 'limpeed-immobilier' ), array( 'status' => 400 ) );
+		}
+
+		$documents = Limpeed_Documents::get_for_entity( $entity_type, $entity_id );
+
+		$items = array_map( array( $this, 'format_document_row' ), $documents );
+
+		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * POST /documents (multipart/form-data : entity_type, entity_id, title, file).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_document( WP_REST_Request $request ) {
+		$params = $request->get_params();
+		$files  = $request->get_file_params();
+
+		$entity_type = isset( $params['entity_type'] ) ? sanitize_key( $params['entity_type'] ) : '';
+		$entity_id   = isset( $params['entity_id'] ) ? (int) $params['entity_id'] : 0;
+		$title       = isset( $params['title'] ) ? sanitize_text_field( wp_unslash( $params['title'] ) ) : '';
+
+		if ( empty( $entity_type ) || empty( $entity_id ) ) {
+			return new WP_Error( 'limpeed_invalid', __( 'Type et identifiant d\'entité requis.', 'limpeed-immobilier' ), array( 'status' => 400 ) );
+		}
+
+		$result = Limpeed_Documents::upload( $files['file'] ?? array(), $entity_type, $entity_id, $title );
+
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		return new WP_REST_Response( $this->format_document_row( Limpeed_Documents::get( $result ) ), 201 );
+	}
+
+	/**
+	 * DELETE /documents/{id}.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_document( WP_REST_Request $request ) {
+		$id       = (int) $request['id'];
+		$document = Limpeed_Documents::get( $id );
+		if ( ! $document ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Document introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		Limpeed_Documents::delete( $id );
+
+		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
+	}
+
+	/**
+	 * Formate une ligne de document.
+	 *
+	 * @param object $document
+	 * @return array
+	 */
+	private function format_document_row( $document ) {
+		return array(
+			'id'                => (int) $document->id,
+			'title'             => $document->title,
+			'file_name'         => $document->file_name,
+			'file_size'         => (int) $document->file_size,
+			'file_size_label'   => size_format( (int) $document->file_size ),
+			'mime_type'         => $document->mime_type,
+			'created_at'        => date_i18n( 'd/m/Y H:i', strtotime( $document->created_at ) ),
+			'download_url'      => Limpeed_Frontend::app_url( 'documents', array( 'action' => 'download', 'id' => $document->id, '_wpnonce' => wp_create_nonce( 'limpeed_download_document_' . $document->id ) ) ),
+		);
 	}
 }

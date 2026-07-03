@@ -381,6 +381,23 @@ class Limpeed_Activator {
 			KEY type (type)
 		) {$charset_collate};";
 
+		$documents_table = $wpdb->prefix . 'limpeed_documents';
+
+		$sql_documents = "CREATE TABLE {$documents_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			entity_type VARCHAR(20) NOT NULL,
+			entity_id BIGINT UNSIGNED NOT NULL,
+			title VARCHAR(191) NOT NULL,
+			file_name VARCHAR(255) NOT NULL,
+			file_path VARCHAR(255) NOT NULL,
+			file_size BIGINT UNSIGNED NOT NULL DEFAULT 0,
+			mime_type VARCHAR(100) NULL,
+			uploaded_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY entity (entity_type, entity_id)
+		) {$charset_collate};";
+
 		dbDelta( $sql_owners );
 		dbDelta( $sql_buildings );
 		dbDelta( $sql_properties );
@@ -391,5 +408,6 @@ class Limpeed_Activator {
 		dbDelta( $sql_mandates );
 		dbDelta( $sql_amendments );
 		dbDelta( $sql_inspections );
+		dbDelta( $sql_documents );
 	}
 }
