@@ -123,7 +123,7 @@ class Limpeed_Rest_Api {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_owners' ),
-				'permission_callback' => array( $this, 'can_manage_tenants' ),
+				'permission_callback' => array( $this, 'can_view_lookups' ),
 			)
 		);
 
@@ -131,12 +131,58 @@ class Limpeed_Rest_Api {
 			self::NAMESPACE_V1,
 			'/buildings',
 			array(
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_buildings' ),
-				'permission_callback' => array( $this, 'can_manage_tenants' ),
-				'args'                => array(
-					'owner_id' => array( 'sanitize_callback' => 'absint' ),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_buildings' ),
+					'permission_callback' => array( $this, 'can_view_lookups' ),
+					'args'                => array(
+						'search'   => array( 'sanitize_callback' => 'sanitize_text_field' ),
+						'owner_id' => array( 'sanitize_callback' => 'absint' ),
+						'paged'    => array( 'sanitize_callback' => 'absint' ),
+						'per_page' => array( 'sanitize_callback' => 'absint' ),
+					),
 				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_building' ),
+					'permission_callback' => array( $this, 'can_manage_buildings' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/buildings/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_building' ),
+					'permission_callback' => array( $this, 'can_view_lookups' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_building' ),
+					'permission_callback' => array( $this, 'can_manage_buildings' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_building' ),
+					'permission_callback' => array( $this, 'can_manage_buildings' ),
+					'args'                => $id_arg,
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/buildings/(?P<id>\d+)/history',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_building_history' ),
+				'permission_callback' => array( $this, 'can_manage_buildings' ),
+				'args'                => $id_arg,
 			)
 		);
 
@@ -146,7 +192,7 @@ class Limpeed_Rest_Api {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_properties' ),
-				'permission_callback' => array( $this, 'can_manage_tenants' ),
+				'permission_callback' => array( $this, 'can_view_lookups' ),
 				'args'                => array(
 					'building_id' => array( 'sanitize_callback' => 'absint' ),
 					'tenant_id'   => array( 'sanitize_callback' => 'absint' ),
@@ -156,12 +202,34 @@ class Limpeed_Rest_Api {
 	}
 
 	/**
-	 * Capacité requise pour toutes les routes du pilote Locataires.
+	 * Capacité requise pour les routes de la section Locataires.
 	 *
 	 * @return bool
 	 */
 	public function can_manage_tenants() {
 		return current_user_can( 'manage_limpeed_tenants' );
+	}
+
+	/**
+	 * Capacité requise pour les routes de la section Édifices (mêmes droits
+	 * que les biens : il n'existe pas de capacité manage_limpeed_buildings
+	 * dédiée, voir Limpeed_Frontend_Buildings::handle_request()).
+	 *
+	 * @return bool
+	 */
+	public function can_manage_buildings() {
+		return current_user_can( 'manage_limpeed_properties' );
+	}
+
+	/**
+	 * Capacité requise pour les routes de consultation partagées (propriétaires,
+	 * édifices, biens) : utilisées à la fois comme cascade de sélection par la
+	 * section Locataires et comme listes propres à leurs sections dédiées.
+	 *
+	 * @return bool
+	 */
+	public function can_view_lookups() {
+		return current_user_can( 'manage_limpeed_tenants' ) || current_user_can( 'manage_limpeed_properties' );
 	}
 
 	/**
@@ -383,35 +451,260 @@ class Limpeed_Rest_Api {
 	}
 
 	/**
-	 * GET /buildings?owner_id= : deuxième niveau de la cascade.
+	 * GET /buildings?owner_id=&search=&paged=&per_page= : sert à la fois de
+	 * deuxième niveau de la cascade Locataires (appel léger avec seulement
+	 * owner_id) et de liste paginée pour la section Édifices elle-même (avec
+	 * recherche et pagination). Le per_page par défaut (500) préserve le
+	 * comportement de la cascade quand ces paramètres ne sont pas fournis.
 	 *
 	 * @param WP_REST_Request $request
 	 * @return WP_REST_Response
 	 */
 	public function get_buildings( WP_REST_Request $request ) {
-		$owner_id = (int) $request->get_param( 'owner_id' );
+		$args = array(
+			'search'   => (string) $request->get_param( 'search' ),
+			'owner_id' => (int) $request->get_param( 'owner_id' ),
+			'paged'    => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page' => min( 500, max( 1, (int) $request->get_param( 'per_page' ) ?: 500 ) ),
+			'orderby'  => 'name',
+			'order'    => 'ASC',
+		);
 
-		$buildings = Limpeed_Buildings::get_all(
+		$buildings = Limpeed_Buildings::get_all( $args );
+		$total     = Limpeed_Buildings::count( $args );
+
+		$items = array_map( array( $this, 'format_building_row' ), $buildings );
+
+		return new WP_REST_Response(
 			array(
-				'owner_id' => $owner_id,
-				'per_page' => 500,
-				'orderby'  => 'name',
-				'order'    => 'ASC',
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+			)
+		);
+	}
+
+	/**
+	 * GET /buildings/{id} : fiche complète (onglet Infos du panneau de détail).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_building( WP_REST_Request $request ) {
+		$building = Limpeed_Buildings::get( (int) $request['id'] );
+		if ( ! $building ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Édifice introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		return new WP_REST_Response( $this->format_building_detail( $building ) );
+	}
+
+	/**
+	 * POST /buildings : création.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_building( WP_REST_Request $request ) {
+		$data   = $this->extract_building_data( $request );
+		$errors = $this->validate_building( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$id = Limpeed_Buildings::insert( $data );
+		if ( ! $id ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible d\'enregistrer l\'édifice.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_building_detail( Limpeed_Buildings::get( $id ) ), 201 );
+	}
+
+	/**
+	 * PUT/PATCH /buildings/{id} : modification.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function update_building( WP_REST_Request $request ) {
+		$id       = (int) $request['id'];
+		$building = Limpeed_Buildings::get( $id );
+		if ( ! $building ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Édifice introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$data   = $this->extract_building_data( $request );
+		$errors = $this->validate_building( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$result = Limpeed_Buildings::update( $id, $data );
+		if ( ! $result ) {
+			return new WP_Error( 'limpeed_save_failed', __( 'Impossible de mettre à jour l\'édifice.', 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_building_detail( Limpeed_Buildings::get( $id ) ) );
+	}
+
+	/**
+	 * DELETE /buildings/{id}. Refusé si des sous-édifices (biens) y sont
+	 * encore rattachés (voir Limpeed_Buildings::delete()).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_building( WP_REST_Request $request ) {
+		$id       = (int) $request['id'];
+		$building = Limpeed_Buildings::get( $id );
+		if ( ! $building ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Édifice introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$result = Limpeed_Buildings::delete( $id );
+
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
+	}
+
+	/**
+	 * GET /buildings/{id}/history : journal d'activité lié à cet édifice.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_building_history( WP_REST_Request $request ) {
+		$id       = (int) $request['id'];
+		$building = Limpeed_Buildings::get( $id );
+		if ( ! $building ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Édifice introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$entries = Limpeed_Activity_Log::get_all(
+			array(
+				'object_type' => 'building',
+				'object_id'   => $id,
+				'per_page'    => 50,
 			)
 		);
 
+		$actions = Limpeed_Activity_Log::get_actions();
+
 		$items = array_map(
-			function ( $building ) {
+			function ( $entry ) use ( $actions ) {
+				$user = $entry->user_id ? get_userdata( $entry->user_id ) : false;
 				return array(
-					'id'       => (int) $building->id,
-					'label'    => $building->name,
-					'owner_id' => (int) $building->owner_id,
+					'id'           => (int) $entry->id,
+					'action'       => $entry->action,
+					'action_label' => $actions[ $entry->action ] ?? $entry->action,
+					'description'  => $entry->description,
+					'agent_name'   => $user ? $user->display_name : __( 'Inconnu', 'limpeed-immobilier' ),
+					'created_at'   => $entry->created_at,
 				);
 			},
-			$buildings
+			$entries
 		);
 
 		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * Extrait et pré-nettoie les données édifice d'une requête REST, mêmes
+	 * champs que Limpeed_Frontend_Buildings::handle_request() (hors sous-édifices
+	 * en masse, non gérés par ce pilote — voir la fiche complète classique).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return array
+	 */
+	private function extract_building_data( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_body_params();
+		}
+
+		return array(
+			'owner_id'        => isset( $params['owner_id'] ) ? (int) $params['owner_id'] : 0,
+			'name'            => isset( $params['name'] ) ? wp_unslash( $params['name'] ) : '',
+			'address'         => isset( $params['address'] ) ? wp_unslash( $params['address'] ) : '',
+			'description'     => isset( $params['description'] ) ? wp_unslash( $params['description'] ) : '',
+			'commission_rate' => isset( $params['commission_rate'] ) ? wp_unslash( $params['commission_rate'] ) : '',
+		);
+	}
+
+	/**
+	 * Règles de validation métier, identiques à Limpeed_Frontend_Buildings::validate().
+	 *
+	 * @param array $data
+	 * @return array Liste de messages d'erreur (vide si valide).
+	 */
+	private function validate_building( $data ) {
+		$errors = array();
+
+		if ( empty( $data['owner_id'] ) || ! Limpeed_Owners::get( $data['owner_id'] ) ) {
+			$errors[] = __( 'Veuillez sélectionner un propriétaire valide.', 'limpeed-immobilier' );
+		}
+
+		if ( empty( trim( (string) $data['name'] ) ) ) {
+			$errors[] = __( 'Le nom de l\'édifice est obligatoire.', 'limpeed-immobilier' );
+		}
+
+		if ( '' !== $data['commission_rate'] && ( ! is_numeric( $data['commission_rate'] ) || $data['commission_rate'] < 0 || $data['commission_rate'] > 100 ) ) {
+			$errors[] = __( 'Le taux de commission doit être un nombre entre 0 et 100.', 'limpeed-immobilier' );
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Formate une ligne de la liste (colonnes affichées dans le tableau Édifices),
+	 * et sert aussi de forme allégée pour la cascade de sélection de la section
+	 * Locataires (les champs id/label/owner_id y suffisent, le reste est ignoré).
+	 *
+	 * @param object $building
+	 * @return array
+	 */
+	private function format_building_row( $building ) {
+		$owner = Limpeed_Owners::get( $building->owner_id );
+
+		return array(
+			'id'                     => (int) $building->id,
+			'label'                  => $building->name,
+			'name'                   => $building->name,
+			'owner_id'               => (int) $building->owner_id,
+			'owner_label'            => $owner ? $owner->full_name : '',
+			'address'                => $building->address,
+			'commission_rate'        => (float) $building->commission_rate,
+			'commission_rate_label'  => number_format_i18n( (float) $building->commission_rate, 2 ) . '%',
+			'properties_count'       => Limpeed_Properties::count( array( 'building_id' => $building->id ) ),
+		);
+	}
+
+	/**
+	 * Formate la fiche complète d'un édifice (onglet Infos du panneau de détail).
+	 *
+	 * @param object $building
+	 * @return array
+	 */
+	private function format_building_detail( $building ) {
+		$owner = Limpeed_Owners::get( $building->owner_id );
+
+		return array(
+			'id'                    => (int) $building->id,
+			'owner_id'              => (int) $building->owner_id,
+			'owner_label'           => $owner ? $owner->full_name : '',
+			'name'                  => $building->name,
+			'address'               => $building->address,
+			'description'           => $building->description,
+			'commission_rate'       => (float) $building->commission_rate,
+			'commission_rate_label' => number_format_i18n( (float) $building->commission_rate, 2 ) . '%',
+			'properties_count'      => Limpeed_Properties::count( array( 'building_id' => $building->id ) ),
+		);
 	}
 
 	/**

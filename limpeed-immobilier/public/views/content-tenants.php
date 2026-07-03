@@ -762,6 +762,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	<script>
 	window.limpeedRest = <?php echo wp_json_encode( $rest_config ); ?>;
 	</script>
+	<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/limpeed-rest-client.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
 	<?php /* tenants-app.js enregistre son composant via l'événement "alpine:init", déclenché de façon synchrone dès l'exécution du script Alpine ci-dessous : il doit donc être chargé (et son listener attaché) AVANT le script Alpine, pas après. */ ?>
 	<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/tenants-app.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
 	<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/vendor/alpinejs/alpine.min.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>

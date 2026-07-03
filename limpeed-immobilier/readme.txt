@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.17.0
+Stable tag: 1.18.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,11 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.18.0 =
+* Section Édifices (application frontend) rendue dynamique sur le même modèle que les Locataires : recherche et filtre par propriétaire en direct, modale d'ajout/modification, suppression Ajax avec confirmation (bloquée avec message clair si des sous-édifices y sont encore rattachés), panneau de détail à onglets (Infos, Biens, Historique).
+* L'API REST `limpeed/v1` gère désormais aussi les édifices (liste paginée/recherche, création, modification, suppression, historique), en plus des locataires.
+* Le client REST JavaScript commun aux sections dynamiques est désormais mutualisé (`limpeed-rest-client.js`) au lieu d'être dupliqué par section.
 
 = 1.17.0 =
 * Nouvelle API REST (`limpeed/v1`) sécurisée par les capacités du plugin et le nonce standard de l'API REST WordPress (`X-WP-Nonce`).
