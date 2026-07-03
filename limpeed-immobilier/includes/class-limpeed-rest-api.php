@@ -321,6 +321,19 @@ class Limpeed_Rest_Api {
 				'args'                => $id_arg,
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/dashboard/kpis',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_dashboard_kpis' ),
+				'permission_callback' => array( $this, 'can_manage_properties' ),
+				'args'                => array(
+					'expiring_days' => array( 'sanitize_callback' => 'absint' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -1213,6 +1226,69 @@ class Limpeed_Rest_Api {
 		);
 
 		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * GET /dashboard/kpis?expiring_days= : cartes KPI dynamiques du tableau de
+	 * bord (taux d'occupation, loyers impayés du mois en cours, baux arrivant
+	 * à échéance). Rafraîchi en Ajax par le composant Alpine
+	 * public/assets/js/dashboard-kpis-app.js, sans recharger la page.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_dashboard_kpis( WP_REST_Request $request ) {
+		$expiring_days = (int) $request->get_param( 'expiring_days' ) ?: 30;
+
+		$properties_total    = Limpeed_Properties::count();
+		$properties_occupied = Limpeed_Properties::count( array( 'status' => 'loue' ) );
+		$occupancy_rate      = $properties_total > 0 ? round( ( $properties_occupied / $properties_total ) * 100 ) : 0;
+
+		$period_summary = Limpeed_Payments::get_period_summary();
+		$unpaid_total   = max( 0, $period_summary['expected_total'] - $period_summary['collected'] );
+
+		$unpaid_tenants = array_map(
+			function ( $tenant ) {
+				return array(
+					'id'              => (int) $tenant->id,
+					'full_name'       => $tenant->full_name,
+					'rent_formatted'  => Limpeed_Payments::format_amount( $tenant->rent_amount ),
+				);
+			},
+			array_slice( $period_summary['unpaid_tenants'], 0, 10 )
+		);
+
+		$expiring_leases = Limpeed_Tenants::get_expiring_leases( $expiring_days );
+		$today           = current_time( 'Y-m-d' );
+
+		$expiring_items = array_map(
+			function ( $tenant ) use ( $today ) {
+				$property   = Limpeed_Properties::get( $tenant->property_id );
+				$days_left  = (int) floor( ( strtotime( $tenant->lease_end ) - strtotime( $today ) ) / DAY_IN_SECONDS );
+				return array(
+					'id'             => (int) $tenant->id,
+					'full_name'      => $tenant->full_name,
+					'property_label' => $property ? Limpeed_Properties::get_display_label( $property ) : '',
+					'lease_end'      => $tenant->lease_end,
+					'days_left'      => $days_left,
+				);
+			},
+			$expiring_leases
+		);
+
+		return new WP_REST_Response(
+			array(
+				'occupancy_rate'        => $occupancy_rate,
+				'properties_occupied'   => $properties_occupied,
+				'properties_total'      => $properties_total,
+				'unpaid_count'          => count( $period_summary['unpaid_tenants'] ),
+				'unpaid_total_formatted' => Limpeed_Payments::format_amount( $unpaid_total ),
+				'unpaid_tenants'        => $unpaid_tenants,
+				'expiring_count'        => count( $expiring_items ),
+				'expiring_days'         => $expiring_days,
+				'expiring_leases'       => $expiring_items,
+			)
+		);
 	}
 
 	/**

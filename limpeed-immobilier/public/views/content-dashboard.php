@@ -103,6 +103,91 @@ $properties_occupied_ratio = $properties_count > 0 ? round( ( $properties_occupi
 	</div>
 </div>
 
+<?php
+$kpi_config = array(
+	'expiringDays' => 30,
+	'i18n'         => array(
+		'occupancyRate'  => __( 'Taux d\'occupation', 'limpeed-immobilier' ),
+		'unpaidRents'    => __( 'Loyers impayés (mois en cours)', 'limpeed-immobilier' ),
+		'expiringLeases' => __( 'Baux arrivant à échéance (30 jours)', 'limpeed-immobilier' ),
+	),
+);
+$kpi_rest_config = array(
+	'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
+	'nonce' => wp_create_nonce( 'wp_rest' ),
+);
+?>
+<div class="limpeed-cards-row" x-data="limpeedDashboardKpisApp(<?php echo esc_attr( wp_json_encode( $kpi_config ) ); ?>)">
+	<div class="limpeed-app-card">
+		<button type="button" class="limpeed-app-card-clickable" @click="togglePanel('occupancy')">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number" x-text="loading ? '…' : occupancyRate + '%'"></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Taux d\'occupation', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-chart-pie"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-blue">
+				<span x-text="propertiesOccupied + ' / ' + propertiesTotal + ' <?php echo esc_js( __( 'biens occupés', 'limpeed-immobilier' ) ); ?>'"></span>
+			</div>
+		</button>
+	</div>
+	<div class="limpeed-app-card">
+		<button type="button" class="limpeed-app-card-clickable" @click="togglePanel('unpaid')">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number" x-text="loading ? '…' : unpaidCount"></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Loyers impayés (mois en cours)', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-red"><span class="dashicons dashicons-warning"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-red">
+				<span x-text="unpaidTotalFormatted"></span>
+			</div>
+		</button>
+		<div class="limpeed-app-card-panel" x-show="expandedPanel === 'unpaid'" x-cloak>
+			<p class="limpeed-app-card-panel-empty" x-show="unpaidTenants.length === 0"><?php esc_html_e( 'Aucun impayé ce mois-ci.', 'limpeed-immobilier' ); ?></p>
+			<template x-for="tenant in unpaidTenants" :key="tenant.id">
+				<div class="limpeed-app-card-panel-item">
+					<span x-text="tenant.full_name"></span>
+					<span x-text="tenant.rent_formatted"></span>
+				</div>
+			</template>
+		</div>
+	</div>
+	<div class="limpeed-app-card">
+		<button type="button" class="limpeed-app-card-clickable" @click="togglePanel('expiring')">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number" x-text="loading ? '…' : expiringCount"></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Baux arrivant à échéance (30 jours)', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-calendar-alt"></span></span>
+			</div>
+			<div class="limpeed-app-card-bar limpeed-bar-orange">
+				<span><?php esc_html_e( 'Cliquer pour voir le détail', 'limpeed-immobilier' ); ?></span>
+			</div>
+		</button>
+		<div class="limpeed-app-card-panel" x-show="expandedPanel === 'expiring'" x-cloak>
+			<p class="limpeed-app-card-panel-empty" x-show="expiringLeases.length === 0"><?php esc_html_e( 'Aucun bail à échéance dans les 30 prochains jours.', 'limpeed-immobilier' ); ?></p>
+			<template x-for="tenant in expiringLeases" :key="tenant.id">
+				<div class="limpeed-app-card-panel-item">
+					<span x-text="tenant.full_name + ' — ' + tenant.property_label"></span>
+					<span x-text="tenant.lease_end"></span>
+				</div>
+			</template>
+		</div>
+	</div>
+</div>
+
+<script>
+window.limpeedRest = <?php echo wp_json_encode( $kpi_rest_config ); ?>;
+</script>
+<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/limpeed-rest-client.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
+<?php /* dashboard-kpis-app.js enregistre son composant via l'événement "alpine:init", déclenché de façon synchrone dès l'exécution du script Alpine ci-dessous : il doit donc être chargé (et son listener attaché) AVANT le script Alpine, pas après. */ ?>
+<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/dashboard-kpis-app.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
+<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/vendor/alpinejs/alpine.min.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
+
 <div class="limpeed-app-panel">
 	<h2><?php esc_html_e( 'Statistiques de recouvrement mensuel des loyers', 'limpeed-immobilier' ); ?></h2>
 	<div class="limpeed-chart">

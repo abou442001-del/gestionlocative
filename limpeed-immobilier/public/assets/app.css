@@ -1225,6 +1225,38 @@ a.limpeed-app-calendar-month-retard:hover {
 .limpeed-app-toast-success { background: var(--limpeed-green-dark); }
 .limpeed-app-toast-error { background: var(--limpeed-danger); }
 
+/* Cartes KPI dynamiques du tableau de bord (dépliables) */
+.limpeed-app-card-clickable {
+	cursor: pointer;
+	background: none;
+	border: none;
+	text-align: left;
+	font: inherit;
+	color: inherit;
+	width: 100%;
+	padding: 0;
+}
+
+.limpeed-app-card-panel {
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px solid var(--limpeed-border);
+}
+
+.limpeed-app-card-panel-item {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 6px 0;
+	font-size: 13px;
+}
+
+.limpeed-app-card-panel-empty {
+	font-size: 13px;
+	color: var(--limpeed-text-muted);
+	padding: 6px 0;
+}
+
 @media (max-width: 480px) {
 	.limpeed-app-drawer {
 		max-width: 100%;

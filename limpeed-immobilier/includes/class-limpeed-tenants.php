@@ -493,6 +493,30 @@ class Limpeed_Tenants {
 	}
 
 	/**
+	 * Locataires actifs dont le bail se termine dans les N prochains jours
+	 * (aujourd'hui inclus), du plus proche au plus lointain. Utilisé par la
+	 * carte KPI "Baux arrivant à échéance" du tableau de bord.
+	 *
+	 * @param int $days Fenêtre en nombre de jours.
+	 * @return array
+	 */
+	public static function get_expiring_leases( $days = 30 ) {
+		global $wpdb;
+		$table = self::table();
+
+		$today       = current_time( 'Y-m-d' );
+		$limit_date  = gmdate( 'Y-m-d', strtotime( $today . " +{$days} days" ) );
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} WHERE status = 'actif' AND lease_end IS NOT NULL AND lease_end BETWEEN %s AND %s ORDER BY lease_end ASC",
+				$today,
+				$limit_date
+			)
+		);
+	}
+
+	/**
 	 * Vérifie quelles informations du dossier locataire sont encore manquantes
 	 * (pièce d'identité, garant, profession...), pour l'aide contextuelle
 	 * affichée sur la fiche du locataire.
