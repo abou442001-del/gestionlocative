@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.26.0
+Stable tag: 1.27.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,13 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.27.0 =
+* Nouveau module "Trésorerie" (menu Finances), en lecture seule :
+  * Solde de trésorerie de l'agence (encaissé net non encore reversé aux propriétaires), total encaissé, total des commissions et total reversé depuis toujours.
+  * Graphique de flux de trésorerie sur 6 mois passés + 3 mois de prévision (basée sur les locataires actifs actuels), avec distinction visuelle réel/prévisionnel.
+  * Liste des derniers reversements (décaissements) aux propriétaires, avec lien vers les bordereaux complets.
+  * Nouvelle classe `Limpeed_Treasury`, entièrement calculée à partir des paiements et bordereaux déjà existants (aucune nouvelle table).
 
 = 1.26.0 =
 * Nouveau module "États des lieux" (menu Gestion) :

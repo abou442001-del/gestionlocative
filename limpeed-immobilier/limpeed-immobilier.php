@@ -3,7 +3,7 @@
  * Plugin Name: Limpeed Immobilier - Gestion Locative
  * Plugin URI: https://limpeed-immobilier.com
  * Description: Plugin de gestion locative pour Limpeed Immobilier : biens, propriétaires, locataires, paiements et bordereaux PDF.
- * Version: 1.26.0
+ * Version: 1.27.0
  * Author: Limpeed Immobilier
  * Text Domain: limpeed-immobilier
  * Domain Path: /languages
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes du plugin.
-define( 'LIMPEED_VERSION', '1.26.0' );
+define( 'LIMPEED_VERSION', '1.27.0' );
 define( 'LIMPEED_DB_VERSION', '1.11.0' );
 define( 'LIMPEED_PLUGIN_FILE', __FILE__ );
 define( 'LIMPEED_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -39,6 +39,7 @@ require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-mandates.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-lease-amendments.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-inspections.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-contracts.php';
+require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-treasury.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-rest-api.php';
 
 if ( is_admin() ) {

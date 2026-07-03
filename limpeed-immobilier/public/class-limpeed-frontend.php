@@ -168,6 +168,12 @@ class Limpeed_Frontend {
 				'icon'  => 'dashicons-media-document',
 				'group' => __( 'Finances', 'limpeed-immobilier' ),
 			),
+			'treasury'     => array(
+				'label' => __( 'Trésorerie', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_statements',
+				'icon'  => 'dashicons-chart-line',
+				'group' => __( 'Finances', 'limpeed-immobilier' ),
+			),
 			'agents'       => array(
 				'label' => __( 'Agents', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_agents',
