@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.21.1
+Stable tag: 1.22.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.22.0 =
+* Rafraîchissement visuel de l'application frontend : barre supérieure plus sobre (couleur moins saturée, ombre allégée remplacée par une fine bordure), listes déroulantes (filtres et formulaires) désormais personnalisées avec une flèche dédiée au lieu du rendu natif du navigateur, et bandeaux de titre des listes du tableau de bord ("Liste des...") remplacés par un style plus discret (fond teinté + liseré de couleur) au lieu d'un aplat de couleur plein.
 
 = 1.21.1 =
 * Correction : sur les écrans étroits (mobile), les tableaux des sections de l'application frontend (Locataires, Édifices, Biens, Paiements, Propriétaires, Agents, Journal d'activité, Bordereaux, Tableau de bord) forçaient la page entière à dépasser la largeur de l'écran. Cela provoquait un rendu incorrect des fenêtres modales sur mobile (contenu de la page visible par-dessus la modale, champs coupés sur les bords). Chaque tableau défile désormais horizontalement dans son propre conteneur, sans affecter la largeur de la page.
