@@ -187,6 +187,20 @@ class Limpeed_Expenses {
 	}
 
 	/**
+	 * Total de toutes les charges enregistrées, toutes périodes confondues.
+	 *
+	 * @return float
+	 */
+	public static function get_total() {
+		global $wpdb;
+		$table = self::table();
+
+		$total = $wpdb->get_var( "SELECT SUM(amount) FROM {$table}" );
+
+		return $total ? (float) $total : 0.0;
+	}
+
+	/**
 	 * Insère une nouvelle charge.
 	 *
 	 * @param array $data

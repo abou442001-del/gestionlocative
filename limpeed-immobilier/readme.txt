@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.36.0
+Stable tag: 1.36.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,11 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.36.1 =
+* Trois caisses passent en calcul automatique plutôt qu'en saisie manuelle, puisque leur donnée existe déjà ailleurs dans le plugin : Commission agence (commissions déjà prélevées sur les paiements), Dépense (charges déjà enregistrées dans Comptabilité) et Caution (dépôts de garantie des locataires actuellement actifs).
+* Ces trois caisses affichent une icône de synchronisation (au lieu de la flèche) sur leur tuile, et leur panneau de détail affiche une explication au lieu du formulaire de saisie manuelle. Toute tentative d'y enregistrer un mouvement manuel (y compris directement via l'API REST) est rejetée avec un message explicite.
+* Les 8 autres caisses (Tva sur commission, Caution CIE/SODECI, Honoraire agence, Timbres fiscaux, Droit d'enregistrement, Frais de dossiers, Frais d'assurance, Autres fonds) restent des livres de caisse manuels.
 
 = 1.36.0 =
 * Nouvel onglet "Caisses" dans la section Trésorerie, reprenant le principe de l'ancien logiciel du client : 11 caisses fixes (Commission agence, Caution, Tva sur commission, Dépense, Caution CIE/SODECI, Honoraire agence, Timbres fiscaux (Légalisation bail), Droit d'enregistrement, Frais de dossiers, Frais d'assurance, Autres fonds), chacune tenue manuellement par l'agent comme un petit livre de mouvements (entrées/sorties d'argent), avec un solde calculé automatiquement. Le "Solde" affiché en tête est la somme de toutes les caisses.

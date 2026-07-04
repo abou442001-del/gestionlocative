@@ -3061,11 +3061,13 @@ class Limpeed_Rest_Api {
 		foreach ( $categories as $key => $category ) {
 			$balance   = $data['balances'][ $key ];
 			$items[]   = array(
-				'key'           => $key,
-				'label'         => $category['label'],
-				'color'         => $category['color'],
-				'balance'       => $balance,
-				'balance_label' => Limpeed_Payments::format_amount( $balance ),
+				'key'              => $key,
+				'label'            => $category['label'],
+				'color'            => $category['color'],
+				'mode'             => $category['mode'] ?? 'manual',
+				'auto_description' => $category['auto_description'] ?? '',
+				'balance'          => $balance,
+				'balance_label'    => Limpeed_Payments::format_amount( $balance ),
 			);
 		}
 
@@ -3198,10 +3200,13 @@ class Limpeed_Rest_Api {
 	 * @return array Liste de messages d'erreur (vide si valide).
 	 */
 	private function validate_fund_transaction( $data ) {
-		$errors = array();
+		$errors     = array();
+		$categories = Limpeed_Funds::get_categories();
 
-		if ( ! array_key_exists( $data['fund_category'], Limpeed_Funds::get_categories() ) ) {
+		if ( ! array_key_exists( $data['fund_category'], $categories ) ) {
 			$errors[] = __( 'Caisse sélectionnée invalide.', 'limpeed-immobilier' );
+		} elseif ( 'auto' === ( $categories[ $data['fund_category'] ]['mode'] ?? 'manual' ) ) {
+			$errors[] = __( 'Cette caisse est calculée automatiquement et ne peut pas recevoir de mouvement manuel.', 'limpeed-immobilier' );
 		}
 
 		if ( ! in_array( $data['direction'], array( 'in', 'out' ), true ) ) {

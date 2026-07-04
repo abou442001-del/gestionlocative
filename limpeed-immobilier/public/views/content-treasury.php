@@ -154,7 +154,7 @@ $rest_config = array(
 	<!-- Onglet Caisses -->
 	<template x-if="activeTab === 'caisses'">
 		<div class="limpeed-app-panel">
-			<p class="limpeed-app-description"><?php esc_html_e( "Chaque caisse est un petit livre de mouvements tenu manuellement par l'agent (entrées/sorties d'argent). Le Solde est la somme de toutes les caisses ci-dessous. Cliquez sur une caisse pour voir son historique et ajouter un mouvement.", 'limpeed-immobilier' ); ?></p>
+			<p class="limpeed-app-description"><?php esc_html_e( "Chaque caisse est un petit livre de mouvements tenu manuellement par l'agent (entrées/sorties d'argent), sauf celles marquées d'une icône de synchronisation qui sont calculées automatiquement. Le Solde est la somme de toutes les caisses ci-dessous. Cliquez sur une caisse pour voir son détail.", 'limpeed-immobilier' ); ?></p>
 
 			<p x-show="funds.loading"><?php esc_html_e( 'Chargement...', 'limpeed-immobilier' ); ?></p>
 
@@ -168,7 +168,9 @@ $rest_config = array(
 					<template x-for="item in funds.items" :key="item.key">
 						<button type="button" class="limpeed-fund-card" :class="'limpeed-fund-card--' + item.color" @click="openDrawer(item)">
 							<span class="dashicons dashicons-money limpeed-fund-card-icon-bg"></span>
-							<span class="limpeed-fund-card-arrow"><span class="dashicons dashicons-arrow-right-alt"></span></span>
+							<span class="limpeed-fund-card-arrow" :title="item.mode === 'auto' ? '<?php echo esc_js( __( 'Calculé automatiquement', 'limpeed-immobilier' ) ); ?>' : ''">
+								<span class="dashicons" :class="item.mode === 'auto' ? 'dashicons-update' : 'dashicons-arrow-right-alt'"></span>
+							</span>
 							<div class="limpeed-fund-card-label" x-text="item.label"></div>
 							<div class="limpeed-fund-card-amount" x-text="item.balance_label"></div>
 						</button>
@@ -193,7 +195,14 @@ $rest_config = array(
 				<div class="limpeed-app-drawer-body">
 					<p x-show="drawer.loading"><?php esc_html_e( 'Chargement...', 'limpeed-immobilier' ); ?></p>
 
-					<template x-if="!drawer.loading">
+					<template x-if="!drawer.loading && drawer.mode === 'auto'">
+						<div class="limpeed-app-notice limpeed-app-notice-info">
+							<span class="dashicons dashicons-update"></span>
+							<span x-text="drawer.autoDescription"></span>
+						</div>
+					</template>
+
+					<template x-if="!drawer.loading && drawer.mode !== 'auto'">
 						<div>
 							<p x-show="drawer.items.length === 0"><?php esc_html_e( 'Aucun mouvement enregistré.', 'limpeed-immobilier' ); ?></p>
 							<template x-for="row in drawer.items" :key="row.id">

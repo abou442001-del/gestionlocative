@@ -35,6 +35,8 @@ document.addEventListener( 'alpine:init', function () {
 				category: '',
 				label: '',
 				balanceLabel: '',
+				mode: 'manual',
+				autoDescription: '',
 				items: [],
 				total: 0,
 				totalPages: 1,
@@ -94,6 +96,8 @@ document.addEventListener( 'alpine:init', function () {
 				self.drawer.category = item.key;
 				self.drawer.label = item.label;
 				self.drawer.balanceLabel = item.balance_label;
+				self.drawer.mode = item.mode || 'manual';
+				self.drawer.autoDescription = item.auto_description || '';
 				self.drawer.paged = 1;
 				self.form = createDefaultTransactionForm();
 				self.fetchDrawerTransactions();

@@ -30,53 +30,74 @@ class Limpeed_Funds {
 	 * logiciel). Chaque catégorie porte une couleur d'accent reprise du
 	 * système de couleurs déjà utilisé pour les cartes de l'application.
 	 *
-	 * @return array clé => { label, color }
+	 * La plupart sont des livres de caisse manuels (mode "manual"), mais
+	 * trois catégories ont déjà leur donnée source ailleurs dans le plugin
+	 * et sont donc calculées automatiquement (mode "auto") plutôt que
+	 * ressaisies : Commission agence (commissions déjà prélevées sur les
+	 * paiements), Dépense (charges déjà enregistrées dans Comptabilité) et
+	 * Caution (dépôts de garantie des locataires actuellement actifs).
+	 *
+	 * @return array clé => { label, color, mode, auto_description? }
 	 */
 	public static function get_categories() {
 		return array(
 			'commission_agence'  => array(
-				'label' => __( 'Commission agence', 'limpeed-immobilier' ),
-				'color' => 'blue',
+				'label'            => __( 'Commission agence', 'limpeed-immobilier' ),
+				'color'            => 'blue',
+				'mode'             => 'auto',
+				'auto_description' => __( "Calculé automatiquement à partir des commissions déjà prélevées sur les paiements de loyers.", 'limpeed-immobilier' ),
 			),
 			'caution'            => array(
-				'label' => __( 'Caution', 'limpeed-immobilier' ),
-				'color' => 'orange',
+				'label'            => __( 'Caution', 'limpeed-immobilier' ),
+				'color'            => 'orange',
+				'mode'             => 'auto',
+				'auto_description' => __( 'Calculé automatiquement : somme des dépôts de garantie versés par les locataires actuellement actifs.', 'limpeed-immobilier' ),
 			),
 			'tva_commission'     => array(
 				'label' => __( 'Tva sur commission', 'limpeed-immobilier' ),
 				'color' => 'red',
+				'mode'  => 'manual',
 			),
 			'depense'            => array(
-				'label' => __( 'Dépense', 'limpeed-immobilier' ),
-				'color' => 'red',
+				'label'            => __( 'Dépense', 'limpeed-immobilier' ),
+				'color'            => 'red',
+				'mode'             => 'auto',
+				'auto_description' => __( 'Calculé automatiquement à partir des charges déjà enregistrées dans Comptabilité → Charges.', 'limpeed-immobilier' ),
 			),
 			'caution_cie_sodeci' => array(
 				'label' => __( 'Caution CIE/SODECI', 'limpeed-immobilier' ),
 				'color' => 'blue',
+				'mode'  => 'manual',
 			),
 			'honoraire_agence'   => array(
 				'label' => __( 'Honoraire agence', 'limpeed-immobilier' ),
 				'color' => 'blue',
+				'mode'  => 'manual',
 			),
 			'timbres_fiscaux'    => array(
 				'label' => __( "Timbres fiscaux (Légalisation bail)", 'limpeed-immobilier' ),
 				'color' => 'blue',
+				'mode'  => 'manual',
 			),
 			'droit_enregistrement' => array(
 				'label' => __( "Droit d'enregistrement", 'limpeed-immobilier' ),
 				'color' => 'blue',
+				'mode'  => 'manual',
 			),
 			'frais_dossiers'     => array(
 				'label' => __( 'Frais de dossiers', 'limpeed-immobilier' ),
 				'color' => 'blue',
+				'mode'  => 'manual',
 			),
 			'frais_assurance'    => array(
 				'label' => __( "Frais d'assurance", 'limpeed-immobilier' ),
 				'color' => 'blue',
+				'mode'  => 'manual',
 			),
 			'autres_fonds'       => array(
 				'label' => __( 'Autres fonds', 'limpeed-immobilier' ),
 				'color' => 'blue',
+				'mode'  => 'manual',
 			),
 		);
 	}
@@ -175,12 +196,21 @@ class Limpeed_Funds {
 	}
 
 	/**
-	 * Solde d'une catégorie de caisse (entrées - sorties).
+	 * Solde d'une catégorie de caisse. Pour les catégories en mode "auto",
+	 * le solde est recalculé depuis sa donnée source ailleurs dans le plugin
+	 * plutôt que depuis le livre de mouvements (entrées - sorties).
 	 *
 	 * @param string $category
 	 * @return float
 	 */
 	public static function get_balance( $category ) {
+		$categories = self::get_categories();
+		$mode       = $categories[ $category ]['mode'] ?? 'manual';
+
+		if ( 'auto' === $mode ) {
+			return self::get_auto_balance( $category );
+		}
+
 		global $wpdb;
 		$table = self::table();
 
@@ -192,6 +222,26 @@ class Limpeed_Funds {
 		);
 
 		return $total ? (float) $total : 0.0;
+	}
+
+	/**
+	 * Solde calculé d'une catégorie en mode "auto" à partir de sa donnée
+	 * source (commissions, charges, dépôts de garantie...).
+	 *
+	 * @param string $category
+	 * @return float
+	 */
+	private static function get_auto_balance( $category ) {
+		switch ( $category ) {
+			case 'commission_agence':
+				return Limpeed_Treasury::get_total_commission();
+			case 'depense':
+				return Limpeed_Expenses::get_total();
+			case 'caution':
+				return Limpeed_Tenants::get_total_deposits_held();
+			default:
+				return 0.0;
+		}
 	}
 
 	/**
@@ -224,9 +274,11 @@ class Limpeed_Funds {
 	 */
 	public static function insert( $data ) {
 		global $wpdb;
-		$table = self::table();
+		$table      = self::table();
+		$categories = self::get_categories();
+		$category   = $data['fund_category'] ?? '';
 
-		if ( ! array_key_exists( $data['fund_category'] ?? '', self::get_categories() ) ) {
+		if ( ! array_key_exists( $category, $categories ) || 'auto' === ( $categories[ $category ]['mode'] ?? 'manual' ) ) {
 			return false;
 		}
 

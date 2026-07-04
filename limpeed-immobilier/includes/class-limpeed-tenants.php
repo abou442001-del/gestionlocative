@@ -60,6 +60,21 @@ class Limpeed_Tenants {
 	}
 
 	/**
+	 * Somme des dépôts de garantie versés par les locataires actuellement
+	 * actifs (photo à l'instant présent, pas un historique de mouvements).
+	 *
+	 * @return float
+	 */
+	public static function get_total_deposits_held() {
+		global $wpdb;
+		$table = self::table();
+
+		$total = $wpdb->get_var( "SELECT SUM(deposit_paid) FROM {$table} WHERE status = 'actif'" );
+
+		return $total ? (float) $total : 0.0;
+	}
+
+	/**
 	 * Récupère la liste des locataires avec recherche, filtres et pagination.
 	 *
 	 * @param array $args
