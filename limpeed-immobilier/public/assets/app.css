@@ -1718,3 +1718,99 @@ div.limpeed-entity-card:hover {
 		grid-template-columns: 1fr;
 	}
 }
+
+/* Caisses de la Trésorerie : tuiles pleine couleur (à la différence des
+   cartes KPI/entité, blanches avec un simple accent) car chaque caisse est
+   un petit compte d'argent distinct que l'agent alimente manuellement. */
+.limpeed-fund-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: var(--space-4, 16px);
+}
+
+.limpeed-fund-card {
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	border: none;
+	border-radius: var(--limpeed-radius);
+	box-shadow: var(--limpeed-shadow);
+	padding: 18px 20px;
+	color: #fff;
+	text-align: left;
+	cursor: pointer;
+	font: inherit;
+	width: 100%;
+	transition: box-shadow .15s ease, transform .15s ease;
+}
+
+button.limpeed-fund-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(16, 24, 40, .18);
+}
+
+.limpeed-fund-card.is-static {
+	cursor: default;
+}
+
+.limpeed-fund-card-label {
+	position: relative;
+	z-index: 1;
+	font-size: 13px;
+	font-weight: 600;
+	opacity: .92;
+}
+
+.limpeed-fund-card-amount {
+	position: relative;
+	z-index: 1;
+	font-family: var(--font-heading);
+	font-size: 22px;
+	font-weight: 800;
+	letter-spacing: -.01em;
+}
+
+.limpeed-fund-card-arrow {
+	position: absolute;
+	top: 14px;
+	right: 14px;
+	z-index: 1;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .22);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.limpeed-fund-card-arrow .dashicons {
+	font-size: 15px;
+	width: 15px;
+	height: 15px;
+	color: #fff;
+}
+
+.limpeed-fund-card .limpeed-fund-card-icon-bg {
+	position: absolute;
+	bottom: -14px;
+	right: -8px;
+	font-size: 76px;
+	width: 76px;
+	height: 76px;
+	opacity: .16;
+	color: #fff;
+}
+
+.limpeed-fund-card--green { background: var(--limpeed-primary); }
+.limpeed-fund-card--blue { background: var(--limpeed-blue); }
+.limpeed-fund-card--orange { background: var(--limpeed-orange); }
+.limpeed-fund-card--red { background: var(--limpeed-danger); }
+
+@media (max-width: 480px) {
+	.limpeed-fund-grid {
+		grid-template-columns: 1fr;
+	}
+}

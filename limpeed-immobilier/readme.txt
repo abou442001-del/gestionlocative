@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.35.0
+Stable tag: 1.36.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.36.0 =
+* Nouvel onglet "Caisses" dans la section Trésorerie, reprenant le principe de l'ancien logiciel du client : 11 caisses fixes (Commission agence, Caution, Tva sur commission, Dépense, Caution CIE/SODECI, Honoraire agence, Timbres fiscaux (Légalisation bail), Droit d'enregistrement, Frais de dossiers, Frais d'assurance, Autres fonds), chacune tenue manuellement par l'agent comme un petit livre de mouvements (entrées/sorties d'argent), avec un solde calculé automatiquement. Le "Solde" affiché en tête est la somme de toutes les caisses.
+* Cliquer sur une caisse ouvre son historique de mouvements et un formulaire pour enregistrer une nouvelle entrée ou sortie (montant, sens, date, libellé) ; chaque mouvement peut être supprimé individuellement.
+* L'onglet "Vue d'ensemble" de la Trésorerie (solde net calculé, graphique de flux, derniers décaissements) reste inchangé, désormais sous son propre onglet à côté de "Caisses".
+* Nouvelle table `wp_limpeed_fund_transactions` et nouveaux endpoints REST `/funds/balances`, `/funds/transactions`.
 
 = 1.35.0 =
 * Chaque section de gestion a maintenant une identité visuelle propre plutôt qu'un modèle de carte générique unique : couleur d'accent en haut de carte (fixe par section, ou dynamique selon le statut/type de la ligne pour les entités qui en ont un), avatar rond (initiales pour les personnes — propriétaires, locataires, agents ; icône pour les objets — biens, édifices, mandats, documents, charges) et, pour les cartes où un montant est l'information la plus importante (Paiements, Bordereaux, Charges), une mise en avant typographique du montant ("hero").

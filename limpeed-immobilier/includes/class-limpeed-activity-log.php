@@ -40,6 +40,7 @@ class Limpeed_Activity_Log {
 			'inspection' => __( 'État des lieux', 'limpeed-immobilier' ),
 			'document'   => __( 'Document', 'limpeed-immobilier' ),
 			'expense'    => __( 'Charge', 'limpeed-immobilier' ),
+			'fund_transaction' => __( 'Transaction de caisse', 'limpeed-immobilier' ),
 			'financial_report' => __( 'Rapport financier', 'limpeed-immobilier' ),
 		);
 	}

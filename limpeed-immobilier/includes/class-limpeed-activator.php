@@ -422,6 +422,22 @@ class Limpeed_Activator {
 			KEY property_id (property_id)
 		) {$charset_collate};";
 
+		$fund_transactions_table = $wpdb->prefix . 'limpeed_fund_transactions';
+
+		$sql_fund_transactions = "CREATE TABLE {$fund_transactions_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			fund_category VARCHAR(30) NOT NULL,
+			direction VARCHAR(10) NOT NULL DEFAULT 'in',
+			amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+			label VARCHAR(191) NULL,
+			transaction_date DATE NOT NULL,
+			created_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY fund_category (fund_category),
+			KEY transaction_date (transaction_date)
+		) {$charset_collate};";
+
 		dbDelta( $sql_owners );
 		dbDelta( $sql_buildings );
 		dbDelta( $sql_properties );
@@ -434,5 +450,6 @@ class Limpeed_Activator {
 		dbDelta( $sql_inspections );
 		dbDelta( $sql_documents );
 		dbDelta( $sql_expenses );
+		dbDelta( $sql_fund_transactions );
 	}
 }

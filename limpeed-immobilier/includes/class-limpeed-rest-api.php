@@ -596,6 +596,49 @@ class Limpeed_Rest_Api {
 
 		register_rest_route(
 			self::NAMESPACE_V1,
+			'/funds/balances',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_fund_balances' ),
+				'permission_callback' => array( $this, 'can_manage_statements' ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/funds/transactions',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_fund_transactions' ),
+					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'args'                => array(
+						'category' => array( 'sanitize_callback' => 'sanitize_key' ),
+						'paged'    => array( 'sanitize_callback' => 'absint' ),
+						'per_page' => array( 'sanitize_callback' => 'absint' ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_fund_transaction' ),
+					'permission_callback' => array( $this, 'can_manage_statements' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/funds/transactions/(?P<id>\d+)',
+			array(
+				'methods'             => WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'delete_fund_transaction' ),
+				'permission_callback' => array( $this, 'can_manage_statements' ),
+				'args'                => $id_arg,
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
 			'/accounting/ledger',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -3000,6 +3043,177 @@ class Limpeed_Rest_Api {
 
 		if ( ! empty( $data['building_id'] ) && ! Limpeed_Buildings::get( $data['building_id'] ) ) {
 			$errors[] = __( 'Édifice sélectionné invalide.', 'limpeed-immobilier' );
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * GET /funds/balances : solde de chaque caisse + solde global.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function get_fund_balances() {
+		$categories = Limpeed_Funds::get_categories();
+		$data       = Limpeed_Funds::get_all_balances();
+
+		$items = array();
+		foreach ( $categories as $key => $category ) {
+			$balance   = $data['balances'][ $key ];
+			$items[]   = array(
+				'key'           => $key,
+				'label'         => $category['label'],
+				'color'         => $category['color'],
+				'balance'       => $balance,
+				'balance_label' => Limpeed_Payments::format_amount( $balance ),
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'items'        => $items,
+				'total'        => $data['total'],
+				'total_label'  => Limpeed_Payments::format_amount( $data['total'] ),
+			)
+		);
+	}
+
+	/**
+	 * GET /funds/transactions?category=&paged=&per_page= : liste paginée des
+	 * mouvements d'une caisse (ou de toutes si category est vide).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_fund_transactions( WP_REST_Request $request ) {
+		$args = array(
+			'category' => (string) $request->get_param( 'category' ),
+			'paged'    => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page' => min( 100, max( 1, (int) $request->get_param( 'per_page' ) ?: 20 ) ),
+		);
+
+		$transactions = Limpeed_Funds::get_all( $args );
+		$total        = Limpeed_Funds::count( $args );
+
+		$items = array_map( array( $this, 'format_fund_transaction_row' ), $transactions );
+
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+			)
+		);
+	}
+
+	/**
+	 * POST /funds/transactions : enregistre un mouvement de caisse (entrée/sortie).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_fund_transaction( WP_REST_Request $request ) {
+		$data   = $this->extract_fund_transaction_data( $request );
+		$errors = $this->validate_fund_transaction( $data );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error( 'limpeed_invalid', implode( ' ', $errors ), array( 'status' => 400 ) );
+		}
+
+		$id = Limpeed_Funds::insert( $data );
+		if ( ! $id ) {
+			return new WP_Error( 'limpeed_save_failed', __( "Impossible d'enregistrer le mouvement de caisse.", 'limpeed-immobilier' ), array( 'status' => 500 ) );
+		}
+
+		return new WP_REST_Response( $this->format_fund_transaction_row( Limpeed_Funds::get( $id ) ), 201 );
+	}
+
+	/**
+	 * DELETE /funds/transactions/{id}.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_fund_transaction( WP_REST_Request $request ) {
+		$id          = (int) $request['id'];
+		$transaction = Limpeed_Funds::get( $id );
+		if ( ! $transaction ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Mouvement de caisse introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		Limpeed_Funds::delete( $id );
+
+		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
+	}
+
+	/**
+	 * Formate un mouvement de caisse pour la liste.
+	 *
+	 * @param object $transaction
+	 * @return array
+	 */
+	private function format_fund_transaction_row( $transaction ) {
+		$categories = Limpeed_Funds::get_categories();
+		$category   = $categories[ $transaction->fund_category ] ?? array( 'label' => $transaction->fund_category, 'color' => 'blue' );
+
+		return array(
+			'id'               => (int) $transaction->id,
+			'fund_category'    => $transaction->fund_category,
+			'fund_label'       => $category['label'],
+			'direction'        => $transaction->direction,
+			'amount'           => (float) $transaction->amount,
+			'amount_label'     => Limpeed_Payments::format_amount( (float) $transaction->amount ),
+			'label'            => $transaction->label,
+			'transaction_date' => $transaction->transaction_date,
+			'created_at'       => date_i18n( 'd/m/Y H:i', strtotime( $transaction->created_at ) ),
+		);
+	}
+
+	/**
+	 * Extrait et pré-nettoie les données d'un mouvement de caisse depuis une requête REST.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return array
+	 */
+	private function extract_fund_transaction_data( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_body_params();
+		}
+
+		return array(
+			'fund_category'    => isset( $params['fund_category'] ) ? sanitize_key( $params['fund_category'] ) : '',
+			'direction'        => isset( $params['direction'] ) ? sanitize_key( $params['direction'] ) : 'in',
+			'amount'           => isset( $params['amount'] ) ? wp_unslash( $params['amount'] ) : '',
+			'label'            => isset( $params['label'] ) ? sanitize_text_field( wp_unslash( $params['label'] ) ) : '',
+			'transaction_date' => isset( $params['transaction_date'] ) ? sanitize_text_field( $params['transaction_date'] ) : '',
+		);
+	}
+
+	/**
+	 * Règles de validation métier d'un mouvement de caisse.
+	 *
+	 * @param array $data
+	 * @return array Liste de messages d'erreur (vide si valide).
+	 */
+	private function validate_fund_transaction( $data ) {
+		$errors = array();
+
+		if ( ! array_key_exists( $data['fund_category'], Limpeed_Funds::get_categories() ) ) {
+			$errors[] = __( 'Caisse sélectionnée invalide.', 'limpeed-immobilier' );
+		}
+
+		if ( ! in_array( $data['direction'], array( 'in', 'out' ), true ) ) {
+			$errors[] = __( 'Le sens du mouvement doit être une entrée ou une sortie.', 'limpeed-immobilier' );
+		}
+
+		if ( empty( $data['transaction_date'] ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $data['transaction_date'] ) ) {
+			$errors[] = __( 'La date du mouvement est obligatoire et doit être une date valide.', 'limpeed-immobilier' );
+		}
+
+		if ( '' === $data['amount'] || ! is_numeric( $data['amount'] ) || $data['amount'] <= 0 ) {
+			$errors[] = __( 'Le montant doit être un nombre positif.', 'limpeed-immobilier' );
 		}
 
 		return $errors;
