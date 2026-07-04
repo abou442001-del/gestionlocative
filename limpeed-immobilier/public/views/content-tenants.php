@@ -439,10 +439,16 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 		$filter_properties
 	);
 
+	$month_names = array();
+	for ( $m = 1; $m <= 12; $m++ ) {
+		$month_names[] = date_i18n( 'M', mktime( 0, 0, 0, $m, 1, (int) current_time( 'Y' ) ) );
+	}
+
 	$app_config = array(
 		'statuses'         => $statuses,
 		'idDocumentTypes'  => $id_document_types,
 		'propertyOptions'  => $property_options,
+		'monthNames'       => $month_names,
 		'i18n'             => array(
 			'created'                => __( 'Locataire ajouté avec succès.', 'limpeed-immobilier' ),
 			'updated'                => __( 'Locataire mis à jour avec succès.', 'limpeed-immobilier' ),
@@ -772,12 +778,17 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 
 						<template x-if="! drawer.loading && drawer.tab === 'paiements'">
 							<div>
-								<p x-show="drawer.payments.length === 0"><?php esc_html_e( 'Aucun paiement enregistré.', 'limpeed-immobilier' ); ?></p>
-								<template x-for="payment in drawer.payments" :key="payment.id">
-									<div class="limpeed-app-drawer-list-item">
-										<span x-text="payment.period"></span>
-										<span x-text="payment.amount_formatted"></span>
-										<span class="limpeed-app-badge" :class="'limpeed-app-badge-' + payment.status" x-text="payment.status_label"></span>
+								<div class="limpeed-app-drawer-calendar-nav">
+									<button type="button" class="limpeed-app-btn limpeed-app-btn-secondary" @click="changeCalendarYear(-1)">&laquo;</button>
+									<strong x-text="drawer.calendarYear"></strong>
+									<button type="button" class="limpeed-app-btn limpeed-app-btn-secondary" @click="changeCalendarYear(1)">&raquo;</button>
+								</div>
+								<p x-show="drawer.calendarLoading"><?php esc_html_e( 'Chargement...', 'limpeed-immobilier' ); ?></p>
+								<template x-for="entry in drawer.calendar" :key="entry.period">
+									<div class="limpeed-app-drawer-list-item" x-show="! drawer.calendarLoading">
+										<span x-text="monthLabel(entry.period)"></span>
+										<span x-show="entry.amount_formatted" x-text="entry.amount_formatted"></span>
+										<span class="limpeed-app-badge" :class="'limpeed-app-badge-' + entry.status" x-text="entry.status_label"></span>
 									</div>
 								</template>
 							</div>

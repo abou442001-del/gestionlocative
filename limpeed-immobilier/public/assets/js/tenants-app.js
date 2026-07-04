@@ -16,6 +16,7 @@ document.addEventListener( 'alpine:init', function () {
 			statuses: config.statuses || {},
 			idDocumentTypes: config.idDocumentTypes || {},
 			propertyOptions: config.propertyOptions || [],
+			monthNames: config.monthNames || [],
 			i18n: config.i18n || {},
 
 			// Liste.
@@ -49,9 +50,11 @@ document.addEventListener( 'alpine:init', function () {
 				loading: false,
 				tab: 'infos',
 				tenant: null,
-				payments: [],
 				amendments: [],
 				history: [],
+				calendar: [],
+				calendarYear: new Date().getFullYear(),
+				calendarLoading: false,
 			},
 
 			amendmentForm: createDefaultAmendmentForm(),
@@ -285,22 +288,22 @@ document.addEventListener( 'alpine:init', function () {
 				self.drawer.tab = 'infos';
 				self.drawer.loading = true;
 				self.drawer.tenant = null;
-				self.drawer.payments = [];
 				self.drawer.amendments = [];
 				self.drawer.history = [];
+				self.drawer.calendar = [];
+				self.drawer.calendarYear = new Date().getFullYear();
 				self.amendmentForm = createDefaultAmendmentForm();
 
 				Promise.all( [
 					self.apiFetch( 'tenants/' + row.id ),
-					self.apiFetch( 'tenants/' + row.id + '/payments' ),
 					self.apiFetch( 'tenants/' + row.id + '/amendments' ),
 					self.apiFetch( 'tenants/' + row.id + '/history' ),
 				] )
 					.then( function ( results ) {
 						self.drawer.tenant = results[0];
-						self.drawer.payments = results[1].items || [];
-						self.drawer.amendments = results[2].items || [];
-						self.drawer.history = results[3].items || [];
+						self.drawer.amendments = results[1].items || [];
+						self.drawer.history = results[2].items || [];
+						return self.loadCalendar();
 					} )
 					.catch( function ( error ) {
 						self.toast( 'error', error.message );
@@ -313,6 +316,33 @@ document.addEventListener( 'alpine:init', function () {
 
 			closeDrawer: function () {
 				this.drawer.open = false;
+			},
+
+			// -----------------------------------------------------------
+			// Calendrier annuel de suivi des paiements (onglet Paiements).
+			// -----------------------------------------------------------
+			loadCalendar: function () {
+				var self = this;
+				if ( ! self.drawer.tenant ) {
+					return Promise.resolve();
+				}
+				self.drawer.calendarLoading = true;
+
+				return self.apiFetch( 'tenants/' + self.drawer.tenant.id + '/payment-calendar?year=' + self.drawer.calendarYear )
+					.then( function ( body ) {
+						self.drawer.calendar = body.items || [];
+					} )
+					.catch( function ( error ) {
+						self.toast( 'error', error.message );
+					} )
+					.finally( function () {
+						self.drawer.calendarLoading = false;
+					} );
+			},
+
+			changeCalendarYear: function ( delta ) {
+				this.drawer.calendarYear += delta;
+				this.loadCalendar();
 			},
 
 			// -----------------------------------------------------------
@@ -369,6 +399,13 @@ document.addEventListener( 'alpine:init', function () {
 
 			switchDrawerTab: function ( tab ) {
 				this.drawer.tab = tab;
+			},
+
+			monthLabel: function ( period ) {
+				var parts = ( period || '' ).split( '-' );
+				var monthIndex = parseInt( parts[1], 10 ) - 1;
+				var name = this.monthNames[ monthIndex ] || parts[1];
+				return name + ' ' + parts[0];
 			},
 
 			// -----------------------------------------------------------

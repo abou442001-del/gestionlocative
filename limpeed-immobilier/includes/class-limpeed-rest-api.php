@@ -110,6 +110,22 @@ class Limpeed_Rest_Api {
 
 		register_rest_route(
 			self::NAMESPACE_V1,
+			'/tenants/(?P<id>\d+)/payment-calendar',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_tenant_payment_calendar' ),
+				'permission_callback' => array( $this, 'can_manage_tenants' ),
+				'args'                => array_merge(
+					$id_arg,
+					array(
+						'year' => array( 'sanitize_callback' => 'absint' ),
+					)
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
 			'/tenants/(?P<id>\d+)/history',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -924,6 +940,57 @@ class Limpeed_Rest_Api {
 		);
 
 		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * GET /tenants/{id}/payment-calendar : les 12 mois d'une année donnée avec leur
+	 * statut (payé, partiel, en retard, à venir, hors bail), pour permettre de
+	 * suivre un locataire mois par mois plutôt que de ne voir que les paiements
+	 * effectivement enregistrés (onglet Paiements du panneau de détail).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_tenant_payment_calendar( WP_REST_Request $request ) {
+		$id     = (int) $request['id'];
+		$tenant = Limpeed_Tenants::get( $id );
+		if ( ! $tenant ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Locataire introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		$year = (int) $request->get_param( 'year' );
+		if ( $year < 2000 ) {
+			$year = (int) current_time( 'Y' );
+		}
+
+		$status_labels = array(
+			'paye'      => __( 'Payé', 'limpeed-immobilier' ),
+			'partiel'   => __( 'Partiel', 'limpeed-immobilier' ),
+			'retard'    => __( 'En retard', 'limpeed-immobilier' ),
+			'a_venir'   => __( 'À venir', 'limpeed-immobilier' ),
+			'hors_bail' => __( 'Hors bail', 'limpeed-immobilier' ),
+		);
+
+		$calendar = Limpeed_Tenants::get_payment_calendar( $tenant, $year );
+
+		$items = array();
+		foreach ( $calendar as $month => $entry ) {
+			$items[] = array(
+				'month'            => (int) $month,
+				'period'           => $entry['period'],
+				'status'           => $entry['status'],
+				'status_label'     => isset( $status_labels[ $entry['status'] ] ) ? $status_labels[ $entry['status'] ] : $entry['status'],
+				'payment_id'       => $entry['payment'] ? (int) $entry['payment']->id : 0,
+				'amount_formatted' => $entry['payment'] ? Limpeed_Payments::format_amount( $entry['payment']->amount ) : '',
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'year'  => $year,
+				'items' => $items,
+			)
+		);
 	}
 
 	/**

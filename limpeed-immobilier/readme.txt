@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.39.0
+Stable tag: 1.40.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.40.0 =
+* Dans la fiche locataire (panneau de détail), l'onglet "Paiements" affiche désormais les 12 mois de l'année (avec navigation « / » entre années) au lieu de la seule liste des paiements déjà enregistrés : chaque mois indique s'il est payé (avec le montant), en retard, à venir, ou hors période de bail — pour permettre de suivre un locataire au fil du temps, pas seulement de consulter son historique.
 
 = 1.39.0 =
 * Refonte visuelle complète du tableau de bord : les quatre listes "Derniers locataires", "Derniers propriétaires", "Quittances soldées" et "Quittances en attente de paiement" passent d'un tableau HTML dense à des mini-cartes (avatar, libellé, montant), dans le même esprit visuel que le reste de l'application. Les deux rangées d'indicateurs (Portefeuille, Ce mois-ci) et les listes récentes reçoivent chacune un intitulé de zone, pour mieux structurer la page.
