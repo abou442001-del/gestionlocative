@@ -204,6 +204,12 @@ class Limpeed_Frontend {
 				'icon'  => 'dashicons-admin-generic',
 				'group' => __( 'Administration', 'limpeed-immobilier' ),
 			),
+			'guide'        => array(
+				'label' => __( 'Guide de formation', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_properties',
+				'icon'  => 'dashicons-welcome-learn-more',
+				'group' => '',
+			),
 		);
 	}
 

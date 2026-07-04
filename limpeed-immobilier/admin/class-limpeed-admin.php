@@ -130,6 +130,15 @@ class Limpeed_Admin {
 			'limpeed-settings',
 			array( $this, 'render_settings' )
 		);
+
+		add_submenu_page(
+			'limpeed-immobilier',
+			__( 'Guide de formation', 'limpeed-immobilier' ),
+			__( 'Guide de formation', 'limpeed-immobilier' ),
+			'manage_limpeed_properties',
+			'limpeed-guide',
+			array( $this, 'render_guide' )
+		);
 	}
 
 	/**
@@ -248,5 +257,16 @@ class Limpeed_Admin {
 	public function render_settings() {
 		$page = new Limpeed_Settings_Page();
 		$page->render();
+	}
+
+	/**
+	 * Page Guide de formation.
+	 */
+	public function render_guide() {
+		if ( ! current_user_can( 'manage_limpeed_properties' ) ) {
+			wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette page.', 'limpeed-immobilier' ) );
+		}
+
+		include LIMPEED_PLUGIN_DIR . 'admin/views/guide.php';
 	}
 }

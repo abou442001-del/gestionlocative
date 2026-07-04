@@ -67,6 +67,13 @@ $unpaid_count = count( $period_summary['unpaid_tenants'] );
 		</div>
 	</div>
 
+	<p style="margin-top: 24px;">
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=limpeed-guide' ) ); ?>" class="button button-secondary">
+			<span class="dashicons dashicons-welcome-learn-more" style="margin-top: 3px;"></span>
+			<?php esc_html_e( 'Ouvrir le guide de formation', 'limpeed-immobilier' ); ?>
+		</a>
+	</p>
+
 	<?php if ( $unpaid_count > 0 ) : ?>
 		<h3><?php esc_html_e( 'Locataires actifs sans paiement enregistré ce mois-ci', 'limpeed-immobilier' ); ?></h3>
 		<table class="widefat striped">

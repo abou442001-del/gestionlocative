@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes du plugin.
-define( 'LIMPEED_VERSION', '1.37.0' );
+define( 'LIMPEED_VERSION', '1.38.0' );
 define( 'LIMPEED_DB_VERSION', '1.16.0' );
 define( 'LIMPEED_PLUGIN_FILE', __FILE__ );
 define( 'LIMPEED_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );

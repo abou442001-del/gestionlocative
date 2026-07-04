@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.37.0
+Stable tag: 1.38.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,11 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.38.0 =
+* Nouveau "Guide de formation" intégré au plugin, expliquant section par section comment utiliser l'application au quotidien (propriétaires, biens, locataires, paiements, bordereaux, trésorerie, comptabilité...).
+* Accessible à la fois depuis l'application frontend (nouvelle entrée de menu "Guide de formation") et depuis l'administration WordPress (nouveau sous-menu du plugin "Limpeed Immobilier" → "Guide de formation").
+* Un lien "Ouvrir le guide de formation" a été ajouté sur le tableau de bord (frontend et wp-admin) pour le rendre facilement accessible aux nouveaux agents.
 
 = 1.37.0 =
 * Sécurité et intégrité des données, suite à un audit complet du plugin :

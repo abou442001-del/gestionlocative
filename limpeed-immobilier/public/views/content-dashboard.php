@@ -420,4 +420,12 @@ $lists_config = array(
 			</div>
 		</div>
 	</div>
+
+	<div class="limpeed-app-panel" style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+		<div>
+			<h2 style="margin:0 0 4px;"><?php esc_html_e( 'Nouveau sur Limpeed Immobilier ?', 'limpeed-immobilier' ); ?></h2>
+			<p class="limpeed-app-description" style="margin:0;"><?php esc_html_e( 'Le guide de formation détaille chaque section de l\'application : propriétaires, biens, locataires, paiements, bordereaux, trésorerie et comptabilité.', 'limpeed-immobilier' ); ?></p>
+		</div>
+		<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'guide' ) ); ?>" class="limpeed-app-btn"><span class="dashicons dashicons-welcome-learn-more"></span> <?php esc_html_e( 'Ouvrir le guide de formation', 'limpeed-immobilier' ); ?></a>
+	</div>
 </div>
