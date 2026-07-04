@@ -271,9 +271,13 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 				);
 				$is_self = get_current_user_id() === $agent_row->ID;
 				?>
-				<div class="limpeed-entity-card" <?php echo $is_self ? '' : 'data-href="' . esc_url( $edit_url ) . '" role="link" tabindex="0"'; ?>>
+				<div class="limpeed-entity-card limpeed-entity-card--blue" <?php echo $is_self ? '' : 'data-href="' . esc_url( $edit_url ) . '" role="link" tabindex="0"'; ?>>
 					<div class="limpeed-entity-card-header">
-						<div class="limpeed-entity-card-title"><?php echo esc_html( $agent_row->display_name ); ?></div>
+						<span class="limpeed-entity-card-avatar is-solid limpeed-icon-blue"><?php echo esc_html( Limpeed_Frontend::initials( $agent_row->display_name ) ); ?></span>
+						<div class="limpeed-entity-card-header-text">
+							<div class="limpeed-entity-card-title"><?php echo esc_html( $agent_row->display_name ); ?></div>
+							<div class="limpeed-entity-card-subtitle"><?php echo esc_html( $agent_row->user_login ); ?></div>
+						</div>
 						<?php if ( $is_self ) : ?>
 							<span class="limpeed-app-badge limpeed-app-badge-actif"><?php esc_html_e( 'Vous', 'limpeed-immobilier' ); ?></span>
 						<?php else : ?>
@@ -281,10 +285,6 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 						<?php endif; ?>
 					</div>
 					<div class="limpeed-entity-card-meta">
-						<div class="limpeed-entity-card-meta-row">
-							<span class="dashicons dashicons-admin-users"></span>
-							<span><?php echo esc_html( $agent_row->user_login ); ?></span>
-						</div>
 						<div class="limpeed-entity-card-meta-row">
 							<span class="dashicons dashicons-email"></span>
 							<span><?php echo esc_html( $agent_row->user_email ); ?></span>

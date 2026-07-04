@@ -318,16 +318,16 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			</template>
 			<p x-show="!loading && items.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun édifice pour le moment.', 'limpeed-immobilier' ); ?></p>
 			<template x-for="row in items" :key="row.id">
-				<div class="limpeed-entity-card" @click="openDrawer(row)">
+				<div class="limpeed-entity-card limpeed-entity-card--blue" @click="openDrawer(row)">
 					<div class="limpeed-entity-card-header">
-						<div class="limpeed-entity-card-title" x-text="row.name"></div>
+						<span class="limpeed-entity-card-avatar limpeed-icon-blue"><span class="dashicons dashicons-building"></span></span>
+						<div class="limpeed-entity-card-header-text">
+							<div class="limpeed-entity-card-title" x-text="row.name"></div>
+							<div class="limpeed-entity-card-subtitle" x-text="row.owner_label || '—'"></div>
+						</div>
 						<span class="limpeed-app-badge" x-text="row.commission_rate_label"></span>
 					</div>
 					<div class="limpeed-entity-card-meta">
-						<div class="limpeed-entity-card-meta-row">
-							<span class="dashicons dashicons-groups"></span>
-							<span x-text="row.owner_label || '—'"></span>
-						</div>
 						<div class="limpeed-entity-card-meta-row">
 							<span class="dashicons dashicons-location"></span>
 							<span x-text="row.address || '—'"></span>

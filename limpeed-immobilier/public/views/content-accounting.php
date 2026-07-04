@@ -182,9 +182,13 @@ $rest_config = array(
 				</template>
 				<p x-show="!expenses.loading && expenses.items.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucune charge pour le moment.', 'limpeed-immobilier' ); ?></p>
 				<template x-for="row in expenses.items" :key="row.id">
-					<div class="limpeed-entity-card" @click="openEditModal(row)">
+					<div class="limpeed-entity-card limpeed-entity-card--red" @click="openEditModal(row)">
 						<div class="limpeed-entity-card-header">
-							<div class="limpeed-entity-card-title" x-text="row.label"></div>
+							<span class="limpeed-entity-card-avatar limpeed-icon-red"><span class="dashicons dashicons-money-alt"></span></span>
+							<div class="limpeed-entity-card-header-text">
+								<div class="limpeed-entity-card-title" x-text="row.label"></div>
+								<div class="limpeed-entity-card-subtitle" x-text="row.building_label || '—'"></div>
+							</div>
 							<span class="limpeed-app-badge" x-text="row.category_label"></span>
 						</div>
 						<div class="limpeed-entity-card-meta">
@@ -192,14 +196,10 @@ $rest_config = array(
 								<span class="dashicons dashicons-calendar-alt"></span>
 								<span x-text="row.expense_date"></span>
 							</div>
-							<div class="limpeed-entity-card-meta-row">
-								<span class="dashicons dashicons-admin-multisite"></span>
-								<span x-text="row.building_label || '—'"></span>
-							</div>
-							<div class="limpeed-entity-card-meta-row">
-								<span class="dashicons dashicons-money-alt"></span>
-								<span x-text="row.amount_label"></span>
-							</div>
+						</div>
+						<div>
+							<div class="limpeed-entity-card-hero-label"><?php esc_html_e( 'Montant', 'limpeed-immobilier' ); ?></div>
+							<div class="limpeed-entity-card-hero" x-text="row.amount_label"></div>
 						</div>
 						<div class="limpeed-entity-card-footer">
 							<button type="button" class="limpeed-app-link-btn" @click.stop="openEditModal(row)"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></button>

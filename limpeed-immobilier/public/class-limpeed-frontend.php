@@ -244,12 +244,33 @@ class Limpeed_Frontend {
 	}
 
 	/**
-	 * Affiche la pagination d'une liste de section frontend.
+	 * Initiales d'un nom complet (1 ou 2 lettres), pour l'avatar rond des
+	 * cartes de liste (Propriétaires, Bordereaux [propriétaire], Agents...).
+	 *
+	 * @param string $name
+	 * @return string
+	 */
+	public static function initials( $name ) {
+		$name  = trim( (string) $name );
+		if ( '' === $name ) {
+			return '?';
+		}
+		$parts = preg_split( '/\s+/', $name );
+		$parts = array_filter( $parts );
+		if ( count( $parts ) >= 2 ) {
+			return mb_strtoupper( mb_substr( $parts[0], 0, 1 ) . mb_substr( $parts[ count( $parts ) - 1 ], 0, 1 ) );
+		}
+		return mb_strtoupper( mb_substr( $parts[0], 0, 2 ) );
+	}
+
+	/**
+	 * Affiche la liste de pagination (numéros de page) pour une section
+	 * frontend rendue côté serveur (Propriétaires, Bordereaux, Agents...).
 	 *
 	 * @param int   $total_items
 	 * @param int   $per_page
 	 * @param int   $paged
-	 * @param array $base_args Paramètres de requête à conserver (filtres, recherche...).
+	 * @param array $base_args Paramètres de requête additionnels (ex. recherche).
 	 */
 	public static function render_pagination( $total_items, $per_page, $paged, $base_args = array() ) {
 		$total_pages = max( 1, (int) ceil( $total_items / $per_page ) );

@@ -174,16 +174,19 @@ if ( 'add' === $action ) :
 				$user         = $statement_row->generated_by ? get_userdata( $statement_row->generated_by ) : false;
 				$period_label = ( $statement_row->period_start === $statement_row->period_end ) ? $statement_row->period_start : sprintf( '%s — %s', $statement_row->period_start, $statement_row->period_end );
 				?>
-				<div class="limpeed-entity-card" data-href="<?php echo esc_url( $download_url ); ?>" role="link" tabindex="0">
+				<div class="limpeed-entity-card limpeed-entity-card--green" data-href="<?php echo esc_url( $download_url ); ?>" role="link" tabindex="0">
 					<div class="limpeed-entity-card-header">
-						<div class="limpeed-entity-card-title"><?php echo esc_html( $period_label ); ?></div>
-						<span class="limpeed-app-badge limpeed-app-badge-paye"><?php echo esc_html( Limpeed_Payments::format_amount( $statement_row->net_amount ) ); ?></span>
+						<span class="limpeed-entity-card-avatar is-solid limpeed-icon-green"><?php echo esc_html( Limpeed_Frontend::initials( $owner ? $owner->full_name : '?' ) ); ?></span>
+						<div class="limpeed-entity-card-header-text">
+							<div class="limpeed-entity-card-title"><?php echo $owner ? esc_html( $owner->full_name ) : '—'; ?></div>
+							<div class="limpeed-entity-card-subtitle"><?php echo esc_html( $period_label ); ?></div>
+						</div>
+					</div>
+					<div>
+						<div class="limpeed-entity-card-hero-label"><?php esc_html_e( 'Net reversé', 'limpeed-immobilier' ); ?></div>
+						<div class="limpeed-entity-card-hero"><?php echo esc_html( Limpeed_Payments::format_amount( $statement_row->net_amount ) ); ?></div>
 					</div>
 					<div class="limpeed-entity-card-meta">
-						<div class="limpeed-entity-card-meta-row">
-							<span class="dashicons dashicons-groups"></span>
-							<span><?php echo $owner ? esc_html( $owner->full_name ) : '—'; ?></span>
-						</div>
 						<div class="limpeed-entity-card-meta-row">
 							<span class="dashicons dashicons-money-alt"></span>
 							<span><?php printf( esc_html__( '%1$s encaissés, %2$s de commission', 'limpeed-immobilier' ), esc_html( Limpeed_Payments::format_amount( $statement_row->total_collected ) ), esc_html( Limpeed_Payments::format_amount( $statement_row->total_commission ) ) ); ?></span>

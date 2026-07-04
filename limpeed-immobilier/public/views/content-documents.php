@@ -83,9 +83,12 @@ $documents_this_month = Limpeed_Documents::count_added_this_month();
 	<div x-show="entityType && entityOptions.length > 0" x-cloak style="margin-top: 10px;">
 		<div class="limpeed-entity-grid">
 			<template x-for="option in entityOptions" :key="option.id">
-				<div class="limpeed-entity-card" @click="selectEntity(option.id)">
+				<div class="limpeed-entity-card limpeed-entity-card--green" @click="selectEntity(option.id)">
 					<div class="limpeed-entity-card-header">
-						<div class="limpeed-entity-card-title" x-text="option.label"></div>
+						<span class="limpeed-entity-card-avatar limpeed-icon-green"><span class="dashicons dashicons-portfolio"></span></span>
+						<div class="limpeed-entity-card-header-text">
+							<div class="limpeed-entity-card-title" x-text="option.label"></div>
+						</div>
 					</div>
 					<div class="limpeed-entity-card-footer">
 						<span class="limpeed-app-link-btn"><?php esc_html_e( 'Voir les documents', 'limpeed-immobilier' ); ?></span>
@@ -107,16 +110,16 @@ $documents_this_month = Limpeed_Documents::count_added_this_month();
 				</template>
 				<p x-show="!loadingDocuments && documents.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun document pour le moment.', 'limpeed-immobilier' ); ?></p>
 				<template x-for="doc in documents" :key="doc.id">
-					<div class="limpeed-entity-card" @click="window.location.href = doc.download_url">
+					<div class="limpeed-entity-card limpeed-entity-card--green" @click="window.location.href = doc.download_url">
 						<div class="limpeed-entity-card-header">
-							<div class="limpeed-entity-card-title" x-text="doc.title"></div>
+							<span class="limpeed-entity-card-avatar limpeed-icon-green"><span class="dashicons dashicons-media-default"></span></span>
+							<div class="limpeed-entity-card-header-text">
+								<div class="limpeed-entity-card-title" x-text="doc.title"></div>
+								<div class="limpeed-entity-card-subtitle" x-text="doc.file_name"></div>
+							</div>
 							<span class="limpeed-app-badge" x-text="doc.file_size_label"></span>
 						</div>
 						<div class="limpeed-entity-card-meta">
-							<div class="limpeed-entity-card-meta-row">
-								<span class="dashicons dashicons-media-default"></span>
-								<span x-text="doc.file_name"></span>
-							</div>
 							<div class="limpeed-entity-card-meta-row">
 								<span class="dashicons dashicons-clock"></span>
 								<span x-text="doc.created_at"></span>

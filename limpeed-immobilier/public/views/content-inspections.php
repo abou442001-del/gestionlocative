@@ -88,16 +88,16 @@ $inspections_sortie  = Limpeed_Inspections::count( array( 'type' => 'sortie' ) )
 		</template>
 		<p x-show="!loading && items.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun état des lieux pour le moment.', 'limpeed-immobilier' ); ?></p>
 		<template x-for="row in items" :key="row.id">
-			<div class="limpeed-entity-card" @click="openDrawer(row)">
+			<div class="limpeed-entity-card" :class="'limpeed-entity-card-status-' + row.type" @click="openDrawer(row)">
 				<div class="limpeed-entity-card-header">
-					<div class="limpeed-entity-card-title" x-text="row.tenant_label || '—'"></div>
+					<span class="limpeed-entity-card-avatar" :class="row.type === 'sortie' ? 'limpeed-icon-orange' : 'limpeed-icon-green'"><span class="dashicons dashicons-camera"></span></span>
+					<div class="limpeed-entity-card-header-text">
+						<div class="limpeed-entity-card-title" x-text="row.tenant_label || '—'"></div>
+						<div class="limpeed-entity-card-subtitle" x-text="row.property_label || '—'"></div>
+					</div>
 					<span class="limpeed-app-badge" :class="row.type === 'sortie' ? 'limpeed-app-badge-en_retard' : 'limpeed-app-badge-actif'" x-text="row.type_label"></span>
 				</div>
 				<div class="limpeed-entity-card-meta">
-					<div class="limpeed-entity-card-meta-row">
-						<span class="dashicons dashicons-building"></span>
-						<span x-text="row.property_label || '—'"></span>
-					</div>
 					<div class="limpeed-entity-card-meta-row">
 						<span class="dashicons dashicons-calendar-alt"></span>
 						<span x-text="row.inspection_date"></span>

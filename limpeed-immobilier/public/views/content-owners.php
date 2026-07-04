@@ -299,10 +299,13 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				$delete_url  = wp_nonce_url( Limpeed_Frontend::app_url( 'owners', array( 'action' => 'delete', 'id' => $owner_row->id ) ), 'limpeed_delete_owner_' . $owner_row->id );
 				$buildings_n = Limpeed_Buildings::count( array( 'owner_id' => $owner_row->id ) );
 				?>
-				<div class="limpeed-entity-card" data-href="<?php echo esc_url( $view_url ); ?>" role="link" tabindex="0">
+				<div class="limpeed-entity-card limpeed-entity-card--orange" data-href="<?php echo esc_url( $view_url ); ?>" role="link" tabindex="0">
 					<div class="limpeed-entity-card-header">
-						<div class="limpeed-entity-card-title"><?php echo esc_html( $owner_row->full_name ); ?></div>
-						<span class="limpeed-app-badge"><?php echo esc_html( number_format_i18n( $buildings_n ) ); ?> <?php echo esc_html( _n( 'édifice', 'édifices', $buildings_n, 'limpeed-immobilier' ) ); ?></span>
+						<span class="limpeed-entity-card-avatar is-solid limpeed-icon-orange"><?php echo esc_html( Limpeed_Frontend::initials( $owner_row->full_name ) ); ?></span>
+						<div class="limpeed-entity-card-header-text">
+							<div class="limpeed-entity-card-title"><?php echo esc_html( $owner_row->full_name ); ?></div>
+							<div class="limpeed-entity-card-subtitle"><?php echo esc_html( number_format_i18n( $buildings_n ) ); ?> <?php echo esc_html( _n( 'édifice', 'édifices', $buildings_n, 'limpeed-immobilier' ) ); ?></div>
+						</div>
 					</div>
 					<div class="limpeed-entity-card-meta">
 						<div class="limpeed-entity-card-meta-row">

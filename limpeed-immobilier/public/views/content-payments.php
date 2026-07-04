@@ -229,28 +229,32 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			</template>
 			<p x-show="!loading && items.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun paiement pour le moment.', 'limpeed-immobilier' ); ?></p>
 			<template x-for="row in items" :key="row.id">
-				<div class="limpeed-entity-card" @click="openDrawer(row)">
+				<div class="limpeed-entity-card" :class="'limpeed-entity-card-status-' + row.status" @click="openDrawer(row)">
 					<div class="limpeed-entity-card-header">
-						<div class="limpeed-entity-card-title" x-text="row.tenant_label || '—'"></div>
+						<span class="limpeed-entity-card-avatar limpeed-icon-green"><span class="dashicons dashicons-money-alt"></span></span>
+						<div class="limpeed-entity-card-header-text">
+							<div class="limpeed-entity-card-title" x-text="row.tenant_label || '—'"></div>
+							<div class="limpeed-entity-card-subtitle" x-text="row.period"></div>
+						</div>
 						<span class="limpeed-app-badge" :class="'limpeed-app-badge-' + row.status" x-text="row.status_label"></span>
 					</div>
 					<div class="limpeed-entity-card-meta">
-						<div class="limpeed-entity-card-meta-row">
-							<span class="dashicons dashicons-calendar-alt"></span>
-							<span x-text="row.period"></span>
-						</div>
 						<div class="limpeed-entity-card-meta-row">
 							<span class="dashicons dashicons-building"></span>
 							<span x-text="row.property_label || '—'"></span>
 						</div>
 						<div class="limpeed-entity-card-meta-row">
-							<span class="dashicons dashicons-money-alt"></span>
-							<span x-text="row.amount_formatted + ' (commission ' + row.commission_formatted + ')'"></span>
+							<span class="dashicons dashicons-chart-bar"></span>
+							<span x-text="'Commission ' + row.commission_formatted"></span>
 						</div>
 						<div class="limpeed-entity-card-meta-row">
 							<span class="dashicons dashicons-admin-users"></span>
 							<span x-text="row.agent_name || '—'"></span>
 						</div>
+					</div>
+					<div>
+						<div class="limpeed-entity-card-hero-label"><?php esc_html_e( 'Montant payé', 'limpeed-immobilier' ); ?></div>
+						<div class="limpeed-entity-card-hero" x-text="row.amount_formatted"></div>
 					</div>
 					<div class="limpeed-entity-card-footer">
 						<button type="button" class="limpeed-app-link-btn" @click.stop="openEditModal(row)"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></button>

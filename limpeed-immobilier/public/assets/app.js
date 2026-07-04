@@ -1,3 +1,24 @@
+/**
+ * Initiales d'un nom complet (1 ou 2 lettres), pour l'avatar rond des cartes
+ * de liste. Miroir JS de Limpeed_Frontend::initials() (PHP), utilisé par les
+ * sections rendues via Alpine.js où le nom n'est connu qu'après le chargement
+ * Ajax (Locataires...).
+ *
+ * @param {string} name
+ * @return {string}
+ */
+window.limpeedInitials = function ( name ) {
+	var trimmed = ( name || '' ).trim();
+	if ( ! trimmed ) {
+		return '?';
+	}
+	var parts = trimmed.split( /\s+/ ).filter( Boolean );
+	if ( parts.length >= 2 ) {
+		return ( parts[0].charAt( 0 ) + parts[ parts.length - 1 ].charAt( 0 ) ).toUpperCase();
+	}
+	return parts[0].slice( 0, 2 ).toUpperCase();
+};
+
 document.addEventListener( 'DOMContentLoaded', function () {
 	document.querySelectorAll( '.limpeed-confirm-delete' ).forEach( function ( link ) {
 		link.addEventListener( 'click', function ( event ) {

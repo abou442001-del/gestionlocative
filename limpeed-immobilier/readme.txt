@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.34.0
+Stable tag: 1.35.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,17 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.35.0 =
+* Chaque section de gestion a maintenant une identité visuelle propre plutôt qu'un modèle de carte générique unique : couleur d'accent en haut de carte (fixe par section, ou dynamique selon le statut/type de la ligne pour les entités qui en ont un), avatar rond (initiales pour les personnes — propriétaires, locataires, agents ; icône pour les objets — biens, édifices, mandats, documents, charges) et, pour les cartes où un montant est l'information la plus importante (Paiements, Bordereaux, Charges), une mise en avant typographique du montant ("hero").
+* Biens : accent selon statut (loué/vacant/travaux), avatar maison verte, sous-titre = édifice.
+* Édifices : accent bleu fixe, avatar immeuble bleu, sous-titre = propriétaire.
+* Mandats : accent selon statut, avatar document bleu, sous-titre = propriétaire.
+* États des lieux : accent et avatar caméra selon le type (entrée = vert, sortie = orange), sous-titre = bien.
+* Paiements : accent selon statut, avatar vert, montant payé en gros caractères.
+* Documents : accent vert fixe, avatar dossier/fichier, sous-titre = nom du fichier.
+* Charges (Comptabilité) : accent rouge fixe, avatar rouge, montant en gros caractères.
+* Propriétaires, Bordereaux et Agents avaient déjà reçu ce traitement dans une itération précédente de la même version de travail.
 
 = 1.34.0 =
 * Refonte visuelle de toutes les listes de l'application : les tableaux denses (Propriétaires, Locataires, Biens, Édifices, Mandats, États des lieux, Paiements, Bordereaux, Agents, Documents, Charges) sont remplacés par des grilles de cartes cliquables, dans le même esprit que les cartes KPI du tableau de bord.
