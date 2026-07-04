@@ -18,6 +18,8 @@ if ( ! $confirmed ) {
 	return;
 }
 
+wp_clear_scheduled_hook( 'limpeed_daily_late_payment_reminder' );
+
 global $wpdb;
 
 $tables = array(

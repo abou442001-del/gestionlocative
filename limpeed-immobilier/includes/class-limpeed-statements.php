@@ -100,6 +100,50 @@ class Limpeed_Statements {
 	}
 
 	/**
+	 * Exporte l'historique des bordereaux (filtré par propriétaire le cas
+	 * échéant) en CSV, envoyé directement au navigateur, et termine la requête.
+	 * Complète le PDF individuel de chaque bordereau : un export global est
+	 * plus exploitable pour un comptable externe ou un tableur.
+	 *
+	 * @param array $args { @type int $owner_id }
+	 */
+	public static function stream_csv( $args = array() ) {
+		$statements = self::get_all( wp_parse_args( $args, array( 'per_page' => 100000 ) ) );
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="bordereaux-' . gmdate( 'Y-m-d' ) . '.csv"' );
+
+		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		// BOM UTF-8 : Excel n'affiche correctement les accents français sans lui.
+		fwrite( $out, "\xEF\xBB\xBF" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+
+		fputcsv( $out, array( 'Propriétaire', 'Période début', 'Période fin', 'Encaissé', 'Commission', 'Net reversé', 'Date de génération' ), ',', '"', '\\' );
+
+		foreach ( $statements as $statement ) {
+			$owner = Limpeed_Owners::get( $statement->owner_id );
+			fputcsv(
+				$out,
+				array(
+					$owner ? $owner->full_name : '—',
+					$statement->period_start,
+					$statement->period_end,
+					$statement->total_collected,
+					$statement->total_commission,
+					$statement->net_amount,
+					$statement->created_at,
+				),
+				',',
+				'"',
+				'\\'
+			);
+		}
+
+		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+		exit;
+	}
+
+	/**
 	 * Répertoire de stockage des bordereaux PDF (hors accès web direct).
 	 *
 	 * @return string Chemin absolu, sans slash final.

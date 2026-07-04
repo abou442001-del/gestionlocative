@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.36.1
+Stable tag: 1.37.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,15 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.37.0 =
+* Sécurité et intégrité des données, suite à un audit complet du plugin :
+  * La suppression d'un locataire est désormais bloquée tant que des paiements, documents, états des lieux ou avenants lui sont encore rattachés (même principe que pour Propriétaires/Édifices/Biens) — évite de perdre l'historique comptable d'un locataire par erreur.
+  * Un agent n'ayant que le droit "Paiements" ne peut plus consulter/ajouter/supprimer les documents des modules Propriétaires/Édifices/Biens/Locataires : chaque action sur `/documents` vérifie désormais la capacité propre au type de fiche concerné.
+  * Index ajoutés sur `tenants.lease_end` et `payments.payment_date` pour accélérer les listes de baux expirants et de retards.
+* Rappel automatique quotidien (email, 7h) récapitulant les locataires en retard de paiement de la période en cours, envoyé à tous les agents/administrateurs. (Un envoi par SMS — Orange Money, MTN, Wave... — nécessiterait la clé API d'un fournisseur tiers à fournir séparément.)
+* Export CSV de l'historique des bordereaux (Bordereaux) et du grand livre (Comptabilité), en complément du PDF existant — utile pour un comptable externe ou un tableur.
+* Centre de notifications dans la barre du haut (icône cloche, badge de comptage) : les alertes "locataires en retard" et "baux expirant sous 30 jours", jusqu'ici visibles uniquement sur le tableau de bord, sont maintenant accessibles en permanence depuis n'importe quelle page.
 
 = 1.36.1 =
 * Trois caisses passent en calcul automatique plutôt qu'en saisie manuelle, puisque leur donnée existe déjà ailleurs dans le plugin : Commission agence (commissions déjà prélevées sur les paiements), Dépense (charges déjà enregistrées dans Comptabilité) et Caution (dépôts de garantie des locataires actuellement actifs).

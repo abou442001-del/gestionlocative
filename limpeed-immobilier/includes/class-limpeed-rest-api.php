@@ -723,6 +723,31 @@ class Limpeed_Rest_Api {
 	}
 
 	/**
+	 * Capacité requise pour consulter/ajouter/supprimer les documents d'un
+	 * type d'entité donné : contrairement à can_view_lookups() (large, utilisé
+	 * comme porte d'entrée par le permission_callback des routes /documents),
+	 * ce contrôle applique la capacité spécifique au module concerné, pour
+	 * qu'un agent Paiements ne puisse pas gérer les documents des Locataires
+	 * ou des Propriétaires par exemple.
+	 *
+	 * @param string $entity_type owner|building|property|tenant
+	 * @return bool
+	 */
+	private function can_manage_document_entity( $entity_type ) {
+		switch ( $entity_type ) {
+			case 'owner':
+				return current_user_can( 'manage_limpeed_owners' );
+			case 'building':
+			case 'property':
+				return current_user_can( 'manage_limpeed_properties' );
+			case 'tenant':
+				return current_user_can( 'manage_limpeed_tenants' );
+			default:
+				return false;
+		}
+	}
+
+	/**
 	 * GET /tenants : liste filtrée + paginée.
 	 *
 	 * @param WP_REST_Request $request
@@ -849,7 +874,11 @@ class Limpeed_Rest_Api {
 			return new WP_Error( 'limpeed_not_found', __( 'Locataire introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
-		Limpeed_Tenants::delete( $id );
+		$result = Limpeed_Tenants::delete( $id );
+
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
+		}
 
 		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
 	}
@@ -2802,6 +2831,10 @@ class Limpeed_Rest_Api {
 			return new WP_Error( 'limpeed_invalid', __( 'Type et identifiant d\'entité requis.', 'limpeed-immobilier' ), array( 'status' => 400 ) );
 		}
 
+		if ( ! $this->can_manage_document_entity( $entity_type ) ) {
+			return new WP_Error( 'limpeed_forbidden', __( "Vous n'avez pas les droits pour consulter les documents de ce module.", 'limpeed-immobilier' ), array( 'status' => 403 ) );
+		}
+
 		$documents = Limpeed_Documents::get_for_entity( $entity_type, $entity_id );
 
 		$items = array_map( array( $this, 'format_document_row' ), $documents );
@@ -2827,6 +2860,10 @@ class Limpeed_Rest_Api {
 			return new WP_Error( 'limpeed_invalid', __( 'Type et identifiant d\'entité requis.', 'limpeed-immobilier' ), array( 'status' => 400 ) );
 		}
 
+		if ( ! $this->can_manage_document_entity( $entity_type ) ) {
+			return new WP_Error( 'limpeed_forbidden', __( "Vous n'avez pas les droits pour ajouter un document à ce module.", 'limpeed-immobilier' ), array( 'status' => 403 ) );
+		}
+
 		$result = Limpeed_Documents::upload( $files['file'] ?? array(), $entity_type, $entity_id, $title );
 
 		if ( is_wp_error( $result ) ) {
@@ -2847,6 +2884,10 @@ class Limpeed_Rest_Api {
 		$document = Limpeed_Documents::get( $id );
 		if ( ! $document ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Document introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		if ( ! $this->can_manage_document_entity( $document->entity_type ) ) {
+			return new WP_Error( 'limpeed_forbidden', __( "Vous n'avez pas les droits pour supprimer les documents de ce module.", 'limpeed-immobilier' ), array( 'status' => 403 ) );
 		}
 
 		Limpeed_Documents::delete( $id );

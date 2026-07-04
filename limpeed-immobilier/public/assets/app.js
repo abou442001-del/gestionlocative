@@ -88,4 +88,18 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			}
 		} );
 	}
+
+	var notifToggle = document.getElementById( 'limpeed-notif-toggle' );
+	var notifPanel   = document.getElementById( 'limpeed-notif-panel' );
+	if ( notifToggle && notifPanel ) {
+		notifToggle.addEventListener( 'click', function ( event ) {
+			event.stopPropagation();
+			notifPanel.classList.toggle( 'is-open' );
+		} );
+		document.addEventListener( 'click', function ( event ) {
+			if ( notifPanel.classList.contains( 'is-open' ) && ! notifPanel.contains( event.target ) ) {
+				notifPanel.classList.remove( 'is-open' );
+			}
+		} );
+	}
 } );

@@ -317,13 +317,65 @@ class Limpeed_Tenants {
 	}
 
 	/**
-	 * Supprime un locataire.
+	 * Supprime un locataire. Bloque la suppression tant que des paiements,
+	 * documents, états des lieux ou avenants lui sont encore rattachés (même
+	 * principe que pour Propriétaires/Édifices/Biens) : un locataire ayant
+	 * un historique ne doit jamais être effacé, sous peine d'orpheliner ces
+	 * enregistrements et de perdre la traçabilité comptable.
 	 *
 	 * @param int $id
-	 * @return bool
+	 * @return bool|WP_Error
 	 */
 	public static function delete( $id ) {
 		global $wpdb;
+
+		$payments_table = Limpeed_Payments::table();
+		$linked_payments = (int) $wpdb->get_var(
+			$wpdb->prepare( "SELECT COUNT(*) FROM {$payments_table} WHERE tenant_id = %d", $id )
+		);
+
+		if ( $linked_payments > 0 ) {
+			return new WP_Error(
+				'limpeed_tenant_has_payments',
+				__( 'Impossible de supprimer ce locataire : des paiements y sont encore rattachés.', 'limpeed-immobilier' )
+			);
+		}
+
+		$documents_table = Limpeed_Documents::table();
+		$linked_documents = (int) $wpdb->get_var(
+			$wpdb->prepare( "SELECT COUNT(*) FROM {$documents_table} WHERE entity_type = 'tenant' AND entity_id = %d", $id )
+		);
+
+		if ( $linked_documents > 0 ) {
+			return new WP_Error(
+				'limpeed_tenant_has_documents',
+				__( 'Impossible de supprimer ce locataire : des documents y sont encore rattachés.', 'limpeed-immobilier' )
+			);
+		}
+
+		$inspections_table = Limpeed_Inspections::table();
+		$linked_inspections = (int) $wpdb->get_var(
+			$wpdb->prepare( "SELECT COUNT(*) FROM {$inspections_table} WHERE tenant_id = %d", $id )
+		);
+
+		if ( $linked_inspections > 0 ) {
+			return new WP_Error(
+				'limpeed_tenant_has_inspections',
+				__( 'Impossible de supprimer ce locataire : des états des lieux y sont encore rattachés.', 'limpeed-immobilier' )
+			);
+		}
+
+		$amendments_table = Limpeed_Lease_Amendments::table();
+		$linked_amendments = (int) $wpdb->get_var(
+			$wpdb->prepare( "SELECT COUNT(*) FROM {$amendments_table} WHERE tenant_id = %d", $id )
+		);
+
+		if ( $linked_amendments > 0 ) {
+			return new WP_Error(
+				'limpeed_tenant_has_amendments',
+				__( 'Impossible de supprimer ce locataire : des avenants y sont encore rattachés.', 'limpeed-immobilier' )
+			);
+		}
 
 		$tenant = self::get( $id );
 		$table  = self::table();

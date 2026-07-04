@@ -16,8 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes du plugin.
-define( 'LIMPEED_VERSION', '1.36.1' );
-define( 'LIMPEED_DB_VERSION', '1.15.0' );
+define( 'LIMPEED_VERSION', '1.37.0' );
+define( 'LIMPEED_DB_VERSION', '1.16.0' );
 define( 'LIMPEED_PLUGIN_FILE', __FILE__ );
 define( 'LIMPEED_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LIMPEED_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -44,6 +44,7 @@ require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-documents.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-expenses.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-accounting.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-funds.php';
+require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-reminders.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-rest-api.php';
 
 if ( is_admin() ) {
@@ -70,6 +71,7 @@ if ( is_admin() ) {
  */
 function limpeed_activate_plugin() {
 	Limpeed_Activator::activate();
+	Limpeed_Reminders::schedule();
 }
 register_activation_hook( __FILE__, 'limpeed_activate_plugin' );
 
@@ -79,8 +81,18 @@ register_activation_hook( __FILE__, 'limpeed_activate_plugin' );
  */
 function limpeed_deactivate_plugin() {
 	Limpeed_Activator::deactivate();
+	Limpeed_Reminders::unschedule();
 }
 register_deactivation_hook( __FILE__, 'limpeed_deactivate_plugin' );
+
+/**
+ * Rappel quotidien des loyers en retard : planifié à l'activation, mais on
+ * s'assure ici qu'il l'est aussi pour les installations déjà actives lors de
+ * la mise à jour du plugin (register_activation_hook ne se redéclenche pas
+ * pour une mise à jour sans désactivation/réactivation).
+ */
+add_action( 'init', array( 'Limpeed_Reminders', 'schedule' ) );
+add_action( Limpeed_Reminders::CRON_HOOK, array( 'Limpeed_Reminders', 'send_daily_reminder' ) );
 
 /**
  * Vérifie à chaque chargement si une migration de schéma est nécessaire.

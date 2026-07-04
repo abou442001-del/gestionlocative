@@ -244,6 +244,34 @@ class Limpeed_Frontend {
 	}
 
 	/**
+	 * Alertes à afficher dans le centre de notifications de la barre du haut
+	 * (locataires en retard de paiement, baux expirant sous 30 jours) : ces
+	 * indicateurs existaient déjà (cartes du tableau de bord), mais n'étaient
+	 * visibles qu'en ouvrant le tableau de bord — ce centre les rend visibles
+	 * en permanence, sur toutes les pages de l'application. Retourne des
+	 * tableaux vides pour un utilisateur sans droit sur les modules concernés.
+	 *
+	 * @return array { unpaid_tenants: array, expiring_leases: array }
+	 */
+	public static function get_notifications() {
+		$unpaid_tenants  = array();
+		$expiring_leases = array();
+
+		if ( current_user_can( 'manage_limpeed_payments' ) ) {
+			$unpaid_tenants = Limpeed_Payments::get_unpaid_tenants();
+		}
+
+		if ( current_user_can( 'manage_limpeed_tenants' ) ) {
+			$expiring_leases = Limpeed_Tenants::get_expiring_leases( 30 );
+		}
+
+		return array(
+			'unpaid_tenants'  => $unpaid_tenants,
+			'expiring_leases' => $expiring_leases,
+		);
+	}
+
+	/**
 	 * Initiales d'un nom complet (1 ou 2 lettres), pour l'avatar rond des
 	 * cartes de liste (Propriétaires, Bordereaux [propriétaire], Agents...).
 	 *

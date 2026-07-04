@@ -311,6 +311,28 @@ class Limpeed_Payments {
 	}
 
 	/**
+	 * Liste complète (non paginée) des locataires actifs sans paiement "payé"
+	 * sur la période — utilisée par le rappel automatique quotidien
+	 * (Limpeed_Reminders), qui a besoin de la liste entière plutôt que d'une
+	 * page pour composer l'email récapitulatif.
+	 *
+	 * @param string $period Format YYYY-MM. Par défaut le mois en cours.
+	 * @return array
+	 */
+	public static function get_unpaid_tenants( $period = '' ) {
+		global $wpdb;
+
+		$period = $period ? $period : self::get_current_period();
+
+		$tenants_table  = Limpeed_Tenants::table();
+		$payments_table = self::table();
+
+		$sql = "SELECT t.* FROM {$tenants_table} t WHERE t.status = 'actif' AND t.id NOT IN ( SELECT tenant_id FROM {$payments_table} WHERE period = %s AND status = 'paye' ) ORDER BY t.full_name ASC";
+
+		return $wpdb->get_results( $wpdb->prepare( $sql, $period ) );
+	}
+
+	/**
 	 * Résumé des recouvrements de loyers sur les N derniers mois (le mois en
 	 * cours inclus), du plus ancien au plus récent. Utilisé pour le graphique
 	 * du tableau de bord.

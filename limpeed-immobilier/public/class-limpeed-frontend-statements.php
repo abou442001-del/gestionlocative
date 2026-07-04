@@ -63,6 +63,14 @@ class Limpeed_Frontend_Statements {
 			exit;
 		}
 
+		// Export CSV de l'historique (respecte le filtre propriétaire courant).
+		if ( isset( $_GET['action'] ) && 'export_csv' === $_GET['action'] ) {
+			check_admin_referer( 'limpeed_export_statements_csv' );
+
+			$owner_id = isset( $_GET['owner_id'] ) ? (int) $_GET['owner_id'] : 0;
+			Limpeed_Statements::stream_csv( array( 'owner_id' => $owner_id ) );
+		}
+
 		// Suppression.
 		if ( isset( $_GET['action'], $_GET['id'] ) && 'delete' === $_GET['action'] ) {
 			$id = (int) $_GET['id'];

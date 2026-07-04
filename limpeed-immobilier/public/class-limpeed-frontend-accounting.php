@@ -39,6 +39,20 @@ class Limpeed_Frontend_Accounting {
 			}
 			Limpeed_Contracts::stream_financial_results_pdf( $period );
 		}
+
+		// Export CSV du grand livre : mêmes filtres que le nonce fixe ci-dessus
+		// (choisis dynamiquement côté client, onglet Grand livre).
+		if ( isset( $_GET['action'] ) && 'export_ledger_csv' === $_GET['action'] ) {
+			check_admin_referer( 'limpeed_export_ledger_csv' );
+
+			Limpeed_Accounting::stream_ledger_csv(
+				array(
+					'entry_type' => isset( $_GET['entry_type'] ) ? sanitize_key( $_GET['entry_type'] ) : '',
+					'period'     => isset( $_GET['period'] ) ? sanitize_text_field( wp_unslash( $_GET['period'] ) ) : '',
+					'search'     => isset( $_GET['search'] ) ? sanitize_text_field( wp_unslash( $_GET['search'] ) ) : '',
+				)
+			);
+		}
 	}
 }
 

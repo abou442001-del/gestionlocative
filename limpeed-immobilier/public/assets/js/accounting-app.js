@@ -23,6 +23,7 @@ document.addEventListener( 'alpine:init', function () {
 			entryTypes: config.entryTypes || {},
 			currentPeriod: config.currentPeriod || '',
 			financialResultsUrlBase: config.financialResultsUrlBase || '',
+			ledgerExportUrlBase: config.ledgerExportUrlBase || '',
 			i18n: config.i18n || {},
 
 			activeTab: 'bilan',
@@ -122,6 +123,22 @@ document.addEventListener( 'alpine:init', function () {
 				}
 				var separator = this.financialResultsUrlBase.indexOf( '?' ) === -1 ? '?' : '&';
 				return this.financialResultsUrlBase + separator + 'period=' + encodeURIComponent( this.bilan.period );
+			},
+
+			// -----------------------------------------------------------
+			// Export CSV du grand livre (respecte les filtres courants de
+			// l'onglet Grand livre).
+			// -----------------------------------------------------------
+			ledgerExportUrl: function () {
+				if ( ! this.ledgerExportUrlBase ) {
+					return '#';
+				}
+				var separator = this.ledgerExportUrlBase.indexOf( '?' ) === -1 ? '?' : '&';
+				return this.ledgerExportUrlBase + separator + new URLSearchParams( {
+					entry_type: this.ledger.entryType,
+					period: this.ledger.period,
+					search: this.ledger.search,
+				} ).toString();
 			},
 
 			// -----------------------------------------------------------

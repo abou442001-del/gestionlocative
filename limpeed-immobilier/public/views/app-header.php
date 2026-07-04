@@ -10,10 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$current_user  = wp_get_current_user();
-$logout_url    = wp_logout_url( Limpeed_Frontend::login_url() );
-$all_sections  = Limpeed_Frontend::get_sections();
-$current_label = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active_page ]['label'] : '';
+$current_user   = wp_get_current_user();
+$logout_url     = wp_logout_url( Limpeed_Frontend::login_url() );
+$all_sections   = Limpeed_Frontend::get_sections();
+$current_label  = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active_page ]['label'] : '';
+$notifications  = Limpeed_Frontend::get_notifications();
+$notif_count    = count( $notifications['unpaid_tenants'] ) + count( $notifications['expiring_leases'] );
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -48,6 +50,46 @@ $current_label = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'dashboard' ) ); ?>" class="limpeed-app-logo-box"><?php echo Limpeed_Frontend::render_logo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- balisage statique généré et échappé dans render_logo(). ?></a>
 		</div>
 		<div class="limpeed-app-topbar-right">
+			<?php if ( current_user_can( 'manage_limpeed_payments' ) || current_user_can( 'manage_limpeed_tenants' ) ) : ?>
+			<div class="limpeed-app-user-menu">
+				<button type="button" id="limpeed-notif-toggle" class="limpeed-app-notif-toggle" aria-label="<?php esc_attr_e( 'Notifications', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Notifications', 'limpeed-immobilier' ); ?>">
+					<span class="dashicons dashicons-bell"></span>
+					<?php if ( $notif_count > 0 ) : ?>
+						<span class="limpeed-app-notif-badge"><?php echo esc_html( $notif_count > 99 ? '99+' : $notif_count ); ?></span>
+					<?php endif; ?>
+				</button>
+				<div class="limpeed-app-user-menu-panel" id="limpeed-notif-panel">
+					<div class="limpeed-app-user-menu-header"><?php esc_html_e( 'Notifications', 'limpeed-immobilier' ); ?></div>
+					<?php if ( 0 === $notif_count ) : ?>
+						<p class="limpeed-app-notif-empty"><?php esc_html_e( 'Aucune alerte pour le moment.', 'limpeed-immobilier' ); ?></p>
+					<?php endif; ?>
+					<?php if ( $notifications['unpaid_tenants'] ) : ?>
+						<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'payments' ) ); ?>">
+							<span class="dashicons dashicons-warning"></span>
+							<?php
+							printf(
+								/* translators: %d: nombre de locataires en retard */
+								esc_html( _n( '%d locataire en retard de paiement', '%d locataires en retard de paiement', count( $notifications['unpaid_tenants'] ), 'limpeed-immobilier' ) ),
+								count( $notifications['unpaid_tenants'] )
+							);
+							?>
+						</a>
+					<?php endif; ?>
+					<?php if ( $notifications['expiring_leases'] ) : ?>
+						<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants' ) ); ?>">
+							<span class="dashicons dashicons-calendar-alt"></span>
+							<?php
+							printf(
+								/* translators: %d: nombre de baux */
+								esc_html( _n( '%d bail expirant sous 30 jours', '%d baux expirant sous 30 jours', count( $notifications['expiring_leases'] ), 'limpeed-immobilier' ) ),
+								count( $notifications['expiring_leases'] )
+							);
+							?>
+						</a>
+					<?php endif; ?>
+				</div>
+			</div>
+			<?php endif; ?>
 			<button type="button" id="limpeed-theme-toggle" class="limpeed-app-theme-toggle" aria-label="<?php esc_attr_e( 'Changer de thème (clair/sombre)', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Changer de thème (clair/sombre)', 'limpeed-immobilier' ); ?>">
 				<svg class="limpeed-theme-icon limpeed-theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4.5" y1="4.5" x2="6.2" y2="6.2"/><line x1="17.8" y1="17.8" x2="19.5" y2="19.5"/><line x1="4.5" y1="19.5" x2="6.2" y2="17.8"/><line x1="17.8" y1="6.2" x2="19.5" y2="4.5"/></g></svg>
 				<svg class="limpeed-theme-icon limpeed-theme-icon-moon" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z"/></svg>

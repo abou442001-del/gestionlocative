@@ -266,7 +266,8 @@ class Limpeed_Activator {
 			updated_at DATETIME NULL,
 			PRIMARY KEY  (id),
 			KEY property_id (property_id),
-			KEY status (status)
+			KEY status (status),
+			KEY lease_end (lease_end)
 		) {$charset_collate};";
 
 		$payments_table = $wpdb->prefix . 'limpeed_payments';
@@ -289,7 +290,8 @@ class Limpeed_Activator {
 			KEY tenant_id (tenant_id),
 			KEY property_id (property_id),
 			KEY period (period),
-			KEY status (status)
+			KEY status (status),
+			KEY payment_date (payment_date)
 		) {$charset_collate};";
 
 		$statements_table = $wpdb->prefix . 'limpeed_statements';

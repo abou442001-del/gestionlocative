@@ -149,6 +149,7 @@ if ( 'add' === $action ) :
 				</select>
 				<button type="submit" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Filtrer', 'limpeed-immobilier' ); ?></button>
 			</form>
+			<a href="<?php echo esc_url( wp_nonce_url( Limpeed_Frontend::app_url( 'statements', array( 'action' => 'export_csv', 'owner_id' => $owner_id ) ), 'limpeed_export_statements_csv' ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Exporter en CSV', 'limpeed-immobilier' ); ?></a>
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'statements', array( 'action' => 'add' ) ) ); ?>" class="limpeed-app-btn"><?php esc_html_e( 'Générer un bordereau', 'limpeed-immobilier' ); ?></a>
 		</div>
 

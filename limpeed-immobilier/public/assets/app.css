@@ -345,6 +345,48 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	display: block;
 }
 
+.limpeed-app-notif-toggle {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .14);
+	color: #fff;
+	cursor: pointer;
+	transition: background .15s ease;
+}
+
+.limpeed-app-notif-toggle:hover {
+	background: rgba(255, 255, 255, .26);
+}
+
+.limpeed-app-notif-badge {
+	position: absolute;
+	top: -2px;
+	right: -2px;
+	min-width: 16px;
+	height: 16px;
+	padding: 0 3px;
+	border-radius: 999px;
+	background: var(--limpeed-danger);
+	color: #fff;
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 16px;
+	text-align: center;
+}
+
+.limpeed-app-notif-empty {
+	padding: 10px;
+	font-size: 13px;
+	color: var(--limpeed-text-muted);
+}
+
 .limpeed-app-user-menu {
 	position: relative;
 }

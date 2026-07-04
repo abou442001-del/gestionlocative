@@ -160,6 +160,45 @@ class Limpeed_Accounting {
 	}
 
 	/**
+	 * Exporte le grand livre (filtré le cas échéant) en CSV, envoyé
+	 * directement au navigateur, et termine la requête.
+	 *
+	 * @param array $args { @type string $entry_type, @type string $period, @type string $search }
+	 */
+	public static function stream_ledger_csv( $args = array() ) {
+		$entries = self::get_ledger( wp_parse_args( $args, array( 'per_page' => 100000 ) ) );
+		$entry_types = self::get_entry_types();
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="grand-livre-' . gmdate( 'Y-m-d' ) . '.csv"' );
+
+		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		// BOM UTF-8 : Excel n'affiche correctement les accents français sans lui.
+		fwrite( $out, "\xEF\xBB\xBF" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+
+		fputcsv( $out, array( 'Date', 'Type', 'Libellé', 'Montant' ), ',', '"', '\\' );
+
+		foreach ( $entries as $entry ) {
+			fputcsv(
+				$out,
+				array(
+					$entry->entry_date,
+					$entry_types[ $entry->entry_type ] ?? $entry->entry_type,
+					$entry->label,
+					$entry->amount,
+				),
+				',',
+				'"',
+				'\\'
+			);
+		}
+
+		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+		exit;
+	}
+
+	/**
 	 * Bilan simplifié d'une période : produits (commissions prélevées),
 	 * charges (dépenses de l'agence) et résultat net.
 	 *

@@ -31,6 +31,7 @@ $app_config = array(
 	'currentPeriod'          => current_time( 'Y-m' ),
 	'currentDate'            => current_time( 'Y-m-d' ),
 	'financialResultsUrlBase' => Limpeed_Frontend::app_url( 'accounting', array( 'action' => 'download_financial_results', '_wpnonce' => wp_create_nonce( 'limpeed_download_financial_results' ) ) ),
+	'ledgerExportUrlBase'    => Limpeed_Frontend::app_url( 'accounting', array( 'action' => 'export_ledger_csv', '_wpnonce' => wp_create_nonce( 'limpeed_export_ledger_csv' ) ) ),
 	'i18n'                   => array(
 		'expenseCreated' => __( 'Charge ajoutée avec succès.', 'limpeed-immobilier' ),
 		'expenseUpdated' => __( 'Charge mise à jour avec succès.', 'limpeed-immobilier' ),
@@ -112,6 +113,7 @@ $rest_config = array(
 					</select>
 					<input type="month" x-model="ledger.period" @change="onLedgerFilterChange()">
 				</div>
+				<a :href="ledgerExportUrl()" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Exporter en CSV', 'limpeed-immobilier' ); ?></a>
 			</div>
 
 			<div class="limpeed-app-table-wrap">
