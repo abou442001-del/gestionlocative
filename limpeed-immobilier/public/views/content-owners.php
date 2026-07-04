@@ -161,45 +161,44 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<?php if ( empty( $building_properties ) ) : ?>
 				<p><?php esc_html_e( 'Aucun sous-édifice pour cet édifice.', 'limpeed-immobilier' ); ?></p>
 			<?php else : ?>
-				<div class="limpeed-app-table-wrap">
-<table class="limpeed-app-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Bien', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Type', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Loyer', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Locataire actuel', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Actions', 'limpeed-immobilier' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $building_properties as $building_property ) : ?>
-							<?php $current_tenant = Limpeed_Properties::get_current_tenant( $building_property->id ); ?>
-							<tr>
-								<td><?php echo esc_html( Limpeed_Properties::get_display_label( $building_property ) ); ?></td>
-								<td><?php echo isset( $property_types[ $building_property->type ] ) ? esc_html( $property_types[ $building_property->type ] ) : esc_html( $building_property->type ); ?></td>
-								<td><?php echo esc_html( Limpeed_Payments::format_amount( $building_property->monthly_rent ) ); ?></td>
-								<td><span class="limpeed-app-badge"><?php echo isset( $property_statuses[ $building_property->status ] ) ? esc_html( $property_statuses[ $building_property->status ] ) : esc_html( $building_property->status ); ?></span></td>
-								<td>
+				<div class="limpeed-entity-grid">
+					<?php foreach ( $building_properties as $building_property ) : ?>
+						<?php $current_tenant = Limpeed_Properties::get_current_tenant( $building_property->id ); ?>
+						<div class="limpeed-entity-card limpeed-entity-card-status-<?php echo esc_attr( $building_property->status ); ?>">
+							<div class="limpeed-entity-card-header">
+								<span class="limpeed-entity-card-avatar limpeed-icon-green"><span class="dashicons dashicons-admin-home"></span></span>
+								<div class="limpeed-entity-card-header-text">
+									<div class="limpeed-entity-card-title"><?php echo esc_html( Limpeed_Properties::get_display_label( $building_property ) ); ?></div>
+									<div class="limpeed-entity-card-subtitle"><?php echo isset( $property_types[ $building_property->type ] ) ? esc_html( $property_types[ $building_property->type ] ) : esc_html( $building_property->type ); ?></div>
+								</div>
+								<span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $building_property->status ); ?>"><?php echo isset( $property_statuses[ $building_property->status ] ) ? esc_html( $property_statuses[ $building_property->status ] ) : esc_html( $building_property->status ); ?></span>
+							</div>
+							<div class="limpeed-entity-card-meta">
+								<div class="limpeed-entity-card-meta-row">
+									<span class="dashicons dashicons-money-alt"></span>
+									<span><?php echo esc_html( Limpeed_Payments::format_amount( $building_property->monthly_rent ) ); ?></span>
+								</div>
+								<div class="limpeed-entity-card-meta-row">
+									<span class="dashicons dashicons-admin-users"></span>
 									<?php if ( $current_tenant ) : ?>
-										<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $current_tenant->id ) ) ); ?>"><?php echo esc_html( $current_tenant->full_name ); ?></a>
-										<span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $current_tenant->status ); ?>"><?php echo isset( $tenant_statuses[ $current_tenant->status ] ) ? esc_html( $tenant_statuses[ $current_tenant->status ] ) : esc_html( $current_tenant->status ); ?></span>
+										<span>
+											<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $current_tenant->id ) ) ); ?>"><?php echo esc_html( $current_tenant->full_name ); ?></a>
+											<span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $current_tenant->status ); ?>"><?php echo isset( $tenant_statuses[ $current_tenant->status ] ) ? esc_html( $tenant_statuses[ $current_tenant->status ] ) : esc_html( $current_tenant->status ); ?></span>
+										</span>
 									<?php else : ?>
-										&mdash;
+										<span>&mdash;</span>
 									<?php endif; ?>
-								</td>
-								<td class="limpeed-app-actions">
-									<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $building_property->id ) ) ); ?>"><?php esc_html_e( 'Modifier le bien', 'limpeed-immobilier' ); ?></a>
-									<?php if ( ! $current_tenant ) : ?>
-										<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'add', 'property_id' => $building_property->id ) ) ); ?>"><?php esc_html_e( 'Ajouter un locataire', 'limpeed-immobilier' ); ?></a>
-									<?php endif; ?>
-								</td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-</div>
+								</div>
+							</div>
+							<div class="limpeed-entity-card-footer">
+								<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $building_property->id ) ) ); ?>" class="limpeed-app-link-btn"><?php esc_html_e( 'Modifier le bien', 'limpeed-immobilier' ); ?></a>
+								<?php if ( ! $current_tenant ) : ?>
+									<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'add', 'property_id' => $building_property->id ) ) ); ?>" class="limpeed-app-link-btn"><?php esc_html_e( 'Ajouter un locataire', 'limpeed-immobilier' ); ?></a>
+								<?php endif; ?>
+							</div>
+						</div>
+					<?php endforeach; ?>
+				</div>
 			<?php endif; ?>
 		</div>
 	<?php endforeach; ?>

@@ -31,51 +31,54 @@ foreach ( $monthly_summary as $month ) {
 $tenants_active_ratio    = $tenants_count > 0 ? round( ( $tenants_active / $tenants_count ) * 100 ) : 0;
 $properties_occupied_ratio = $properties_count > 0 ? round( ( $properties_occupied / $properties_count ) * 100 ) : 0;
 ?>
-<div class="limpeed-cards-row">
-	<div class="limpeed-app-card">
-		<div class="limpeed-app-card-top">
-			<div>
-				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $owners_count ) ); ?></div>
-				<div class="limpeed-app-card-label"><?php esc_html_e( 'Propriétaires', 'limpeed-immobilier' ); ?></div>
+<div class="limpeed-dashboard-section">
+	<h2 class="limpeed-dashboard-section-title"><span class="dashicons dashicons-portfolio"></span> <?php esc_html_e( 'Portefeuille', 'limpeed-immobilier' ); ?></h2>
+	<div class="limpeed-cards-row">
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $owners_count ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Propriétaires', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-groups"></span></span>
 			</div>
-			<span class="limpeed-app-card-icon limpeed-icon-orange"><span class="dashicons dashicons-groups"></span></span>
+			<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
 		</div>
-		<div class="limpeed-app-card-bar limpeed-bar-orange"></div>
-	</div>
-	<div class="limpeed-app-card">
-		<div class="limpeed-app-card-top">
-			<div>
-				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $tenants_count ) ); ?></div>
-				<div class="limpeed-app-card-label"><?php esc_html_e( 'Locataires', 'limpeed-immobilier' ); ?></div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $tenants_count ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Locataires', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-red"><span class="dashicons dashicons-admin-users"></span></span>
 			</div>
-			<span class="limpeed-app-card-icon limpeed-icon-red"><span class="dashicons dashicons-admin-users"></span></span>
-		</div>
-		<div class="limpeed-app-card-ratio"><span style="width: <?php echo esc_attr( $tenants_active_ratio ); ?>%; background: var(--limpeed-green);"></span></div>
-		<div class="limpeed-app-card-bar limpeed-bar-red">
-			<span><?php printf( esc_html__( '%1$d actifs / %2$d inactifs', 'limpeed-immobilier' ), (int) $tenants_active, (int) $tenants_inactive ); ?></span>
-		</div>
-	</div>
-	<div class="limpeed-app-card">
-		<div class="limpeed-app-card-top">
-			<div>
-				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $buildings_count ) ); ?></div>
-				<div class="limpeed-app-card-label"><?php esc_html_e( 'Édifices', 'limpeed-immobilier' ); ?></div>
+			<div class="limpeed-app-card-ratio"><span style="width: <?php echo esc_attr( $tenants_active_ratio ); ?>%; background: var(--limpeed-green);"></span></div>
+			<div class="limpeed-app-card-bar limpeed-bar-red">
+				<span><?php printf( esc_html__( '%1$d actifs / %2$d inactifs', 'limpeed-immobilier' ), (int) $tenants_active, (int) $tenants_inactive ); ?></span>
 			</div>
-			<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-admin-multisite"></span></span>
 		</div>
-		<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
-	</div>
-	<div class="limpeed-app-card">
-		<div class="limpeed-app-card-top">
-			<div>
-				<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $properties_count ) ); ?></div>
-				<div class="limpeed-app-card-label"><?php esc_html_e( 'Biens (sous-édifices)', 'limpeed-immobilier' ); ?></div>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $buildings_count ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Édifices', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-blue"><span class="dashicons dashicons-admin-multisite"></span></span>
 			</div>
-			<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-building"></span></span>
+			<div class="limpeed-app-card-bar limpeed-bar-blue"></div>
 		</div>
-		<div class="limpeed-app-card-ratio"><span style="width: <?php echo esc_attr( $properties_occupied_ratio ); ?>%; background: var(--limpeed-blue);"></span></div>
-		<div class="limpeed-app-card-bar limpeed-bar-green">
-			<span><?php printf( esc_html__( '%1$d disponibles / %2$d occupés', 'limpeed-immobilier' ), (int) $properties_vacant, (int) $properties_occupied ); ?></span>
+		<div class="limpeed-app-card">
+			<div class="limpeed-app-card-top">
+				<div>
+					<div class="limpeed-app-card-number"><?php echo esc_html( number_format_i18n( $properties_count ) ); ?></div>
+					<div class="limpeed-app-card-label"><?php esc_html_e( 'Biens (sous-édifices)', 'limpeed-immobilier' ); ?></div>
+				</div>
+				<span class="limpeed-app-card-icon limpeed-icon-green"><span class="dashicons dashicons-building"></span></span>
+			</div>
+			<div class="limpeed-app-card-ratio"><span style="width: <?php echo esc_attr( $properties_occupied_ratio ); ?>%; background: var(--limpeed-blue);"></span></div>
+			<div class="limpeed-app-card-bar limpeed-bar-green">
+				<span><?php printf( esc_html__( '%1$d disponibles / %2$d occupés', 'limpeed-immobilier' ), (int) $properties_vacant, (int) $properties_occupied ); ?></span>
+			</div>
 		</div>
 	</div>
 </div>
@@ -94,7 +97,9 @@ $kpi_rest_config = array(
 	'nonce' => wp_create_nonce( 'wp_rest' ),
 );
 ?>
-<div class="limpeed-cards-row" x-data="limpeedDashboardKpisApp(<?php echo esc_attr( wp_json_encode( $kpi_config ) ); ?>)">
+<div class="limpeed-dashboard-section" x-data="limpeedDashboardKpisApp(<?php echo esc_attr( wp_json_encode( $kpi_config ) ); ?>)">
+<h2 class="limpeed-dashboard-section-title"><span class="dashicons dashicons-calendar-alt"></span> <?php esc_html_e( 'Ce mois-ci', 'limpeed-immobilier' ); ?></h2>
+<div class="limpeed-cards-row">
 	<div class="limpeed-app-card">
 		<button type="button" class="limpeed-app-card-clickable" @click="togglePanel('occupancy')">
 			<div class="limpeed-app-card-top">
@@ -156,6 +161,7 @@ $kpi_rest_config = array(
 		</div>
 	</div>
 </div>
+</div>
 
 <script>
 window.limpeedRest = <?php echo wp_json_encode( $kpi_rest_config ); ?>;
@@ -202,6 +208,7 @@ $lists_config = array(
 );
 ?>
 <div x-data="limpeedDashboardListsApp(<?php echo esc_attr( wp_json_encode( $lists_config ) ); ?>)">
+	<h2 class="limpeed-dashboard-section-title"><span class="dashicons dashicons-backup"></span> <?php esc_html_e( 'Activité récente', 'limpeed-immobilier' ); ?></h2>
 	<div class="limpeed-tables-row">
 		<div class="limpeed-app-panel">
 			<h2 class="limpeed-panel-title-green"><?php esc_html_e( 'Derniers locataires', 'limpeed-immobilier' ); ?></h2>
@@ -217,34 +224,28 @@ $lists_config = array(
 				</label>
 				<input type="text" placeholder="<?php esc_attr_e( 'Rechercher…', 'limpeed-immobilier' ); ?>" x-model="lists.tenants.search" @input="onSearchInput('tenants')">
 			</div>
-			<div class="limpeed-app-table-wrap">
-				<table class="limpeed-app-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Solde', 'limpeed-immobilier' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<template x-if="lists.tenants.loading">
-							<tr class="limpeed-app-skeleton-row"><td colspan="3"><div class="limpeed-app-skeleton-bar"></div></td></tr>
-						</template>
-						<template x-if="!lists.tenants.loading && lists.tenants.items.length === 0">
-							<tr><td colspan="3"><?php esc_html_e( 'Aucun locataire pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
-						</template>
-						<template x-for="tenant in lists.tenants.items" :key="tenant.id">
-							<tr>
-								<td>
-									<span x-text="tenant.full_name"></span><br>
-									<small x-text="tenant.phone"></small>
-								</td>
-								<td><span class="limpeed-app-badge" :class="'limpeed-app-badge-' + tenant.status" x-text="tenant.status_label"></span></td>
-								<td :class="{ 'limpeed-text-danger': tenant.balance > 0 }" x-text="tenant.balance_formatted"></td>
-							</tr>
-						</template>
-					</tbody>
-				</table>
+			<div class="limpeed-mini-list">
+				<template x-if="lists.tenants.loading">
+					<div>
+						<div class="limpeed-mini-list-skeleton"></div>
+						<div class="limpeed-mini-list-skeleton"></div>
+						<div class="limpeed-mini-list-skeleton"></div>
+					</div>
+				</template>
+				<p class="limpeed-mini-list-empty" x-show="!lists.tenants.loading && lists.tenants.items.length === 0"><?php esc_html_e( 'Aucun locataire pour le moment.', 'limpeed-immobilier' ); ?></p>
+				<template x-for="tenant in lists.tenants.items" :key="tenant.id">
+					<div class="limpeed-mini-list-item">
+						<span class="limpeed-entity-card-avatar is-sm is-solid limpeed-icon-red" x-text="window.limpeedInitials(tenant.full_name)"></span>
+						<div class="limpeed-mini-list-text">
+							<div class="limpeed-mini-list-title" x-text="tenant.full_name"></div>
+							<div class="limpeed-mini-list-sub" x-text="tenant.phone || '—'"></div>
+						</div>
+						<div class="limpeed-mini-list-end">
+							<span class="limpeed-app-badge" :class="'limpeed-app-badge-' + tenant.status" x-text="tenant.status_label"></span>
+							<span class="limpeed-mini-list-value" :class="{ 'limpeed-text-danger': tenant.balance > 0 }" x-text="tenant.balance_formatted"></span>
+						</div>
+					</div>
+				</template>
 			</div>
 			<div class="limpeed-app-pagination-bar">
 				<span class="limpeed-app-pagination-range" x-text="rangeLabel('tenants')"></span>
@@ -274,29 +275,24 @@ $lists_config = array(
 				</label>
 				<input type="text" placeholder="<?php esc_attr_e( 'Rechercher…', 'limpeed-immobilier' ); ?>" x-model="lists.owners.search" @input="onSearchInput('owners')">
 			</div>
-			<div class="limpeed-app-table-wrap">
-				<table class="limpeed-app-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Nom complet', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Téléphone', 'limpeed-immobilier' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<template x-if="lists.owners.loading">
-							<tr class="limpeed-app-skeleton-row"><td colspan="2"><div class="limpeed-app-skeleton-bar"></div></td></tr>
-						</template>
-						<template x-if="!lists.owners.loading && lists.owners.items.length === 0">
-							<tr><td colspan="2"><?php esc_html_e( 'Aucun propriétaire pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
-						</template>
-						<template x-for="owner in lists.owners.items" :key="owner.id">
-							<tr>
-								<td x-text="owner.full_name"></td>
-								<td x-text="owner.phone"></td>
-							</tr>
-						</template>
-					</tbody>
-				</table>
+			<div class="limpeed-mini-list">
+				<template x-if="lists.owners.loading">
+					<div>
+						<div class="limpeed-mini-list-skeleton"></div>
+						<div class="limpeed-mini-list-skeleton"></div>
+						<div class="limpeed-mini-list-skeleton"></div>
+					</div>
+				</template>
+				<p class="limpeed-mini-list-empty" x-show="!lists.owners.loading && lists.owners.items.length === 0"><?php esc_html_e( 'Aucun propriétaire pour le moment.', 'limpeed-immobilier' ); ?></p>
+				<template x-for="owner in lists.owners.items" :key="owner.id">
+					<div class="limpeed-mini-list-item">
+						<span class="limpeed-entity-card-avatar is-sm is-solid limpeed-icon-orange" x-text="window.limpeedInitials(owner.full_name)"></span>
+						<div class="limpeed-mini-list-text">
+							<div class="limpeed-mini-list-title" x-text="owner.full_name"></div>
+							<div class="limpeed-mini-list-sub" x-text="owner.phone || '—'"></div>
+						</div>
+					</div>
+				</template>
 			</div>
 			<div class="limpeed-app-pagination-bar">
 				<span class="limpeed-app-pagination-range" x-text="rangeLabel('owners')"></span>
@@ -328,31 +324,27 @@ $lists_config = array(
 				</label>
 				<input type="text" placeholder="<?php esc_attr_e( 'Rechercher…', 'limpeed-immobilier' ); ?>" x-model="lists.paid.search" @input="onSearchInput('paid')">
 			</div>
-			<div class="limpeed-app-table-wrap">
-				<table class="limpeed-app-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Locataire', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Période', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Montant', 'limpeed-immobilier' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<template x-if="lists.paid.loading">
-							<tr class="limpeed-app-skeleton-row"><td colspan="3"><div class="limpeed-app-skeleton-bar"></div></td></tr>
-						</template>
-						<template x-if="!lists.paid.loading && lists.paid.items.length === 0">
-							<tr><td colspan="3"><?php esc_html_e( 'Aucune quittance pour le moment.', 'limpeed-immobilier' ); ?></td></tr>
-						</template>
-						<template x-for="payment in lists.paid.items" :key="payment.id">
-							<tr>
-								<td x-text="payment.tenant_label || '—'"></td>
-								<td x-text="payment.period"></td>
-								<td x-text="payment.amount_formatted"></td>
-							</tr>
-						</template>
-					</tbody>
-				</table>
+			<div class="limpeed-mini-list">
+				<template x-if="lists.paid.loading">
+					<div>
+						<div class="limpeed-mini-list-skeleton"></div>
+						<div class="limpeed-mini-list-skeleton"></div>
+						<div class="limpeed-mini-list-skeleton"></div>
+					</div>
+				</template>
+				<p class="limpeed-mini-list-empty" x-show="!lists.paid.loading && lists.paid.items.length === 0"><?php esc_html_e( 'Aucune quittance pour le moment.', 'limpeed-immobilier' ); ?></p>
+				<template x-for="payment in lists.paid.items" :key="payment.id">
+					<div class="limpeed-mini-list-item">
+						<span class="limpeed-entity-card-avatar is-sm limpeed-icon-green"><span class="dashicons dashicons-money-alt"></span></span>
+						<div class="limpeed-mini-list-text">
+							<div class="limpeed-mini-list-title" x-text="payment.tenant_label || '—'"></div>
+							<div class="limpeed-mini-list-sub" x-text="payment.period"></div>
+						</div>
+						<div class="limpeed-mini-list-end">
+							<span class="limpeed-mini-list-value" x-text="payment.amount_formatted"></span>
+						</div>
+					</div>
+				</template>
 			</div>
 			<div class="limpeed-app-pagination-bar">
 				<span class="limpeed-app-pagination-range" x-text="rangeLabel('paid')"></span>
@@ -382,29 +374,26 @@ $lists_config = array(
 				</label>
 				<input type="text" placeholder="<?php esc_attr_e( 'Rechercher…', 'limpeed-immobilier' ); ?>" x-model="lists.unpaid.search" @input="onSearchInput('unpaid')">
 			</div>
-			<div class="limpeed-app-table-wrap">
-				<table class="limpeed-app-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Locataire', 'limpeed-immobilier' ); ?></th>
-							<th><?php esc_html_e( 'Montant', 'limpeed-immobilier' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<template x-if="lists.unpaid.loading">
-							<tr class="limpeed-app-skeleton-row"><td colspan="2"><div class="limpeed-app-skeleton-bar"></div></td></tr>
-						</template>
-						<template x-if="!lists.unpaid.loading && lists.unpaid.items.length === 0">
-							<tr><td colspan="2"><?php esc_html_e( 'Aucun impayé ce mois-ci.', 'limpeed-immobilier' ); ?></td></tr>
-						</template>
-						<template x-for="tenant in lists.unpaid.items" :key="tenant.id">
-							<tr>
-								<td x-text="tenant.full_name"></td>
-								<td class="limpeed-text-danger" x-text="tenant.rent_formatted"></td>
-							</tr>
-						</template>
-					</tbody>
-				</table>
+			<div class="limpeed-mini-list">
+				<template x-if="lists.unpaid.loading">
+					<div>
+						<div class="limpeed-mini-list-skeleton"></div>
+						<div class="limpeed-mini-list-skeleton"></div>
+						<div class="limpeed-mini-list-skeleton"></div>
+					</div>
+				</template>
+				<p class="limpeed-mini-list-empty" x-show="!lists.unpaid.loading && lists.unpaid.items.length === 0"><?php esc_html_e( 'Aucun impayé ce mois-ci.', 'limpeed-immobilier' ); ?></p>
+				<template x-for="tenant in lists.unpaid.items" :key="tenant.id">
+					<div class="limpeed-mini-list-item">
+						<span class="limpeed-entity-card-avatar is-sm limpeed-icon-red"><span class="dashicons dashicons-warning"></span></span>
+						<div class="limpeed-mini-list-text">
+							<div class="limpeed-mini-list-title" x-text="tenant.full_name"></div>
+						</div>
+						<div class="limpeed-mini-list-end">
+							<span class="limpeed-mini-list-value limpeed-text-danger" x-text="tenant.rent_formatted"></span>
+						</div>
+					</div>
+				</template>
 			</div>
 			<div class="limpeed-app-pagination-bar">
 				<span class="limpeed-app-pagination-range" x-text="rangeLabel('unpaid')"></span>
