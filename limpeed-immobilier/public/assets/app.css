@@ -193,9 +193,13 @@ body.limpeed-app {
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: .06em;
-	color: var(--limpeed-text-muted);
+	color: #000;
 	opacity: .75;
 	white-space: nowrap;
+}
+
+[data-theme="dark"] .limpeed-app-nav-group-label {
+	color: var(--limpeed-text);
 }
 
 .limpeed-app-nav-item {
