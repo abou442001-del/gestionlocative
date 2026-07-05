@@ -23,6 +23,12 @@ class Limpeed_Frontend_Settings {
 			return;
 		}
 
+		// Export global de toutes les données (lecture seule).
+		if ( isset( $_GET['action'] ) && 'export_all' === $_GET['action'] ) {
+			check_admin_referer( 'limpeed_export_all' );
+			Limpeed_Export::stream_full_export();
+		}
+
 		if ( ! isset( $_POST['limpeed_settings_nonce'] ) ) {
 			return;
 		}

@@ -108,3 +108,9 @@ $is_apache_like      = false !== strpos( $server_software_low, 'apache' ) || fal
 		<button type="submit" class="limpeed-app-btn"><?php esc_html_e( 'Enregistrer les réglages', 'limpeed-immobilier' ); ?></button>
 	</form>
 </div>
+
+<div class="limpeed-app-panel">
+	<h2><?php esc_html_e( 'Export de toutes les données', 'limpeed-immobilier' ); ?></h2>
+	<p class="limpeed-app-description"><?php esc_html_e( 'Télécharge une archive ZIP contenant un fichier CSV par type de donnée (propriétaires, édifices, biens, locataires, paiements, bordereaux, mandats, avenants, états des lieux, documents, charges, caisses et journal d\'activité) — utile pour garder une copie de sauvegarde, la transmettre à un comptable, ou l\'analyser dans un tableur.', 'limpeed-immobilier' ); ?></p>
+	<a href="<?php echo esc_url( wp_nonce_url( Limpeed_Frontend::app_url( 'settings', array( 'action' => 'export_all' ) ), 'limpeed_export_all' ) ); ?>" class="limpeed-app-btn"><span class="dashicons dashicons-download"></span> <?php esc_html_e( 'Exporter toutes les données (ZIP)', 'limpeed-immobilier' ); ?></a>
+</div>

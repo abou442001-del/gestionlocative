@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.41.0
+Stable tag: 1.42.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.42.0 =
+* Nouvel export global des données (section Réglages) : télécharge une archive ZIP contenant un fichier CSV par type de donnée (propriétaires, édifices, biens, locataires, paiements, bordereaux, mandats, avenants, états des lieux, documents, charges, caisses et journal d'activité), avec les libellés déjà traduits (statuts, types, noms des propriétaires/biens/locataires) plutôt que les identifiants bruts — pour donner à l'agence une vue d'ensemble exploitable de toutes ses données (sauvegarde, transmission à un comptable, analyse dans un tableur).
 
 = 1.41.0 =
 * Sécurité, suite à un audit ciblé sur les besoins d'une agence immobilière manipulant des données de locataires/propriétaires :
