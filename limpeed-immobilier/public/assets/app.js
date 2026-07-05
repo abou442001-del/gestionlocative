@@ -19,6 +19,26 @@ window.limpeedInitials = function ( name ) {
 	return parts[0].slice( 0, 2 ).toUpperCase();
 };
 
+/**
+ * Échappe les caractères HTML spéciaux, pour l'insertion de données venant de
+ * l'API (noms de locataires/propriétaires...) dans du innerHTML construit par
+ * concaténation de chaînes (voir la recherche globale de la barre du haut).
+ *
+ * @param {string} value
+ * @return {string}
+ */
+window.limpeedEscapeHtml = function ( value ) {
+	return String( value == null ? '' : value ).replace( /[&<>"']/g, function ( char ) {
+		return ( {
+			'&': '&amp;',
+			'<': '&lt;',
+			'>': '&gt;',
+			'"': '&quot;',
+			"'": '&#39;',
+		} )[ char ];
+	} );
+};
+
 document.addEventListener( 'DOMContentLoaded', function () {
 	document.querySelectorAll( '.limpeed-confirm-delete' ).forEach( function ( link ) {
 		link.addEventListener( 'click', function ( event ) {
@@ -99,6 +119,96 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		document.addEventListener( 'click', function ( event ) {
 			if ( notifPanel.classList.contains( 'is-open' ) && ! notifPanel.contains( event.target ) ) {
 				notifPanel.classList.remove( 'is-open' );
+			}
+		} );
+	}
+
+	var quickAddToggle = document.getElementById( 'limpeed-quick-add-toggle' );
+	var quickAddPanel  = document.getElementById( 'limpeed-quick-add-panel' );
+	if ( quickAddToggle && quickAddPanel ) {
+		quickAddToggle.addEventListener( 'click', function ( event ) {
+			event.stopPropagation();
+			quickAddPanel.classList.toggle( 'is-open' );
+		} );
+		document.addEventListener( 'click', function ( event ) {
+			if ( quickAddPanel.classList.contains( 'is-open' ) && ! quickAddPanel.contains( event.target ) ) {
+				quickAddPanel.classList.remove( 'is-open' );
+			}
+		} );
+	}
+
+	// Recherche globale de la barre du haut : requête l'endpoint REST
+	// limpeed/v1/search (voir Limpeed_Rest_Api::get_global_search()), avec
+	// un debounce court pour éviter une requête à chaque frappe.
+	var searchInput   = document.getElementById( 'limpeed-global-search-input' );
+	var searchResults = document.getElementById( 'limpeed-global-search-results' );
+	if ( searchInput && searchResults && window.LimpeedRestClient ) {
+		var searchTimer = null;
+		var typeIcons   = {
+			owner: 'dashicons-groups',
+			building: 'dashicons-admin-multisite',
+			property: 'dashicons-building',
+			tenant: 'dashicons-admin-users',
+		};
+
+		function closeSearchResults() {
+			searchResults.classList.remove( 'is-open' );
+			searchResults.innerHTML = '';
+		}
+
+		function renderSearchResults( items ) {
+			if ( ! items.length ) {
+				searchResults.innerHTML = '<p class="limpeed-app-global-search-empty">Aucun résultat.</p>';
+				searchResults.classList.add( 'is-open' );
+				return;
+			}
+			searchResults.innerHTML = items.map( function ( item ) {
+				var icon    = typeIcons[ item.type ] || 'dashicons-search';
+				var label   = window.limpeedEscapeHtml( item.label );
+				var sub     = item.sublabel ? '<span class="limpeed-app-global-search-sub">' + window.limpeedEscapeHtml( item.sublabel ) + '</span>' : '';
+				var typeLbl = window.limpeedEscapeHtml( item.type_label );
+				var url     = window.limpeedEscapeHtml( item.url );
+				return (
+					'<a class="limpeed-app-global-search-item" href="' + url + '">' +
+						'<span class="dashicons ' + icon + '"></span>' +
+						'<span class="limpeed-app-global-search-item-text">' +
+							'<span class="limpeed-app-global-search-label">' + label + '</span>' + sub +
+						'</span>' +
+						'<span class="limpeed-app-global-search-type">' + typeLbl + '</span>' +
+					'</a>'
+				);
+			} ).join( '' );
+			searchResults.classList.add( 'is-open' );
+		}
+
+		searchInput.addEventListener( 'input', function () {
+			var term = searchInput.value.trim();
+			clearTimeout( searchTimer );
+			if ( term.length < 2 ) {
+				closeSearchResults();
+				return;
+			}
+			searchTimer = setTimeout( function () {
+				window.LimpeedRestClient.apiFetch( 'search?q=' + encodeURIComponent( term ) )
+					.then( function ( body ) {
+						renderSearchResults( body.items || [] );
+					} )
+					.catch( function () {
+						closeSearchResults();
+					} );
+			}, 300 );
+		} );
+
+		document.addEventListener( 'click', function ( event ) {
+			if ( ! event.target.closest( '.limpeed-app-global-search' ) ) {
+				closeSearchResults();
+			}
+		} );
+
+		searchInput.addEventListener( 'keydown', function ( event ) {
+			if ( 'Escape' === event.key ) {
+				closeSearchResults();
+				searchInput.blur();
 			}
 		} );
 	}

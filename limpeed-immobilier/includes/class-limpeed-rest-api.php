@@ -746,6 +746,19 @@ class Limpeed_Rest_Api {
 				),
 			)
 		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/search',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_global_search' ),
+				'permission_callback' => array( $this, 'can_view_lookups' ),
+				'args'                => array(
+					'q' => array( 'sanitize_callback' => 'sanitize_text_field' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -815,6 +828,100 @@ class Limpeed_Rest_Api {
 		return current_user_can( 'manage_limpeed_tenants' )
 			|| current_user_can( 'manage_limpeed_properties' )
 			|| current_user_can( 'manage_limpeed_payments' );
+	}
+
+	/**
+	 * GET /search?q= : recherche globale (barre de recherche de la barre du
+	 * haut), tous types d'entités confondus. Chaque type n'est inclus que si
+	 * l'utilisateur possède la capacité correspondante (défense en profondeur,
+	 * en plus du permission_callback can_view_lookups qui gate la route entière).
+	 * Résultats volontairement limités (5 par type) : il s'agit d'un accès
+	 * rapide, pas d'une recherche exhaustive (déjà couverte par la recherche
+	 * propre à chaque section).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_global_search( WP_REST_Request $request ) {
+		global $wpdb;
+
+		$term = trim( (string) $request->get_param( 'q' ) );
+		$items = array();
+
+		if ( '' === $term || mb_strlen( $term ) < 2 ) {
+			return new WP_REST_Response( array( 'items' => $items ) );
+		}
+
+		$like = '%' . $wpdb->esc_like( $term ) . '%';
+
+		if ( current_user_can( 'manage_limpeed_owners' ) ) {
+			$owners_table = Limpeed_Owners::table();
+			$rows         = $wpdb->get_results(
+				$wpdb->prepare( "SELECT id, full_name FROM {$owners_table} WHERE full_name LIKE %s ORDER BY full_name ASC LIMIT 5", $like )
+			);
+			foreach ( $rows as $row ) {
+				$items[] = array(
+					'type'     => 'owner',
+					'type_label' => __( 'Propriétaire', 'limpeed-immobilier' ),
+					'id'       => (int) $row->id,
+					'label'    => $row->full_name,
+					'sublabel' => '',
+					'url'      => Limpeed_Frontend::app_url( 'owners', array( 'action' => 'view', 'id' => $row->id ) ),
+				);
+			}
+		}
+
+		if ( current_user_can( 'manage_limpeed_properties' ) ) {
+			$buildings_table = Limpeed_Buildings::table();
+			$rows            = $wpdb->get_results(
+				$wpdb->prepare( "SELECT id, name FROM {$buildings_table} WHERE name LIKE %s ORDER BY name ASC LIMIT 5", $like )
+			);
+			foreach ( $rows as $row ) {
+				$items[] = array(
+					'type'     => 'building',
+					'type_label' => __( 'Édifice', 'limpeed-immobilier' ),
+					'id'       => (int) $row->id,
+					'label'    => $row->name,
+					'sublabel' => '',
+					'url'      => Limpeed_Frontend::app_url( 'buildings', array( 'action' => 'edit', 'id' => $row->id ) ),
+				);
+			}
+
+			$properties_table = Limpeed_Properties::table();
+			$rows             = $wpdb->get_results(
+				$wpdb->prepare( "SELECT id, reference FROM {$properties_table} WHERE reference LIKE %s ORDER BY reference ASC LIMIT 5", $like )
+			);
+			foreach ( $rows as $row ) {
+				$property = Limpeed_Properties::get( $row->id );
+				$items[]  = array(
+					'type'     => 'property',
+					'type_label' => __( 'Bien', 'limpeed-immobilier' ),
+					'id'       => (int) $row->id,
+					'label'    => $property ? Limpeed_Properties::get_display_label( $property ) : $row->reference,
+					'sublabel' => '',
+					'url'      => Limpeed_Frontend::app_url( 'properties', array( 'action' => 'edit', 'id' => $row->id ) ),
+				);
+			}
+		}
+
+		if ( current_user_can( 'manage_limpeed_tenants' ) ) {
+			$tenants_table = Limpeed_Tenants::table();
+			$rows          = $wpdb->get_results(
+				$wpdb->prepare( "SELECT id, full_name, phone FROM {$tenants_table} WHERE full_name LIKE %s ORDER BY full_name ASC LIMIT 5", $like )
+			);
+			foreach ( $rows as $row ) {
+				$items[] = array(
+					'type'     => 'tenant',
+					'type_label' => __( 'Locataire', 'limpeed-immobilier' ),
+					'id'       => (int) $row->id,
+					'label'    => $row->full_name,
+					'sublabel' => $row->phone ? $row->phone : '',
+					'url'      => Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => $row->id ) ),
+				);
+			}
+		}
+
+		return new WP_REST_Response( array( 'items' => $items ) );
 	}
 
 	/**

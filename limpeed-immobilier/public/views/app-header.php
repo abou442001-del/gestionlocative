@@ -16,6 +16,33 @@ $all_sections   = Limpeed_Frontend::get_sections();
 $current_label  = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active_page ]['label'] : '';
 $notifications  = Limpeed_Frontend::get_notifications();
 $notif_count    = count( $notifications['unpaid_tenants'] ) + count( $notifications['expiring_leases'] );
+
+// Barre de recherche globale : visible si l'utilisateur a accès à au moins
+// une des sections consultables (même condition que can_view_lookups côté
+// API REST, voir includes/class-limpeed-rest-api.php).
+$can_global_search = current_user_can( 'manage_limpeed_tenants' ) || current_user_can( 'manage_limpeed_properties' ) || current_user_can( 'manage_limpeed_payments' );
+
+// Menu "+ Ajouter" : un lien par section à laquelle l'utilisateur peut ajouter
+// une entrée, masqué entièrement si aucune n'est accessible.
+$quick_add_links = array();
+if ( current_user_can( 'manage_limpeed_tenants' ) ) {
+	$quick_add_links['tenants'] = array( 'label' => __( 'Locataire', 'limpeed-immobilier' ), 'icon' => 'dashicons-admin-users' );
+}
+if ( current_user_can( 'manage_limpeed_owners' ) ) {
+	$quick_add_links['owners'] = array( 'label' => __( 'Propriétaire', 'limpeed-immobilier' ), 'icon' => 'dashicons-groups' );
+}
+if ( current_user_can( 'manage_limpeed_properties' ) ) {
+	$quick_add_links['buildings']  = array( 'label' => __( 'Édifice', 'limpeed-immobilier' ), 'icon' => 'dashicons-admin-multisite' );
+	$quick_add_links['properties'] = array( 'label' => __( 'Bien', 'limpeed-immobilier' ), 'icon' => 'dashicons-building' );
+}
+if ( current_user_can( 'manage_limpeed_payments' ) ) {
+	$quick_add_links['payments'] = array( 'label' => __( 'Paiement', 'limpeed-immobilier' ), 'icon' => 'dashicons-money-alt' );
+}
+
+$global_search_rest_config = array(
+	'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
+	'nonce' => wp_create_nonce( 'wp_rest' ),
+);
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -23,6 +50,9 @@ $notif_count    = count( $notifications['unpaid_tenants'] ) + count( $notificati
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title><?php echo esc_html( $current_label ); ?> — <?php esc_html_e( 'Limpeed Immobilier', 'limpeed-immobilier' ); ?></title>
+	<script>
+	window.limpeedRest = <?php echo wp_json_encode( $global_search_rest_config ); ?>;
+	</script>
 	<script>
 	// Applique le thème et l'état de la sidebar mémorisés avant le rendu de
 	// la page pour éviter un flash au chargement (les attributs doivent être
@@ -49,7 +79,31 @@ $notif_count    = count( $notifications['unpaid_tenants'] ) + count( $notificati
 			</button>
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'dashboard' ) ); ?>" class="limpeed-app-logo-box"><?php echo Limpeed_Frontend::render_logo(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- balisage statique généré et échappé dans render_logo(). ?></a>
 		</div>
+		<?php if ( $can_global_search ) : ?>
+			<div class="limpeed-app-topbar-search">
+				<div class="limpeed-app-global-search">
+					<span class="dashicons dashicons-search limpeed-app-global-search-icon"></span>
+					<input type="text" id="limpeed-global-search-input" autocomplete="off" placeholder="<?php esc_attr_e( 'Rechercher un locataire, propriétaire, édifice, bien...', 'limpeed-immobilier' ); ?>">
+					<div class="limpeed-app-global-search-results" id="limpeed-global-search-results"></div>
+				</div>
+			</div>
+		<?php endif; ?>
 		<div class="limpeed-app-topbar-right">
+			<?php if ( ! empty( $quick_add_links ) ) : ?>
+				<div class="limpeed-app-user-menu">
+					<button type="button" id="limpeed-quick-add-toggle" class="limpeed-app-quick-add-toggle" aria-label="<?php esc_attr_e( 'Ajouter', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Ajouter', 'limpeed-immobilier' ); ?>">
+						<span class="dashicons dashicons-plus-alt2"></span>
+					</button>
+					<div class="limpeed-app-user-menu-panel" id="limpeed-quick-add-panel">
+						<div class="limpeed-app-user-menu-header"><?php esc_html_e( 'Ajouter', 'limpeed-immobilier' ); ?></div>
+						<?php foreach ( $quick_add_links as $section_key => $link ) : ?>
+							<a href="<?php echo esc_url( Limpeed_Frontend::app_url( $section_key, array( 'action' => 'add' ) ) ); ?>">
+								<span class="dashicons <?php echo esc_attr( $link['icon'] ); ?>"></span> <?php echo esc_html( $link['label'] ); ?>
+							</a>
+						<?php endforeach; ?>
+					</div>
+				</div>
+			<?php endif; ?>
 			<?php if ( current_user_can( 'manage_limpeed_payments' ) || current_user_can( 'manage_limpeed_tenants' ) ) : ?>
 			<div class="limpeed-app-user-menu">
 				<button type="button" id="limpeed-notif-toggle" class="limpeed-app-notif-toggle" aria-label="<?php esc_attr_e( 'Notifications', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Notifications', 'limpeed-immobilier' ); ?>">

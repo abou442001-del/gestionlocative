@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.50.0
+Stable tag: 1.51.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,10 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.51.0 =
+* Nouvelle barre de recherche globale dans la barre du haut, disponible sur toutes les pages de l'application : recherche un locataire, un propriétaire, un édifice ou un bien par nom/référence et propose un accès direct à sa fiche, sans devoir d'abord naviguer vers la bonne section.
+* Nouveau bouton "+ Ajouter" dans la barre du haut : menu déroulant avec un accès rapide aux formulaires d'ajout (locataire, propriétaire, édifice, bien, paiement), chaque lien n'apparaissant que si l'utilisateur a le droit d'ajouter l'entité correspondante.
 
 = 1.50.0 =
 * Lors de l'ajout d'un nouveau locataire, possibilité de choisir le mois à partir duquel les paiements d'avance de loyer seront enregistrés automatiquement comme payés (au lieu de toujours se baser implicitement sur le mois de début de bail, ou sur le mois en cours si non renseigné). Ce champ n'apparaît qu'à la création (formulaire classique et modale) : les paiements d'avance ne sont générés qu'une seule fois, lors de l'ajout du locataire.
