@@ -229,12 +229,28 @@ class Limpeed_Activator {
 			email VARCHAR(191) NULL,
 			address TEXT NULL,
 			bank_details TEXT NULL,
+			branch_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
 			created_by BIGINT UNSIGNED NULL,
 			updated_by BIGINT UNSIGNED NULL,
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME NULL,
 			PRIMARY KEY  (id),
-			KEY full_name (full_name)
+			KEY full_name (full_name),
+			KEY branch_id (branch_id)
+		) {$charset_collate};";
+
+		$branches_table = $wpdb->prefix . 'limpeed_branches';
+
+		$sql_branches = "CREATE TABLE {$branches_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			name VARCHAR(191) NOT NULL,
+			address TEXT NULL,
+			phone VARCHAR(50) NULL,
+			created_by BIGINT UNSIGNED NULL,
+			updated_by BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NULL,
+			PRIMARY KEY  (id)
 		) {$charset_collate};";
 
 		$sql_buildings = "CREATE TABLE {$buildings_table} (
@@ -493,6 +509,7 @@ class Limpeed_Activator {
 			KEY requested_by (requested_by)
 		) {$charset_collate};";
 
+		dbDelta( $sql_branches );
 		dbDelta( $sql_owners );
 		dbDelta( $sql_buildings );
 		dbDelta( $sql_properties );

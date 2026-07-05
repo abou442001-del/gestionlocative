@@ -47,8 +47,13 @@ class Limpeed_Frontend_Buildings {
 
 		// Suppression.
 		if ( isset( $_GET['action'], $_GET['id'] ) && 'delete' === $_GET['action'] ) {
-			$id = (int) $_GET['id'];
+			$id       = (int) $_GET['id'];
+			$building = Limpeed_Buildings::get( $id );
 			check_admin_referer( 'limpeed_delete_building_' . $id );
+
+			if ( $building && ! Limpeed_Branches::can_access_owner( $building->owner_id ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette fiche.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
 
 			$result = Limpeed_Buildings::delete( $id );
 
@@ -83,6 +88,10 @@ class Limpeed_Frontend_Buildings {
 			}
 
 			$id = isset( $_POST['building_id'] ) ? (int) $_POST['building_id'] : 0;
+
+			if ( $id > 0 && ! Limpeed_Branches::can_access_owner( $data['owner_id'] ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette fiche.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
 
 			if ( $id > 0 ) {
 				Limpeed_Buildings::update( $id, $data );

@@ -30,8 +30,10 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 		return $default;
 	};
 
-	$current_roles = array_intersect( $agent->roles, array_keys( Limpeed_Agents::get_available_roles() ) );
-	$current_role  = reset( $current_roles );
+	$current_roles  = array_intersect( $agent->roles, array_keys( Limpeed_Agents::get_available_roles() ) );
+	$current_role   = reset( $current_roles );
+	$current_branch = (int) get_user_meta( $agent->ID, Limpeed_Branches::USER_META_KEY, true );
+	$branches       = Limpeed_Branches::get_all();
 	?>
 
 	<div class="limpeed-app-panel">
@@ -65,6 +67,18 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 					<?php endforeach; ?>
 				</select>
 			</div>
+			<div class="limpeed-form-row">
+				<label for="branch_id"><?php esc_html_e( 'Succursale', 'limpeed-immobilier' ); ?></label>
+				<select name="branch_id" id="branch_id">
+					<option value=""><?php esc_html_e( '— Aucune (Administrateur uniquement) —', 'limpeed-immobilier' ); ?></option>
+					<?php foreach ( $branches as $branch_option ) : ?>
+						<option value="<?php echo esc_attr( $branch_option->id ); ?>" <?php selected( (int) $field( 'branch_id', $current_branch ), $branch_option->id ); ?>>
+							<?php echo esc_html( $branch_option->name ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				<p class="limpeed-app-description"><?php esc_html_e( 'Obligatoire pour les rôles Agent et Responsable de succursale : ces rôles ne voient que les données de la succursale assignée. Ignoré pour le rôle Administrateur, qui voit toute l\'agence.', 'limpeed-immobilier' ); ?></p>
+			</div>
 
 			<button type="submit" class="limpeed-app-btn"><?php esc_html_e( 'Mettre à jour le rôle', 'limpeed-immobilier' ); ?></button>
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'agents' ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Annuler', 'limpeed-immobilier' ); ?></a>
@@ -85,6 +99,7 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 		}
 		return $default;
 	};
+	$branches = Limpeed_Branches::get_all();
 	?>
 
 	<div class="limpeed-app-panel">
@@ -123,6 +138,18 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 					<?php endforeach; ?>
 				</select>
 			</div>
+			<div class="limpeed-form-row">
+				<label for="branch_id"><?php esc_html_e( 'Succursale', 'limpeed-immobilier' ); ?></label>
+				<select name="branch_id" id="branch_id">
+					<option value=""><?php esc_html_e( '— Aucune (Administrateur uniquement) —', 'limpeed-immobilier' ); ?></option>
+					<?php foreach ( $branches as $branch_option ) : ?>
+						<option value="<?php echo esc_attr( $branch_option->id ); ?>" <?php selected( (int) $field( 'branch_id' ), $branch_option->id ); ?>>
+							<?php echo esc_html( $branch_option->name ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				<p class="limpeed-app-description"><?php esc_html_e( 'Obligatoire pour les rôles Agent et Responsable de succursale : ces rôles ne voient que les données de la succursale assignée. Ignoré pour le rôle Administrateur, qui voit toute l\'agence.', 'limpeed-immobilier' ); ?></p>
+			</div>
 
 			<button type="submit" class="limpeed-app-btn"><?php esc_html_e( 'Créer le compte agent', 'limpeed-immobilier' ); ?></button>
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'agents' ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Annuler', 'limpeed-immobilier' ); ?></a>
@@ -147,6 +174,7 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 	$total_items = Limpeed_Agents::count( $args );
 	$agents      = Limpeed_Agents::get_all( $args );
 	$pending     = Limpeed_Agents::get_pending();
+	$branches    = Limpeed_Branches::get_all();
 
 	// Cartes de synthèse.
 	$agents_total      = Limpeed_Agents::count();
@@ -229,6 +257,12 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 											<option value="<?php echo esc_attr( $key ); ?>" <?php selected( 'limpeed_agent', $key ); ?>><?php echo esc_html( $label ); ?></option>
 										<?php endforeach; ?>
 									</select>
+									<select name="branch_id">
+										<option value=""><?php esc_html_e( '— Succursale —', 'limpeed-immobilier' ); ?></option>
+										<?php foreach ( $branches as $branch_option ) : ?>
+											<option value="<?php echo esc_attr( $branch_option->id ); ?>"><?php echo esc_html( $branch_option->name ); ?></option>
+										<?php endforeach; ?>
+									</select>
 									<button type="submit" class="limpeed-app-btn"><?php esc_html_e( 'Approuver', 'limpeed-immobilier' ); ?></button>
 								</form>
 								<a href="<?php echo esc_url( $reject_url ); ?>" class="limpeed-app-btn limpeed-app-btn-danger limpeed-confirm-delete" data-confirm="<?php esc_attr_e( 'Confirmez-vous le rejet de cette demande ?', 'limpeed-immobilier' ); ?>"><?php esc_html_e( 'Rejeter', 'limpeed-immobilier' ); ?></a>
@@ -269,7 +303,10 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 					},
 					$user_roles
 				);
-				$is_self = get_current_user_id() === $agent_row->ID;
+				$is_self         = get_current_user_id() === $agent_row->ID;
+				$is_branch_scoped = array_intersect( $user_roles, Limpeed_Agents::get_branch_scoped_roles() );
+				$agent_branch_id  = (int) get_user_meta( $agent_row->ID, Limpeed_Branches::USER_META_KEY, true );
+				$agent_branch     = $agent_branch_id ? Limpeed_Branches::get( $agent_branch_id ) : null;
 				?>
 				<div class="limpeed-entity-card limpeed-entity-card--blue" <?php echo $is_self ? '' : 'data-href="' . esc_url( $edit_url ) . '" role="link" tabindex="0"'; ?>>
 					<div class="limpeed-entity-card-header">
@@ -288,6 +325,20 @@ if ( 'edit' === $action && isset( $_GET['id'] ) ) :
 						<div class="limpeed-entity-card-meta-row">
 							<span class="dashicons dashicons-email"></span>
 							<span><?php echo esc_html( $agent_row->user_email ); ?></span>
+						</div>
+						<div class="limpeed-entity-card-meta-row">
+							<span class="dashicons dashicons-location"></span>
+							<span>
+								<?php
+								if ( $agent_branch ) {
+									echo esc_html( $agent_branch->name );
+								} elseif ( $is_branch_scoped ) {
+									esc_html_e( 'Aucune succursale assignée (ne voit aucune donnée)', 'limpeed-immobilier' );
+								} else {
+									esc_html_e( 'Toute l\'agence (Administrateur)', 'limpeed-immobilier' );
+								}
+								?>
+							</span>
 						</div>
 					</div>
 					<?php if ( ! $is_self ) : ?>

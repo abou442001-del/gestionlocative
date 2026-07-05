@@ -167,7 +167,7 @@ class Limpeed_Properties {
 		$orderby         = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'address';
 		$order           = strtoupper( $args['order'] ) === 'DESC' ? 'DESC' : 'ASC';
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::owner_scope_sql( 'owner_id' );
 		$params = array();
 
 		if ( ! empty( $args['search'] ) ) {
@@ -213,7 +213,7 @@ class Limpeed_Properties {
 		global $wpdb;
 		$table = self::table();
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::owner_scope_sql( 'owner_id' );
 		$params = array();
 
 		if ( ! empty( $args['search'] ) ) {

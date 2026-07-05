@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.52.0
+Stable tag: 1.53.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,10 +26,18 @@ Ce plugin permet à plusieurs agents connectés (comptes WordPress) de gérer :
 
 == Rôles et capacités ==
 
-* `limpeed_agent` : gestion des propriétaires, biens, locataires et paiements.
-* `limpeed_admin` : toutes les capacités agent + gestion des agents, des bordereaux et consultation du journal d'activité.
-* Les administrateurs WordPress natifs reçoivent automatiquement ces capacités.
+* `limpeed_agent` : gestion des propriétaires, biens, locataires et paiements, cantonnée à la succursale qui lui est assignée (voir "Succursales" ci-dessous).
+* `limpeed_branch_manager` ("Responsable de succursale") : mêmes capacités que `limpeed_admin` (agents, bordereaux, journal d'activité...), mais cantonnées à sa succursale assignée, comme un agent.
+* `limpeed_admin` : toutes les capacités agent + gestion des agents, des bordereaux et consultation du journal d'activité, sans aucune restriction de succursale (voit toute l'agence).
+* Les administrateurs WordPress natifs reçoivent automatiquement ces capacités et ne sont, eux non plus, jamais restreints à une succursale.
 * Retirer l'accès à un agent ne supprime jamais son compte WordPress ni les données qu'il a créées : seul son rôle Limpeed est retiré.
+
+== Succursales (cloisonnement des données par agence/équipe) ==
+
+* Une **succursale** (Administration > Succursales) regroupe des propriétaires ; les édifices, biens, locataires, paiements et bordereaux d'un propriétaire héritent automatiquement de sa succursale.
+* Un `limpeed_agent` ou `limpeed_branch_manager` ne voit que les données de sa succursale assignée (Agents > modifier > Succursale) ; sans succursale assignée, il ne voit encore aucune donnée.
+* Un `limpeed_admin` (ou administrateur WordPress) voit toujours toutes les succursales, sans restriction.
+* Ce cloisonnement couvre aujourd'hui : Propriétaires, Édifices, Biens, Locataires, Paiements, Bordereaux. Documents, Mandats, États des lieux, Travaux, Trésorerie/Comptabilité, le Journal d'activité et la gestion des Agents restent visibles à l'échelle de l'agence entière.
 
 == Hiérarchie Propriétaire → Édifice → Sous-édifice ==
 
@@ -87,6 +95,16 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.53.0 =
+* Nouveau cloisonnement des données par succursale ("mon portefeuille"), pour les agences à plusieurs bureaux/équipes :
+  * Nouvelle section Administration "Succursales" : créer/modifier/supprimer des succursales (nom, téléphone, adresse). La suppression est refusée tant que des propriétaires ou des agents y sont encore rattachés.
+  * Nouveau rôle `limpeed_branch_manager` ("Responsable de succursale") : mêmes capacités que l'administrateur Limpeed, mais dont la vue reste cantonnée à sa succursale (comme un agent), contrairement à l'administrateur qui voit toujours toute l'agence.
+  * Chaque propriétaire est rattaché à une succursale (assignable librement par un administrateur ; un agent/responsable ne peut créer un propriétaire que dans sa propre succursale). Les édifices, biens, locataires, paiements et bordereaux d'un propriétaire héritent automatiquement de sa succursale.
+  * Un agent ou un responsable de succursale sans succursale assignée ne voit encore aucune donnée (choix volontairement restrictif par défaut, plutôt que de risquer d'exposer toutes les données par erreur de configuration) : un administrateur doit lui assigner une succursale dans Agents.
+  * Accès direct par identifiant (URL, API) à une fiche d'une autre succursale bloqué (403/introuvable), même si elle n'apparaît dans aucune liste.
+  * **Périmètre couvert par ce cloisonnement** : Propriétaires, Édifices, Biens, Locataires, Paiements, Bordereaux.
+  * **Non couvert pour le moment** (visibles agence entière, sans restriction de succursale) : Documents, Mandats, États des lieux, Travaux, Trésorerie/Comptabilité (vues agrégées), Journal d'activité, la gestion des Agents elle-même, ainsi que le contenu de l'email quotidien de rappel des loyers en retard (qui reste calculé sur toute l'agence quel que soit le destinataire). À élargir dans une prochaine version si besoin.
 
 = 1.52.0 =
 * Nouveau réglage "Jour de clôture mensuelle (bordereaux)" (Réglages, du 1er au 28 du mois, 5 par défaut) : à partir de ce jour, la cloche de notifications signale les propriétaires qui n'ont pas encore de bordereau généré pour le mois en cours. Le rappel disparaît de lui-même une fois tous les bordereaux du mois générés (ou au mois suivant si le jour de clôture n'est pas encore atteint). N'affecte aucun calcul : la génération des bordereaux reste manuelle, avec les périodes choisies librement comme aujourd'hui.

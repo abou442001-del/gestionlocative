@@ -40,8 +40,13 @@ class Limpeed_Frontend_Payments {
 
 		// Suppression.
 		if ( isset( $_GET['action'], $_GET['id'] ) && 'delete' === $_GET['action'] ) {
-			$id = (int) $_GET['id'];
+			$id      = (int) $_GET['id'];
+			$payment = Limpeed_Payments::get( $id );
 			check_admin_referer( 'limpeed_delete_payment_' . $id );
+
+			if ( $payment && ! Limpeed_Branches::can_access_property( $payment->property_id ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette fiche.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
 
 			Limpeed_Payments::delete( $id );
 			Limpeed_Frontend::redirect_to( 'payments', array( 'message' => 'deleted' ) );
@@ -63,6 +68,10 @@ class Limpeed_Frontend_Payments {
 				'status'         => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
 				'payment_method' => isset( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : '',
 			);
+
+			if ( ! Limpeed_Branches::can_access_property( $data['property_id'] ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette fiche.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
 
 			$errors = self::validate( $data, $tenant );
 

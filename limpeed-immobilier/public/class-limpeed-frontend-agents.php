@@ -66,13 +66,14 @@ class Limpeed_Frontend_Agents {
 			$pending_id = isset( $_POST['pending_id'] ) ? (int) $_POST['pending_id'] : 0;
 			check_admin_referer( 'limpeed_approve_agent_' . $pending_id, 'limpeed_approve_nonce' );
 
-			$role = isset( $_POST['role'] ) ? sanitize_text_field( wp_unslash( $_POST['role'] ) ) : '';
+			$role      = isset( $_POST['role'] ) ? sanitize_text_field( wp_unslash( $_POST['role'] ) ) : '';
+			$branch_id = isset( $_POST['branch_id'] ) ? (int) $_POST['branch_id'] : 0;
 
 			if ( ! array_key_exists( $role, Limpeed_Agents::get_available_roles() ) ) {
 				Limpeed_Frontend::redirect_to( 'agents', array( 'message' => 'error', 'error_text' => rawurlencode( __( 'Le rôle sélectionné n\'est pas valide.', 'limpeed-immobilier' ) ) ) );
 			}
 
-			Limpeed_Agents::approve( $pending_id, $role );
+			Limpeed_Agents::approve( $pending_id, $role, $branch_id );
 			Limpeed_Frontend::redirect_to( 'agents', array( 'message' => 'approved' ) );
 		}
 
@@ -88,7 +89,8 @@ class Limpeed_Frontend_Agents {
 				}
 
 				$data = array(
-					'role' => isset( $_POST['role'] ) ? sanitize_text_field( wp_unslash( $_POST['role'] ) ) : '',
+					'role'      => isset( $_POST['role'] ) ? sanitize_text_field( wp_unslash( $_POST['role'] ) ) : '',
+					'branch_id' => isset( $_POST['branch_id'] ) ? (int) $_POST['branch_id'] : 0,
 				);
 
 				$errors = self::validate_role( $data );
@@ -99,7 +101,7 @@ class Limpeed_Frontend_Agents {
 					return;
 				}
 
-				Limpeed_Agents::update_role( $agent_id, $data['role'] );
+				Limpeed_Agents::update_role( $agent_id, $data['role'], $data['branch_id'] );
 				Limpeed_Frontend::redirect_to( 'agents', array( 'message' => 'updated' ) );
 			}
 
@@ -108,6 +110,7 @@ class Limpeed_Frontend_Agents {
 				'user_email'   => isset( $_POST['user_email'] ) ? sanitize_email( wp_unslash( $_POST['user_email'] ) ) : '',
 				'display_name' => isset( $_POST['display_name'] ) ? sanitize_text_field( wp_unslash( $_POST['display_name'] ) ) : '',
 				'role'         => isset( $_POST['role'] ) ? sanitize_text_field( wp_unslash( $_POST['role'] ) ) : '',
+				'branch_id'    => isset( $_POST['branch_id'] ) ? (int) $_POST['branch_id'] : 0,
 			);
 
 			$errors = self::validate_create( $data );
@@ -153,6 +156,8 @@ class Limpeed_Frontend_Agents {
 
 		if ( ! array_key_exists( $data['role'], Limpeed_Agents::get_available_roles() ) ) {
 			$errors[] = __( 'Le rôle sélectionné n\'est pas valide.', 'limpeed-immobilier' );
+		} elseif ( in_array( $data['role'], Limpeed_Agents::get_branch_scoped_roles(), true ) && empty( $data['branch_id'] ) ) {
+			$errors[] = __( 'Veuillez sélectionner une succursale pour ce rôle : sans succursale assignée, cet agent ne verra aucune donnée.', 'limpeed-immobilier' );
 		}
 
 		return $errors;
@@ -169,6 +174,8 @@ class Limpeed_Frontend_Agents {
 
 		if ( ! array_key_exists( $data['role'], Limpeed_Agents::get_available_roles() ) ) {
 			$errors[] = __( 'Le rôle sélectionné n\'est pas valide.', 'limpeed-immobilier' );
+		} elseif ( in_array( $data['role'], Limpeed_Agents::get_branch_scoped_roles(), true ) && empty( $data['branch_id'] ) ) {
+			$errors[] = __( 'Veuillez sélectionner une succursale pour ce rôle : sans succursale assignée, cet agent ne verra aucune donnée.', 'limpeed-immobilier' );
 		}
 
 		return $errors;

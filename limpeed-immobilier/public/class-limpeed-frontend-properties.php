@@ -40,8 +40,13 @@ class Limpeed_Frontend_Properties {
 
 		// Suppression.
 		if ( isset( $_GET['action'], $_GET['id'] ) && 'delete' === $_GET['action'] ) {
-			$id = (int) $_GET['id'];
+			$id       = (int) $_GET['id'];
+			$property = Limpeed_Properties::get( $id );
 			check_admin_referer( 'limpeed_delete_property_' . $id );
+
+			if ( $property && ! Limpeed_Branches::can_access_owner( $property->owner_id ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette fiche.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
 
 			$result = Limpeed_Properties::delete( $id );
 
@@ -75,7 +80,12 @@ class Limpeed_Frontend_Properties {
 				return;
 			}
 
-			$id = isset( $_POST['property_id'] ) ? (int) $_POST['property_id'] : 0;
+			$id       = isset( $_POST['property_id'] ) ? (int) $_POST['property_id'] : 0;
+			$building = Limpeed_Buildings::get( $data['building_id'] );
+
+			if ( ! $building || ! Limpeed_Branches::can_access_owner( $building->owner_id ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette fiche.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
 
 			if ( $id > 0 ) {
 				Limpeed_Properties::update( $id, $data );

@@ -18,7 +18,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	$tenant = null;
 	if ( 'edit' === $action && isset( $_GET['id'] ) ) {
 		$tenant = Limpeed_Tenants::get( (int) $_GET['id'] );
-		if ( ! $tenant ) {
+		if ( ! $tenant || ! Limpeed_Branches::can_access_property( $tenant->property_id ) ) {
 			echo '<div class="limpeed-app-panel">' . esc_html__( 'Locataire introuvable.', 'limpeed-immobilier' ) . '</div>';
 			return;
 		}

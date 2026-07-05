@@ -54,7 +54,7 @@ class Limpeed_Statements {
 		);
 		$args = wp_parse_args( $args, $defaults );
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::owner_scope_sql( 'owner_id' );
 		$params = array();
 
 		if ( ! empty( $args['owner_id'] ) ) {
@@ -83,7 +83,7 @@ class Limpeed_Statements {
 		global $wpdb;
 		$table = self::table();
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::owner_scope_sql( 'owner_id' );
 		$params = array();
 
 		if ( ! empty( $args['owner_id'] ) ) {
@@ -114,8 +114,9 @@ class Limpeed_Statements {
 
 		$buildings_table  = Limpeed_Buildings::table();
 		$statements_table = self::table();
+		$scope            = Limpeed_Branches::owner_scope_sql( 'owner_id' );
 
-		$owner_ids_with_building = $wpdb->get_col( "SELECT DISTINCT owner_id FROM {$buildings_table}" );
+		$owner_ids_with_building = $wpdb->get_col( "SELECT DISTINCT owner_id FROM {$buildings_table} WHERE 1=1{$scope}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $scope déjà préparé par Limpeed_Branches::owner_scope_sql().
 		if ( empty( $owner_ids_with_building ) ) {
 			return array();
 		}

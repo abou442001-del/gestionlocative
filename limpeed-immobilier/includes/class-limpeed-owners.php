@@ -68,7 +68,7 @@ class Limpeed_Owners {
 		$orderby         = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'full_name';
 		$order           = strtoupper( $args['order'] ) === 'DESC' ? 'DESC' : 'ASC';
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::owner_scope_sql( 'id' );
 		$params = array();
 
 		if ( ! empty( $args['search'] ) ) {
@@ -104,7 +104,7 @@ class Limpeed_Owners {
 		global $wpdb;
 		$table = self::table();
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::owner_scope_sql( 'id' );
 		$params = array();
 
 		if ( ! empty( $args['search'] ) ) {
@@ -137,11 +137,12 @@ class Limpeed_Owners {
 			'email'        => sanitize_email( $data['email'] ?? '' ),
 			'address'      => sanitize_textarea_field( $data['address'] ?? '' ),
 			'bank_details' => Limpeed_Encryption::encrypt( sanitize_textarea_field( $data['bank_details'] ?? '' ) ),
+			'branch_id'    => (int) ( $data['branch_id'] ?? 0 ),
 			'created_by'   => get_current_user_id(),
 			'created_at'   => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%s', '%s', '%s', '%s', '%s', '%d', '%s' );
+		$formats = array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s' );
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
@@ -171,11 +172,12 @@ class Limpeed_Owners {
 			'email'        => sanitize_email( $data['email'] ?? '' ),
 			'address'      => sanitize_textarea_field( $data['address'] ?? '' ),
 			'bank_details' => Limpeed_Encryption::encrypt( sanitize_textarea_field( $data['bank_details'] ?? '' ) ),
+			'branch_id'    => (int) ( $data['branch_id'] ?? 0 ),
 			'updated_by'   => get_current_user_id(),
 			'updated_at'   => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%s', '%s', '%s', '%s', '%s', '%d', '%s' );
+		$formats = array( '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s' );
 
 		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
 

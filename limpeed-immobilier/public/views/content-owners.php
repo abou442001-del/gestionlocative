@@ -17,7 +17,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	$owner = null;
 	if ( 'edit' === $action && isset( $_GET['id'] ) ) {
 		$owner = Limpeed_Owners::get( (int) $_GET['id'] );
-		if ( ! $owner ) {
+		if ( ! $owner || ! Limpeed_Branches::can_access_owner( $owner->id ) ) {
 			echo '<div class="limpeed-app-panel">' . esc_html__( 'Propriétaire introuvable.', 'limpeed-immobilier' ) . '</div>';
 			return;
 		}
@@ -87,6 +87,21 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<label for="bank_details"><?php esc_html_e( 'Coordonnées bancaires (RIB/IBAN ou mobile money)', 'limpeed-immobilier' ); ?></label>
 				<textarea name="bank_details" id="bank_details" rows="3"><?php echo esc_textarea( $field( 'bank_details' ) ); ?></textarea>
 			</div>
+			<?php if ( 0 === Limpeed_Branches::current_user_branch_id() ) : ?>
+				<?php $branches = Limpeed_Branches::get_all(); ?>
+				<div class="limpeed-form-row">
+					<label for="branch_id"><?php esc_html_e( 'Succursale', 'limpeed-immobilier' ); ?></label>
+					<select name="branch_id" id="branch_id">
+						<option value=""><?php esc_html_e( '— Aucune —', 'limpeed-immobilier' ); ?></option>
+						<?php foreach ( $branches as $branch_option ) : ?>
+							<option value="<?php echo esc_attr( $branch_option->id ); ?>" <?php selected( (int) $field( 'branch_id' ), $branch_option->id ); ?>>
+								<?php echo esc_html( $branch_option->name ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<p class="limpeed-app-description"><?php esc_html_e( 'Les agents et responsables de la succursale choisie sont les seuls (hors administrateurs) à voir ce propriétaire et tout ce qui en dépend (édifices, biens, locataires, paiements, bordereaux).', 'limpeed-immobilier' ); ?></p>
+				</div>
+			<?php endif; ?>
 
 			<button type="submit" class="limpeed-app-btn"><?php echo $is_edit ? esc_html__( 'Mettre à jour', 'limpeed-immobilier' ) : esc_html__( 'Ajouter', 'limpeed-immobilier' ); ?></button>
 			<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'owners' ) ); ?>" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Annuler', 'limpeed-immobilier' ); ?></a>
@@ -99,7 +114,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	// Fiche propriétaire : vue d'ensemble par édifice/bien/locataire.
 	// -----------------------------------------------------------------
 	$owner = Limpeed_Owners::get( (int) $_GET['id'] );
-	if ( ! $owner ) {
+	if ( ! $owner || ! Limpeed_Branches::can_access_owner( $owner->id ) ) {
 		echo '<div class="limpeed-app-panel">' . esc_html__( 'Propriétaire introuvable.', 'limpeed-immobilier' ) . '</div>';
 		return;
 	}
@@ -315,6 +330,15 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 							<span class="dashicons dashicons-email"></span>
 							<span><?php echo $owner_row->email ? esc_html( $owner_row->email ) : '—'; ?></span>
 						</div>
+						<?php if ( 0 === Limpeed_Branches::current_user_branch_id() && ! empty( $owner_row->branch_id ) ) : ?>
+							<?php $owner_row_branch = Limpeed_Branches::get( $owner_row->branch_id ); ?>
+							<?php if ( $owner_row_branch ) : ?>
+								<div class="limpeed-entity-card-meta-row">
+									<span class="dashicons dashicons-location"></span>
+									<span><?php echo esc_html( $owner_row_branch->name ); ?></span>
+								</div>
+							<?php endif; ?>
+						<?php endif; ?>
 					</div>
 					<div class="limpeed-entity-card-footer">
 						<a href="<?php echo esc_url( $edit_url ); ?>" class="limpeed-app-link-btn" onclick="event.stopPropagation();"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></a>

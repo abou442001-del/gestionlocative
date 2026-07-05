@@ -17,7 +17,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	$building = null;
 	if ( 'edit' === $action && isset( $_GET['id'] ) ) {
 		$building = Limpeed_Buildings::get( (int) $_GET['id'] );
-		if ( ! $building ) {
+		if ( ! $building || ! Limpeed_Branches::can_access_owner( $building->owner_id ) ) {
 			echo '<div class="limpeed-app-panel">' . esc_html__( 'Édifice introuvable.', 'limpeed-immobilier' ) . '</div>';
 			return;
 		}

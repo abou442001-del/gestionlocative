@@ -1006,7 +1006,7 @@ class Limpeed_Rest_Api {
 	 */
 	public function get_tenant( WP_REST_Request $request ) {
 		$tenant = Limpeed_Tenants::get( (int) $request['id'] );
-		if ( ! $tenant ) {
+		if ( ! $tenant || ! Limpeed_Branches::can_access_property( $tenant->property_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Locataire introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1044,7 +1044,7 @@ class Limpeed_Rest_Api {
 	public function update_tenant( WP_REST_Request $request ) {
 		$id     = (int) $request['id'];
 		$tenant = Limpeed_Tenants::get( $id );
-		if ( ! $tenant ) {
+		if ( ! $tenant || ! Limpeed_Branches::can_access_property( $tenant->property_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Locataire introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1072,7 +1072,7 @@ class Limpeed_Rest_Api {
 	public function delete_tenant( WP_REST_Request $request ) {
 		$id     = (int) $request['id'];
 		$tenant = Limpeed_Tenants::get( $id );
-		if ( ! $tenant ) {
+		if ( ! $tenant || ! Limpeed_Branches::can_access_property( $tenant->property_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Locataire introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1310,7 +1310,7 @@ class Limpeed_Rest_Api {
 	 */
 	public function get_building( WP_REST_Request $request ) {
 		$building = Limpeed_Buildings::get( (int) $request['id'] );
-		if ( ! $building ) {
+		if ( ! $building || ! Limpeed_Branches::can_access_owner( $building->owner_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Édifice introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1348,7 +1348,7 @@ class Limpeed_Rest_Api {
 	public function update_building( WP_REST_Request $request ) {
 		$id       = (int) $request['id'];
 		$building = Limpeed_Buildings::get( $id );
-		if ( ! $building ) {
+		if ( ! $building || ! Limpeed_Branches::can_access_owner( $building->owner_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Édifice introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1377,7 +1377,7 @@ class Limpeed_Rest_Api {
 	public function delete_building( WP_REST_Request $request ) {
 		$id       = (int) $request['id'];
 		$building = Limpeed_Buildings::get( $id );
-		if ( ! $building ) {
+		if ( ! $building || ! Limpeed_Branches::can_access_owner( $building->owner_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Édifice introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1579,7 +1579,7 @@ class Limpeed_Rest_Api {
 	 */
 	public function get_property( WP_REST_Request $request ) {
 		$property = Limpeed_Properties::get( (int) $request['id'] );
-		if ( ! $property ) {
+		if ( ! $property || ! Limpeed_Branches::can_access_owner( $property->owner_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Bien introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1617,7 +1617,7 @@ class Limpeed_Rest_Api {
 	public function update_property( WP_REST_Request $request ) {
 		$id       = (int) $request['id'];
 		$property = Limpeed_Properties::get( $id );
-		if ( ! $property ) {
+		if ( ! $property || ! Limpeed_Branches::can_access_owner( $property->owner_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Bien introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1646,7 +1646,7 @@ class Limpeed_Rest_Api {
 	public function delete_property( WP_REST_Request $request ) {
 		$id       = (int) $request['id'];
 		$property = Limpeed_Properties::get( $id );
-		if ( ! $property ) {
+		if ( ! $property || ! Limpeed_Branches::can_access_owner( $property->owner_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Bien introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1781,7 +1781,7 @@ class Limpeed_Rest_Api {
 	 */
 	public function get_payment( WP_REST_Request $request ) {
 		$payment = Limpeed_Payments::get( (int) $request['id'] );
-		if ( ! $payment ) {
+		if ( ! $payment || ! Limpeed_Branches::can_access_property( $payment->property_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Paiement introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1819,7 +1819,7 @@ class Limpeed_Rest_Api {
 	public function update_payment( WP_REST_Request $request ) {
 		$id      = (int) $request['id'];
 		$payment = Limpeed_Payments::get( $id );
-		if ( ! $payment ) {
+		if ( ! $payment || ! Limpeed_Branches::can_access_property( $payment->property_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Paiement introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 
@@ -1847,7 +1847,7 @@ class Limpeed_Rest_Api {
 	public function delete_payment( WP_REST_Request $request ) {
 		$id      = (int) $request['id'];
 		$payment = Limpeed_Payments::get( $id );
-		if ( ! $payment ) {
+		if ( ! $payment || ! Limpeed_Branches::can_access_property( $payment->property_id ) ) {
 			return new WP_Error( 'limpeed_not_found', __( 'Paiement introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
 		}
 

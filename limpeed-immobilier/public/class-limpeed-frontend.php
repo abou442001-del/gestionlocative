@@ -198,6 +198,12 @@ class Limpeed_Frontend {
 				'icon'  => 'dashicons-id',
 				'group' => __( 'Administration', 'limpeed-immobilier' ),
 			),
+			'branches'     => array(
+				'label' => __( 'Succursales', 'limpeed-immobilier' ),
+				'cap'   => 'manage_limpeed_agents',
+				'icon'  => 'dashicons-location',
+				'group' => __( 'Administration', 'limpeed-immobilier' ),
+			),
 			'activity-log' => array(
 				'label' => __( 'Journal d\'activité', 'limpeed-immobilier' ),
 				'cap'   => 'manage_limpeed_agents',
@@ -393,7 +399,12 @@ class Limpeed_Frontend {
 		$sections = self::get_sections();
 		$view     = self::current_view();
 
-		if ( ! current_user_can( $sections[ $view ]['cap'] ) ) {
+		// Succursales : réservé aux administrateurs non restreints, même si
+		// le responsable de succursale partage par ailleurs les mêmes
+		// capacités WordPress (voir Limpeed_Branches::current_user_branch_id()).
+		$branches_denied = 'branches' === $view && 0 !== Limpeed_Branches::current_user_branch_id();
+
+		if ( $branches_denied || ! current_user_can( $sections[ $view ]['cap'] ) ) {
 			wp_die(
 				esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette section.', 'limpeed-immobilier' ),
 				esc_html__( 'Accès refusé', 'limpeed-immobilier' ),

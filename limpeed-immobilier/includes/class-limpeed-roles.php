@@ -57,17 +57,31 @@ class Limpeed_Roles {
 	}
 
 	/**
-	 * Crée (ou met à jour) les rôles limpeed_agent et limpeed_admin.
-	 * Ajoute également les capacités au rôle administrateur WordPress natif.
+	 * Crée (ou met à jour) les rôles limpeed_agent, limpeed_branch_manager et
+	 * limpeed_admin. Ajoute également les capacités au rôle administrateur
+	 * WordPress natif.
+	 *
+	 * limpeed_branch_manager a les mêmes capacités que limpeed_admin
+	 * (Trésorerie, Comptabilité, gestion des agents) mais reste, à la
+	 * différence de ce dernier, cantonné à sa succursale assignée : voir
+	 * Limpeed_Branches::current_user_branch_id(), qui fait la distinction sur
+	 * le rôle plutôt que sur une capacité (les deux partagent les mêmes).
 	 */
 	public static function add_roles() {
 		remove_role( 'limpeed_agent' );
+		remove_role( 'limpeed_branch_manager' );
 		remove_role( 'limpeed_admin' );
 
 		add_role(
 			'limpeed_agent',
 			__( 'Agent Limpeed', 'limpeed-immobilier' ),
 			self::get_agent_capabilities()
+		);
+
+		add_role(
+			'limpeed_branch_manager',
+			__( 'Responsable de succursale', 'limpeed-immobilier' ),
+			self::get_admin_capabilities()
 		);
 
 		add_role(
@@ -89,6 +103,7 @@ class Limpeed_Roles {
 	 */
 	public static function remove_roles() {
 		remove_role( 'limpeed_agent' );
+		remove_role( 'limpeed_branch_manager' );
 		remove_role( 'limpeed_admin' );
 
 		$administrator = get_role( 'administrator' );

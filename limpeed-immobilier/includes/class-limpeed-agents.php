@@ -27,9 +27,21 @@ class Limpeed_Agents {
 	 */
 	public static function get_available_roles() {
 		return array(
-			'limpeed_agent' => __( 'Agent Limpeed', 'limpeed-immobilier' ),
-			'limpeed_admin' => __( 'Administrateur Limpeed', 'limpeed-immobilier' ),
+			'limpeed_agent'           => __( 'Agent Limpeed', 'limpeed-immobilier' ),
+			'limpeed_branch_manager'  => __( 'Responsable de succursale', 'limpeed-immobilier' ),
+			'limpeed_admin'           => __( 'Administrateur Limpeed', 'limpeed-immobilier' ),
 		);
+	}
+
+	/**
+	 * Rôles dont l'accès aux données est restreint à une succursale
+	 * (contrairement à limpeed_admin/administrator, qui voient toute
+	 * l'agence) — voir Limpeed_Branches::current_user_branch_id().
+	 *
+	 * @return array
+	 */
+	public static function get_branch_scoped_roles() {
+		return array( 'limpeed_agent', 'limpeed_branch_manager' );
 	}
 
 	/**
@@ -125,7 +137,7 @@ class Limpeed_Agents {
 	 * Un mot de passe aléatoire est généré ; l'agent reçoit un email
 	 * l'invitant à définir son propre mot de passe.
 	 *
-	 * @param array $data { 'user_login', 'user_email', 'display_name', 'role' }
+	 * @param array $data { 'user_login', 'user_email', 'display_name', 'role', 'branch_id' }
 	 * @return int|WP_Error Id utilisateur créé, ou erreur.
 	 */
 	public static function create( $data ) {
@@ -141,6 +153,10 @@ class Limpeed_Agents {
 
 		if ( is_wp_error( $user_id ) ) {
 			return $user_id;
+		}
+
+		if ( in_array( $data['role'], self::get_branch_scoped_roles(), true ) ) {
+			update_user_meta( $user_id, Limpeed_Branches::USER_META_KEY, (int) ( $data['branch_id'] ?? 0 ) );
 		}
 
 		wp_new_user_notification( $user_id, null, 'user' );
@@ -160,9 +176,10 @@ class Limpeed_Agents {
 	 *
 	 * @param int    $user_id
 	 * @param string $role
+	 * @param int    $branch_id Ignoré (et effacé) si le rôle n'est pas cantonné à une succursale.
 	 * @return bool
 	 */
-	public static function update_role( $user_id, $role ) {
+	public static function update_role( $user_id, $role, $branch_id = null ) {
 		if ( ! array_key_exists( $role, self::get_available_roles() ) ) {
 			return false;
 		}
@@ -173,6 +190,14 @@ class Limpeed_Agents {
 		}
 
 		$user->set_role( $role );
+
+		if ( in_array( $role, self::get_branch_scoped_roles(), true ) ) {
+			if ( null !== $branch_id ) {
+				update_user_meta( $user_id, Limpeed_Branches::USER_META_KEY, (int) $branch_id );
+			}
+		} else {
+			delete_user_meta( $user_id, Limpeed_Branches::USER_META_KEY );
+		}
 
 		Limpeed_Activity_Log::log(
 			'updated',
@@ -277,9 +302,10 @@ class Limpeed_Agents {
 	 *
 	 * @param int    $user_id
 	 * @param string $role
+	 * @param int    $branch_id Ignoré si le rôle n'est pas cantonné à une succursale.
 	 * @return bool
 	 */
-	public static function approve( $user_id, $role ) {
+	public static function approve( $user_id, $role, $branch_id = 0 ) {
 		if ( ! array_key_exists( $role, self::get_available_roles() ) ) {
 			return false;
 		}
@@ -291,6 +317,10 @@ class Limpeed_Agents {
 
 		$user->set_role( $role );
 		delete_user_meta( $user_id, self::PENDING_META_KEY );
+
+		if ( in_array( $role, self::get_branch_scoped_roles(), true ) ) {
+			update_user_meta( $user_id, Limpeed_Branches::USER_META_KEY, (int) $branch_id );
+		}
 
 		Limpeed_Activity_Log::log(
 			'updated',

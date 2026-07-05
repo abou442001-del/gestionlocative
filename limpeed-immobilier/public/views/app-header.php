@@ -184,6 +184,10 @@ $global_search_rest_config = array(
 					<?php if ( ! current_user_can( $item['cap'] ) ) : ?>
 						<?php continue; ?>
 					<?php endif; ?>
+					<?php // Succursales : réservé aux administrateurs non restreints (pas au responsable de succursale, qui partage pourtant les mêmes capacités WordPress). ?>
+					<?php if ( 'branches' === $key && 0 !== Limpeed_Branches::current_user_branch_id() ) : ?>
+						<?php continue; ?>
+					<?php endif; ?>
 					<?php if ( ! empty( $item['group'] ) && $item['group'] !== $current_group ) : ?>
 						<?php $current_group = $item['group']; ?>
 						<div class="limpeed-app-nav-group-label"><?php echo esc_html( $current_group ); ?></div>

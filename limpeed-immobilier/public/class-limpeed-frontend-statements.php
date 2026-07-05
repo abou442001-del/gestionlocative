@@ -50,6 +50,10 @@ class Limpeed_Frontend_Statements {
 				wp_die( esc_html__( 'Bordereau introuvable.', 'limpeed-immobilier' ) );
 			}
 
+			if ( ! Limpeed_Branches::can_access_owner( $statement->owner_id ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à ce bordereau.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
+
 			$file_path = Limpeed_Statements::get_file_path( $statement );
 			if ( ! file_exists( $file_path ) ) {
 				wp_die( esc_html__( 'Le fichier PDF de ce bordereau est introuvable sur le serveur.', 'limpeed-immobilier' ) );
@@ -73,8 +77,13 @@ class Limpeed_Frontend_Statements {
 
 		// Suppression.
 		if ( isset( $_GET['action'], $_GET['id'] ) && 'delete' === $_GET['action'] ) {
-			$id = (int) $_GET['id'];
+			$id        = (int) $_GET['id'];
+			$statement = Limpeed_Statements::get( $id );
 			check_admin_referer( 'limpeed_delete_statement_' . $id );
+
+			if ( $statement && ! Limpeed_Branches::can_access_owner( $statement->owner_id ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à ce bordereau.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
 
 			Limpeed_Statements::delete( $id );
 			Limpeed_Frontend::redirect_to( 'statements', array( 'message' => 'deleted' ) );
@@ -121,7 +130,7 @@ class Limpeed_Frontend_Statements {
 	private static function validate( $data ) {
 		$errors = array();
 
-		if ( empty( $data['owner_id'] ) || ! Limpeed_Owners::get( $data['owner_id'] ) ) {
+		if ( empty( $data['owner_id'] ) || ! Limpeed_Owners::get( $data['owner_id'] ) || ! Limpeed_Branches::can_access_owner( $data['owner_id'] ) ) {
 			$errors[] = __( 'Veuillez sélectionner un propriétaire valide.', 'limpeed-immobilier' );
 		}
 

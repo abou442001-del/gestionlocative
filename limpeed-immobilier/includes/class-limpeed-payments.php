@@ -109,7 +109,7 @@ class Limpeed_Payments {
 		$orderby         = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'payment_date';
 		$order           = strtoupper( $args['order'] ) === 'ASC' ? 'ASC' : 'DESC';
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::property_scope_sql( 'property_id' );
 		$params = array();
 
 		if ( ! empty( $args['search'] ) ) {
@@ -159,7 +159,7 @@ class Limpeed_Payments {
 		global $wpdb;
 		$table = self::table();
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::property_scope_sql( 'property_id' );
 		$params = array();
 
 		if ( ! empty( $args['search'] ) ) {
@@ -211,26 +211,27 @@ class Limpeed_Payments {
 
 		$period = $period ? $period : self::get_current_period();
 		$table  = self::table();
+		$scope  = Limpeed_Branches::property_scope_sql( 'property_id' );
 
 		$collected = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT SUM(amount) FROM {$table} WHERE period = %s AND status IN ('paye','partiel')",
+				"SELECT SUM(amount) FROM {$table} WHERE period = %s AND status IN ('paye','partiel'){$scope}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $scope déjà préparé par Limpeed_Branches::property_scope_sql().
 				$period
 			)
 		);
 
 		$commission = $wpdb->get_var(
-			$wpdb->prepare( "SELECT SUM(commission_amount) FROM {$table} WHERE period = %s", $period )
+			$wpdb->prepare( "SELECT SUM(commission_amount) FROM {$table} WHERE period = %s{$scope}", $period ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $scope déjà préparé par Limpeed_Branches::property_scope_sql().
 		);
 
 		$tenants_table  = Limpeed_Tenants::table();
-		$active_tenants = $wpdb->get_results( "SELECT * FROM {$tenants_table} WHERE status = 'actif'" );
+		$active_tenants = $wpdb->get_results( "SELECT * FROM {$tenants_table} WHERE status = 'actif'{$scope}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $scope déjà préparé par Limpeed_Branches::property_scope_sql().
 
 		// Une seule requête pour récupérer les locataires déjà payés sur la période,
 		// plutôt qu'une requête par locataire (évite un N+1, sensible dès que
 		// get_monthly_summary() appelle cette méthode plusieurs fois de suite).
 		$paid_tenant_ids = $wpdb->get_col(
-			$wpdb->prepare( "SELECT DISTINCT tenant_id FROM {$table} WHERE period = %s AND status = 'paye'", $period )
+			$wpdb->prepare( "SELECT DISTINCT tenant_id FROM {$table} WHERE period = %s AND status = 'paye'{$scope}", $period ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $scope déjà préparé par Limpeed_Branches::property_scope_sql().
 		);
 		$paid_tenant_ids = array_map( 'intval', $paid_tenant_ids );
 
@@ -285,7 +286,7 @@ class Limpeed_Payments {
 		$tenants_table = Limpeed_Tenants::table();
 		$payments_table = self::table();
 
-		$where  = "WHERE t.status = 'actif' AND t.id NOT IN ( SELECT tenant_id FROM {$payments_table} WHERE period = %s AND status = 'paye' )";
+		$where  = "WHERE t.status = 'actif' AND t.id NOT IN ( SELECT tenant_id FROM {$payments_table} WHERE period = %s AND status = 'paye' )" . Limpeed_Branches::property_scope_sql( 't.property_id' );
 		$params = array( $period );
 
 		if ( ! empty( $args['search'] ) ) {
@@ -326,8 +327,9 @@ class Limpeed_Payments {
 
 		$tenants_table  = Limpeed_Tenants::table();
 		$payments_table = self::table();
+		$scope          = Limpeed_Branches::property_scope_sql( 't.property_id' );
 
-		$sql = "SELECT t.* FROM {$tenants_table} t WHERE t.status = 'actif' AND t.id NOT IN ( SELECT tenant_id FROM {$payments_table} WHERE period = %s AND status = 'paye' ) ORDER BY t.full_name ASC";
+		$sql = "SELECT t.* FROM {$tenants_table} t WHERE t.status = 'actif' AND t.id NOT IN ( SELECT tenant_id FROM {$payments_table} WHERE period = %s AND status = 'paye' ){$scope} ORDER BY t.full_name ASC"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $scope déjà préparé par Limpeed_Branches::property_scope_sql().
 
 		return $wpdb->get_results( $wpdb->prepare( $sql, $period ) );
 	}

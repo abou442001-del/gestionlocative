@@ -43,6 +43,10 @@ class Limpeed_Frontend_Owners {
 			$id = (int) $_GET['id'];
 			check_admin_referer( 'limpeed_delete_owner_' . $id );
 
+			if ( ! Limpeed_Branches::can_access_owner( $id ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette fiche.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
+
 			$result = Limpeed_Owners::delete( $id );
 
 			if ( is_wp_error( $result ) ) {
@@ -64,6 +68,16 @@ class Limpeed_Frontend_Owners {
 				'bank_details' => isset( $_POST['bank_details'] ) ? wp_unslash( $_POST['bank_details'] ) : '',
 			);
 
+			// Un agent/responsable cantonné à une succursale ne peut créer ou
+			// réassigner un propriétaire qu'à sa propre succursale (jamais un
+			// choix libre) : évite qu'un compte compromis ou mal utilisé sorte
+			// un propriétaire du cloisonnement. Seul un administrateur non
+			// restreint peut choisir librement la succursale dans le formulaire.
+			$current_branch_id = Limpeed_Branches::current_user_branch_id();
+			$data['branch_id'] = 0 !== $current_branch_id
+				? $current_branch_id
+				: ( isset( $_POST['branch_id'] ) ? (int) $_POST['branch_id'] : 0 );
+
 			$errors = self::validate( $data );
 
 			if ( ! empty( $errors ) ) {
@@ -73,6 +87,10 @@ class Limpeed_Frontend_Owners {
 			}
 
 			$id = isset( $_POST['owner_id'] ) ? (int) $_POST['owner_id'] : 0;
+
+			if ( $id > 0 && ! Limpeed_Branches::can_access_owner( $id ) ) {
+				wp_die( esc_html__( 'Vous n\'avez pas les droits suffisants pour accéder à cette fiche.', 'limpeed-immobilier' ), '', array( 'response' => 403 ) );
+			}
 
 			if ( $id > 0 ) {
 				Limpeed_Owners::update( $id, $data );

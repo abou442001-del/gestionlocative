@@ -99,7 +99,7 @@ class Limpeed_Tenants {
 		$orderby         = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'full_name';
 		$order           = strtoupper( $args['order'] ) === 'DESC' ? 'DESC' : 'ASC';
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::property_scope_sql( 'property_id' );
 		$params = array();
 
 		if ( ! empty( $args['search'] ) ) {
@@ -139,7 +139,7 @@ class Limpeed_Tenants {
 		global $wpdb;
 		$table = self::table();
 
-		$where  = 'WHERE 1=1';
+		$where  = 'WHERE 1=1' . Limpeed_Branches::property_scope_sql( 'property_id' );
 		$params = array();
 
 		if ( ! empty( $args['search'] ) ) {
@@ -614,9 +614,11 @@ class Limpeed_Tenants {
 		$today       = current_time( 'Y-m-d' );
 		$limit_date  = gmdate( 'Y-m-d', strtotime( $today . " +{$days} days" ) );
 
+		$scope = Limpeed_Branches::property_scope_sql( 'property_id' );
+
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE status = 'actif' AND lease_end IS NOT NULL AND lease_end BETWEEN %s AND %s ORDER BY lease_end ASC",
+				"SELECT * FROM {$table} WHERE status = 'actif' AND lease_end IS NOT NULL AND lease_end BETWEEN %s AND %s{$scope} ORDER BY lease_end ASC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $scope est déjà passé par $wpdb->prepare() dans Limpeed_Branches::property_scope_sql().
 				$today,
 				$limit_date
 			)
