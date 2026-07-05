@@ -24,7 +24,8 @@ class Limpeed_Treasury {
 	public static function get_total_collected() {
 		global $wpdb;
 		$table = Limpeed_Payments::table();
-		$total = $wpdb->get_var( "SELECT SUM(amount) FROM {$table} WHERE status IN ('paye','partiel')" );
+		$sql   = "SELECT SUM(amount) FROM {$table} WHERE status IN ('paye','partiel')" . Limpeed_Branches::property_scope_sql( 'property_id' );
+		$total = $wpdb->get_var( $sql );
 		return $total ? (float) $total : 0.0;
 	}
 
@@ -36,7 +37,8 @@ class Limpeed_Treasury {
 	public static function get_total_commission() {
 		global $wpdb;
 		$table = Limpeed_Payments::table();
-		$total = $wpdb->get_var( "SELECT SUM(commission_amount) FROM {$table} WHERE status IN ('paye','partiel')" );
+		$sql   = "SELECT SUM(commission_amount) FROM {$table} WHERE status IN ('paye','partiel')" . Limpeed_Branches::property_scope_sql( 'property_id' );
+		$total = $wpdb->get_var( $sql );
 		return $total ? (float) $total : 0.0;
 	}
 
@@ -48,7 +50,8 @@ class Limpeed_Treasury {
 	public static function get_total_reversed() {
 		global $wpdb;
 		$table = Limpeed_Statements::table();
-		$total = $wpdb->get_var( "SELECT SUM(net_amount) FROM {$table}" );
+		$sql   = "SELECT SUM(net_amount) FROM {$table} WHERE 1=1" . Limpeed_Branches::owner_scope_sql( 'owner_id' );
+		$total = $wpdb->get_var( $sql );
 		return $total ? (float) $total : 0.0;
 	}
 

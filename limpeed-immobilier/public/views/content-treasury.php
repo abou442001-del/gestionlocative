@@ -26,9 +26,26 @@ foreach ( $cashflow_series as $month ) {
 	$chart_max = max( $chart_max, $month['expected_total'] );
 }
 
+// Sélecteur de succursale (mouvements de caisse) : réservé aux
+// utilisateurs non restreints, même principe que dans Comptabilité (voir
+// content-accounting.php).
+$branch_options = array();
+if ( 0 === Limpeed_Branches::current_user_branch_id() ) {
+	$branch_options = array_map(
+		function ( $branch ) {
+			return array(
+				'id'    => (int) $branch->id,
+				'label' => $branch->name,
+			);
+		},
+		Limpeed_Branches::get_all( array( 'per_page' => 500 ) )
+	);
+}
+
 $app_config = array(
-	'categories'  => Limpeed_Funds::get_categories(),
-	'currentDate' => current_time( 'Y-m-d' ),
+	'categories'    => Limpeed_Funds::get_categories(),
+	'branchOptions' => $branch_options,
+	'currentDate'   => current_time( 'Y-m-d' ),
 	'i18n'        => array(
 		'transactionAdded'   => __( 'Mouvement enregistré avec succès.', 'limpeed-immobilier' ),
 		'transactionDeleted' => __( 'Mouvement supprimé avec succès.', 'limpeed-immobilier' ),
@@ -252,6 +269,15 @@ $rest_config = array(
 										<label><?php esc_html_e( 'Libellé (optionnel)', 'limpeed-immobilier' ); ?></label>
 										<input type="text" x-model="form.label">
 									</div>
+								</div>
+								<div class="limpeed-form-row" x-show="branchOptions.length">
+									<label><?php esc_html_e( 'Succursale', 'limpeed-immobilier' ); ?></label>
+									<select x-model="form.branch_id">
+										<option value=""><?php esc_html_e( '— Aucune —', 'limpeed-immobilier' ); ?></option>
+										<template x-for="branch in branchOptions" :key="branch.id">
+											<option :value="branch.id" x-text="branch.label"></option>
+										</template>
+									</select>
 								</div>
 								<button type="submit" class="limpeed-app-btn" :disabled="form.saving"><?php esc_html_e( 'Ajouter le mouvement', 'limpeed-immobilier' ); ?></button>
 							</form>

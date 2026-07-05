@@ -24,8 +24,27 @@ $building_options = array_map(
 	$filter_buildings
 );
 
+// Sélecteur de succursale (Charges) : réservé aux utilisateurs non
+// restreints (administrateurs), qui peuvent librement choisir la
+// succursale d'une charge — un agent/responsable cantonné à une succursale
+// n'a pas ce choix, ses charges sont automatiquement rattachées à sa
+// propre succursale (voir Limpeed_Rest_Api::extract_expense_data()).
+$branch_options = array();
+if ( 0 === Limpeed_Branches::current_user_branch_id() ) {
+	$branch_options = array_map(
+		function ( $branch ) {
+			return array(
+				'id'    => (int) $branch->id,
+				'label' => $branch->name,
+			);
+		},
+		Limpeed_Branches::get_all( array( 'per_page' => 500 ) )
+	);
+}
+
 $app_config = array(
 	'buildingOptions'        => $building_options,
+	'branchOptions'          => $branch_options,
 	'categories'             => Limpeed_Expenses::get_categories(),
 	'entryTypes'             => Limpeed_Accounting::get_entry_types(),
 	'currentPeriod'          => current_time( 'Y-m' ),
@@ -268,6 +287,15 @@ $rest_config = array(
 								</template>
 							</select>
 						</div>
+					</div>
+					<div class="limpeed-form-row" x-show="branchOptions.length">
+						<label><?php esc_html_e( 'Succursale', 'limpeed-immobilier' ); ?></label>
+						<select x-model="modal.data.branch_id">
+							<option value=""><?php esc_html_e( '— Aucune —', 'limpeed-immobilier' ); ?></option>
+							<template x-for="branch in branchOptions" :key="branch.id">
+								<option :value="branch.id" x-text="branch.label"></option>
+							</template>
+						</select>
 					</div>
 					<div class="limpeed-form-row">
 						<label><?php esc_html_e( 'Notes', 'limpeed-immobilier' ); ?></label>

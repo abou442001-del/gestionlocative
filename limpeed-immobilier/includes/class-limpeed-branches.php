@@ -347,6 +347,31 @@ class Limpeed_Branches {
 	}
 
 	/**
+	 * Fragment SQL "AND {colonne} = %d" pour les tables qui portent leur
+	 * branch_id directement (Charges, Mouvements de caisse) plutôt que d'en
+	 * hériter via un propriétaire/bien — contrairement à owner_scope_sql()/
+	 * property_scope_sql(), qui passent par une sous-requête. Chaîne vide si
+	 * l'utilisateur n'est pas restreint (et n'a pas activé de filtre d'affichage).
+	 *
+	 * @param string $branch_id_column Nom (éventuellement préfixé d'un alias) de la colonne branch_id.
+	 * @return string
+	 */
+	public static function direct_scope_sql( $branch_id_column = 'branch_id' ) {
+		$branch_id = self::current_view_branch_id();
+
+		if ( 0 === $branch_id ) {
+			return '';
+		}
+
+		global $wpdb;
+
+		return $wpdb->prepare(
+			" AND {$branch_id_column} = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $branch_id_column est un nom de colonne fixe fourni par le code appelant, jamais une entrée utilisateur.
+			$branch_id
+		);
+	}
+
+	/**
 	 * Nombre de propriétaires rattachés à une succursale donnée.
 	 *
 	 * @param int $branch_id

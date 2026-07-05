@@ -3440,6 +3440,7 @@ class Limpeed_Rest_Api {
 	private function format_expense_row( $expense ) {
 		$categories = Limpeed_Expenses::get_categories();
 		$building   = $expense->building_id ? Limpeed_Buildings::get( $expense->building_id ) : null;
+		$branch     = ! empty( $expense->branch_id ) ? Limpeed_Branches::get( $expense->branch_id ) : null;
 
 		return array(
 			'id'             => (int) $expense->id,
@@ -3451,6 +3452,8 @@ class Limpeed_Rest_Api {
 			'amount_label'   => Limpeed_Payments::format_amount( (float) $expense->amount ),
 			'building_id'    => $expense->building_id ? (int) $expense->building_id : 0,
 			'building_label' => $building ? $building->name : '',
+			'branch_id'      => $branch ? (int) $branch->id : 0,
+			'branch_label'   => $branch ? $branch->name : '',
 			'notes'          => $expense->notes,
 		);
 	}
@@ -3467,6 +3470,14 @@ class Limpeed_Rest_Api {
 			$params = $request->get_body_params();
 		}
 
+		// Un agent/responsable cantonné à une succursale ne peut créer ou
+		// réassigner une charge qu'à sa propre succursale (jamais un choix
+		// libre) ; seul un administrateur non restreint peut choisir
+		// librement la succursale — même principe que pour les propriétaires
+		// (voir Limpeed_Frontend_Owners::handle_request()).
+		$current_branch_id = Limpeed_Branches::current_user_branch_id();
+		$branch_id          = 0 !== $current_branch_id ? $current_branch_id : ( isset( $params['branch_id'] ) ? (int) $params['branch_id'] : 0 );
+
 		return array(
 			'expense_date' => isset( $params['expense_date'] ) ? sanitize_text_field( $params['expense_date'] ) : '',
 			'category'     => isset( $params['category'] ) ? sanitize_key( $params['category'] ) : 'autre',
@@ -3474,6 +3485,7 @@ class Limpeed_Rest_Api {
 			'amount'       => isset( $params['amount'] ) ? wp_unslash( $params['amount'] ) : '',
 			'building_id'  => isset( $params['building_id'] ) ? (int) $params['building_id'] : 0,
 			'property_id'  => isset( $params['property_id'] ) ? (int) $params['property_id'] : 0,
+			'branch_id'    => $branch_id,
 			'notes'        => isset( $params['notes'] ) ? wp_unslash( $params['notes'] ) : '',
 		);
 	}
@@ -3501,6 +3513,10 @@ class Limpeed_Rest_Api {
 
 		if ( ! empty( $data['building_id'] ) && ! Limpeed_Buildings::get( $data['building_id'] ) ) {
 			$errors[] = __( 'Édifice sélectionné invalide.', 'limpeed-immobilier' );
+		}
+
+		if ( ! empty( $data['branch_id'] ) && ! Limpeed_Branches::get( $data['branch_id'] ) ) {
+			$errors[] = __( 'Succursale sélectionnée invalide.', 'limpeed-immobilier' );
 		}
 
 		return $errors;
@@ -3616,6 +3632,7 @@ class Limpeed_Rest_Api {
 	private function format_fund_transaction_row( $transaction ) {
 		$categories = Limpeed_Funds::get_categories();
 		$category   = $categories[ $transaction->fund_category ] ?? array( 'label' => $transaction->fund_category, 'color' => 'blue' );
+		$branch     = ! empty( $transaction->branch_id ) ? Limpeed_Branches::get( $transaction->branch_id ) : null;
 
 		return array(
 			'id'               => (int) $transaction->id,
@@ -3626,6 +3643,8 @@ class Limpeed_Rest_Api {
 			'amount_label'     => Limpeed_Payments::format_amount( (float) $transaction->amount ),
 			'label'            => $transaction->label,
 			'transaction_date' => $transaction->transaction_date,
+			'branch_id'        => $branch ? (int) $branch->id : 0,
+			'branch_label'     => $branch ? $branch->name : '',
 			'created_at'       => date_i18n( 'd/m/Y H:i', strtotime( $transaction->created_at ) ),
 		);
 	}
@@ -3642,12 +3661,19 @@ class Limpeed_Rest_Api {
 			$params = $request->get_body_params();
 		}
 
+		// Même principe que pour les charges : un agent/responsable cantonné
+		// à une succursale ne peut enregistrer un mouvement que dans sa
+		// propre succursale, un administrateur non restreint choisit librement.
+		$current_branch_id = Limpeed_Branches::current_user_branch_id();
+		$branch_id          = 0 !== $current_branch_id ? $current_branch_id : ( isset( $params['branch_id'] ) ? (int) $params['branch_id'] : 0 );
+
 		return array(
 			'fund_category'    => isset( $params['fund_category'] ) ? sanitize_key( $params['fund_category'] ) : '',
 			'direction'        => isset( $params['direction'] ) ? sanitize_key( $params['direction'] ) : 'in',
 			'amount'           => isset( $params['amount'] ) ? wp_unslash( $params['amount'] ) : '',
 			'label'            => isset( $params['label'] ) ? sanitize_text_field( wp_unslash( $params['label'] ) ) : '',
 			'transaction_date' => isset( $params['transaction_date'] ) ? sanitize_text_field( $params['transaction_date'] ) : '',
+			'branch_id'        => $branch_id,
 		);
 	}
 
@@ -3677,6 +3703,10 @@ class Limpeed_Rest_Api {
 
 		if ( '' === $data['amount'] || ! is_numeric( $data['amount'] ) || $data['amount'] <= 0 ) {
 			$errors[] = __( 'Le montant doit être un nombre positif.', 'limpeed-immobilier' );
+		}
+
+		if ( ! empty( $data['branch_id'] ) && ! Limpeed_Branches::get( $data['branch_id'] ) ) {
+			$errors[] = __( 'Succursale sélectionnée invalide.', 'limpeed-immobilier' );
 		}
 
 		return $errors;

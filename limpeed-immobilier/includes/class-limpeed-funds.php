@@ -131,6 +131,8 @@ class Limpeed_Funds {
 			$params[] = $args['category'];
 		}
 
+		$where .= Limpeed_Branches::direct_scope_sql( 'branch_id' );
+
 		return array(
 			'where'  => $where,
 			'params' => $params,
@@ -214,12 +216,13 @@ class Limpeed_Funds {
 		global $wpdb;
 		$table = self::table();
 
-		$total = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT SUM(CASE WHEN direction = 'in' THEN amount ELSE -amount END) FROM {$table} WHERE fund_category = %s",
-				$category
-			)
+		$sql = $wpdb->prepare(
+			"SELECT SUM(CASE WHEN direction = 'in' THEN amount ELSE -amount END) FROM {$table} WHERE fund_category = %s",
+			$category
 		);
+		$sql .= Limpeed_Branches::direct_scope_sql( 'branch_id' );
+
+		$total = $wpdb->get_var( $sql );
 
 		return $total ? (float) $total : 0.0;
 	}
@@ -288,11 +291,12 @@ class Limpeed_Funds {
 			'amount'           => max( 0, (float) ( $data['amount'] ?? 0 ) ),
 			'label'            => sanitize_text_field( $data['label'] ?? '' ),
 			'transaction_date' => sanitize_text_field( $data['transaction_date'] ?? current_time( 'Y-m-d' ) ),
+			'branch_id'        => (int) ( $data['branch_id'] ?? 0 ),
 			'created_by'       => get_current_user_id(),
 			'created_at'       => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%s', '%s', '%f', '%s', '%s', '%d', '%s' );
+		$formats = array( '%s', '%s', '%f', '%s', '%s', '%d', '%d', '%s' );
 
 		$result = $wpdb->insert( $table, $record, $formats );
 

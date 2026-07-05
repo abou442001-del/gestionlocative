@@ -45,23 +45,29 @@ class Limpeed_Accounting {
 		$owners_table     = $wpdb->prefix . 'limpeed_owners';
 		$expenses_table   = Limpeed_Expenses::table();
 
+		$payments_scope   = Limpeed_Branches::property_scope_sql( 'p.property_id' );
+		$statements_scope = Limpeed_Branches::owner_scope_sql( 's.owner_id' );
+		$expenses_scope   = Limpeed_Branches::direct_scope_sql( 'e.branch_id' );
+
 		return "
 			SELECT p.payment_date AS entry_date, 'encaissement' AS entry_type, CONCAT('Loyer — ', t.full_name) AS label, p.amount AS amount, p.id AS reference_id
 			FROM {$payments_table} p
 			INNER JOIN {$tenants_table} t ON t.id = p.tenant_id
-			WHERE p.status IN ('paye','partiel') AND p.payment_date IS NOT NULL
+			WHERE p.status IN ('paye','partiel') AND p.payment_date IS NOT NULL {$payments_scope}
 
 			UNION ALL
 
 			SELECT DATE(s.created_at) AS entry_date, 'reversement' AS entry_type, CONCAT('Reversement — ', o.full_name) AS label, s.net_amount AS amount, s.id AS reference_id
 			FROM {$statements_table} s
 			INNER JOIN {$owners_table} o ON o.id = s.owner_id
+			WHERE 1=1 {$statements_scope}
 
 			UNION ALL
 
 			SELECT e.expense_date AS entry_date, 'charge' AS entry_type, e.label AS label, e.amount AS amount, e.id AS reference_id
 			FROM {$expenses_table} e
-		";
+			WHERE 1=1 {$expenses_scope}
+		"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fragments déjà pré-préparés par Limpeed_Branches::*_scope_sql().
 	}
 
 	/**
@@ -209,12 +215,13 @@ class Limpeed_Accounting {
 		global $wpdb;
 		$payments_table = Limpeed_Payments::table();
 
-		$revenue = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT SUM(commission_amount) FROM {$payments_table} WHERE status IN ('paye','partiel') AND DATE_FORMAT(payment_date, '%%Y-%%m') = %s",
-				$period
-			)
+		$sql = $wpdb->prepare(
+			"SELECT SUM(commission_amount) FROM {$payments_table} WHERE status IN ('paye','partiel') AND DATE_FORMAT(payment_date, '%%Y-%%m') = %s",
+			$period
 		);
+		$sql .= Limpeed_Branches::property_scope_sql( 'property_id' );
+
+		$revenue = $wpdb->get_var( $sql );
 		$revenue = $revenue ? (float) $revenue : 0.0;
 
 		$expenses = Limpeed_Expenses::get_total_for_period( $period );
@@ -244,16 +251,17 @@ class Limpeed_Accounting {
 		$payments_table  = Limpeed_Payments::table();
 		$properties_table = Limpeed_Properties::table();
 
-		$revenue_rows = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT p.payment_date AS entry_date, p.commission_amount AS amount, pr.reference AS property_reference, pr.id AS property_id
-				FROM {$payments_table} p
-				LEFT JOIN {$properties_table} pr ON pr.id = p.property_id
-				WHERE p.status IN ('paye','partiel') AND p.commission_amount > 0 AND DATE_FORMAT(p.payment_date, '%%Y-%%m') = %s
-				ORDER BY p.payment_date ASC",
-				$period
-			)
+		$revenue_sql = $wpdb->prepare(
+			"SELECT p.payment_date AS entry_date, p.commission_amount AS amount, pr.reference AS property_reference, pr.id AS property_id
+			FROM {$payments_table} p
+			LEFT JOIN {$properties_table} pr ON pr.id = p.property_id
+			WHERE p.status IN ('paye','partiel') AND p.commission_amount > 0 AND DATE_FORMAT(p.payment_date, '%%Y-%%m') = %s",
+			$period
 		);
+		$revenue_sql .= Limpeed_Branches::property_scope_sql( 'p.property_id' );
+		$revenue_sql .= ' ORDER BY p.payment_date ASC';
+
+		$revenue_rows = $wpdb->get_results( $revenue_sql );
 
 		$revenue_lines = array_map(
 			function ( $row ) {

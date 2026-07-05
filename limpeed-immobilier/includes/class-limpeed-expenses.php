@@ -88,6 +88,8 @@ class Limpeed_Expenses {
 			$params[] = (int) $args['building_id'];
 		}
 
+		$where .= Limpeed_Branches::direct_scope_sql( 'branch_id' );
+
 		return array(
 			'where'  => $where,
 			'params' => $params,
@@ -176,12 +178,13 @@ class Limpeed_Expenses {
 		global $wpdb;
 		$table = self::table();
 
-		$total = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT SUM(amount) FROM {$table} WHERE DATE_FORMAT(expense_date, '%%Y-%%m') = %s",
-				$period
-			)
+		$sql = $wpdb->prepare(
+			"SELECT SUM(amount) FROM {$table} WHERE DATE_FORMAT(expense_date, '%%Y-%%m') = %s",
+			$period
 		);
+		$sql .= Limpeed_Branches::direct_scope_sql( 'branch_id' );
+
+		$total = $wpdb->get_var( $sql );
 
 		return $total ? (float) $total : 0.0;
 	}
@@ -195,7 +198,8 @@ class Limpeed_Expenses {
 		global $wpdb;
 		$table = self::table();
 
-		$total = $wpdb->get_var( "SELECT SUM(amount) FROM {$table}" );
+		$sql   = "SELECT SUM(amount) FROM {$table} WHERE 1=1" . Limpeed_Branches::direct_scope_sql( 'branch_id' );
+		$total = $wpdb->get_var( $sql );
 
 		return $total ? (float) $total : 0.0;
 	}
@@ -217,12 +221,13 @@ class Limpeed_Expenses {
 			'amount'       => max( 0, (float) ( $data['amount'] ?? 0 ) ),
 			'building_id'  => ! empty( $data['building_id'] ) ? (int) $data['building_id'] : null,
 			'property_id'  => ! empty( $data['property_id'] ) ? (int) $data['property_id'] : null,
+			'branch_id'    => (int) ( $data['branch_id'] ?? 0 ),
 			'notes'        => sanitize_textarea_field( $data['notes'] ?? '' ),
 			'created_by'   => get_current_user_id(),
 			'created_at'   => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%s', '%s', '%s', '%f', '%d', '%d', '%s', '%d', '%s' );
+		$formats = array( '%s', '%s', '%s', '%f', '%d', '%d', '%d', '%s', '%d', '%s' );
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
@@ -253,12 +258,13 @@ class Limpeed_Expenses {
 			'amount'       => max( 0, (float) ( $data['amount'] ?? 0 ) ),
 			'building_id'  => ! empty( $data['building_id'] ) ? (int) $data['building_id'] : null,
 			'property_id'  => ! empty( $data['property_id'] ) ? (int) $data['property_id'] : null,
+			'branch_id'    => (int) ( $data['branch_id'] ?? 0 ),
 			'notes'        => sanitize_textarea_field( $data['notes'] ?? '' ),
 			'updated_by'   => get_current_user_id(),
 			'updated_at'   => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%s', '%s', '%s', '%f', '%d', '%d', '%s', '%d', '%s' );
+		$formats = array( '%s', '%s', '%s', '%f', '%d', '%d', '%d', '%s', '%d', '%s' );
 
 		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
 

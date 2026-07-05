@@ -461,6 +461,7 @@ class Limpeed_Activator {
 			amount DECIMAL(12,2) NOT NULL DEFAULT 0,
 			building_id BIGINT UNSIGNED NULL,
 			property_id BIGINT UNSIGNED NULL,
+			branch_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
 			notes TEXT NULL,
 			created_by BIGINT UNSIGNED NULL,
 			updated_by BIGINT UNSIGNED NULL,
@@ -470,7 +471,8 @@ class Limpeed_Activator {
 			KEY expense_date (expense_date),
 			KEY category (category),
 			KEY building_id (building_id),
-			KEY property_id (property_id)
+			KEY property_id (property_id),
+			KEY branch_id (branch_id)
 		) {$charset_collate};";
 
 		$fund_transactions_table = $wpdb->prefix . 'limpeed_fund_transactions';
@@ -482,11 +484,13 @@ class Limpeed_Activator {
 			amount DECIMAL(12,2) NOT NULL DEFAULT 0,
 			label VARCHAR(191) NULL,
 			transaction_date DATE NOT NULL,
+			branch_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
 			created_by BIGINT UNSIGNED NULL,
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY fund_category (fund_category),
-			KEY transaction_date (transaction_date)
+			KEY transaction_date (transaction_date),
+			KEY branch_id (branch_id)
 		) {$charset_collate};";
 
 		$work_requests_table = $wpdb->prefix . 'limpeed_work_requests';

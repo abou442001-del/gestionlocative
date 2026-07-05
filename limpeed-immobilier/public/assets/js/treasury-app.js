@@ -17,6 +17,7 @@ document.addEventListener( 'alpine:init', function () {
 	Alpine.data( 'limpeedTreasuryApp', function ( config ) {
 		return {
 			categories: config.categories || {},
+			branchOptions: config.branchOptions || [],
 			i18n: config.i18n || {},
 
 			activeTab: 'overview',
@@ -157,6 +158,7 @@ document.addEventListener( 'alpine:init', function () {
 						amount: self.form.amount,
 						label: self.form.label,
 						transaction_date: self.form.transaction_date,
+						branch_id: self.form.branch_id,
 					} ),
 				} )
 					.then( function () {
@@ -213,6 +215,7 @@ document.addEventListener( 'alpine:init', function () {
 				amount: '',
 				label: '',
 				transaction_date: config.currentDate || '',
+				branch_id: '',
 				saving: false,
 				errors: [],
 			};

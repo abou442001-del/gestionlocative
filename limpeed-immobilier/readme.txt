@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.54.0
+Stable tag: 1.55.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,7 +37,7 @@ Ce plugin permet à plusieurs agents connectés (comptes WordPress) de gérer :
 * Une **succursale** (Administration > Succursales) regroupe des propriétaires ; les édifices, biens, locataires, paiements et bordereaux d'un propriétaire héritent automatiquement de sa succursale.
 * Un `limpeed_agent` ou `limpeed_branch_manager` ne voit que les données de sa succursale assignée (Agents > modifier > Succursale) ; sans succursale assignée, il ne voit encore aucune donnée.
 * Un `limpeed_admin` (ou administrateur WordPress) voit toujours toutes les succursales, sans restriction.
-* Ce cloisonnement couvre aujourd'hui : Propriétaires, Édifices, Biens, Locataires, Paiements, Bordereaux. Documents, Mandats, États des lieux, Travaux, Trésorerie/Comptabilité, le Journal d'activité et la gestion des Agents restent visibles à l'échelle de l'agence entière.
+* Ce cloisonnement couvre aujourd'hui : Propriétaires, Édifices, Biens, Locataires, Paiements, Bordereaux, ainsi que Trésorerie et Comptabilité (charges, mouvements de caisse, grand livre, bilan). Documents, Mandats, États des lieux, Travaux, le Journal d'activité et la gestion des Agents restent visibles à l'échelle de l'agence entière.
 
 == Hiérarchie Propriétaire → Édifice → Sous-édifice ==
 
@@ -95,6 +95,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.55.0 =
+* Le cloisonnement par succursale s'étend désormais à Trésorerie et Comptabilité ("chaque agence a sa propre comptabilité et sa propre finance") :
+  * Les charges de l'agence et les mouvements de caisse (Caisses) sont désormais rattachés à une succursale (nouvelle colonne `branch_id`, migration non destructive). Un agent/responsable de succursale ne peut créer une charge ou un mouvement que dans sa propre succursale ; un administrateur non restreint choisit librement.
+  * Le solde de chaque caisse, le bilan simplifié (produits/charges/résultat), le grand livre consolidé et les indicateurs de Trésorerie (encaissé, commissions, reversé, position de trésorerie) ne portent plus que sur la succursale de l'utilisateur — un administrateur continue de voir l'agence entière, et peut filtrer temporairement sur une succursale via le sélecteur de la barre du haut (voir 1.54.0).
+  * Les caisses "automatiques" (Commission agence, Dépense, Caution) recalculent désormais leur solde à partir des mêmes données déjà cantonnées par succursale (paiements, charges, dépôts de garantie).
 
 = 1.54.0 =
 * Nouveau sélecteur de succursale dans la barre du haut, pour les administrateurs (`limpeed_admin`/administrateur WordPress) qui voient normalement toute l'agence sans restriction : permet de filtrer temporairement l'affichage des listes (Propriétaires, Édifices, Biens, Locataires, Paiements, Bordereaux) sur une seule succursale à la fois, par confort de navigation (ex : superviser une équipe), avec un choix "Toute l'agence" pour revenir à la vue globale. Ce filtre n'affecte jamais les droits réels : un administrateur garde la possibilité d'ouvrir/modifier n'importe quelle fiche d'une autre succursale (ex : depuis la recherche globale) même pendant qu'un filtre est actif. N'apparaît pas pour les agents/responsables de succursale, déjà cantonnés à leur propre succursale.

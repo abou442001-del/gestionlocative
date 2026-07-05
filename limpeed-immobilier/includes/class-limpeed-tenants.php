@@ -69,7 +69,8 @@ class Limpeed_Tenants {
 		global $wpdb;
 		$table = self::table();
 
-		$total = $wpdb->get_var( "SELECT SUM(deposit_paid) FROM {$table} WHERE status = 'actif'" );
+		$sql   = "SELECT SUM(deposit_paid) FROM {$table} WHERE status = 'actif'" . Limpeed_Branches::property_scope_sql( 'property_id' );
+		$total = $wpdb->get_var( $sql );
 
 		return $total ? (float) $total : 0.0;
 	}

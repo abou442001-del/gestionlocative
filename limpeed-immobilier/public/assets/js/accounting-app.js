@@ -19,6 +19,7 @@ document.addEventListener( 'alpine:init', function () {
 	Alpine.data( 'limpeedAccountingApp', function ( config ) {
 		return {
 			buildingOptions: config.buildingOptions || [],
+			branchOptions: config.branchOptions || [],
 			categories: config.categories || {},
 			entryTypes: config.entryTypes || {},
 			currentPeriod: config.currentPeriod || '',
@@ -267,6 +268,7 @@ document.addEventListener( 'alpine:init', function () {
 					label: row.label || '',
 					amount: row.amount || 0,
 					building_id: row.building_id || '',
+					branch_id: row.branch_id || '',
 					notes: row.notes || '',
 				};
 				this.modal.open = true;
@@ -355,6 +357,7 @@ document.addEventListener( 'alpine:init', function () {
 				label: '',
 				amount: '',
 				building_id: '',
+				branch_id: '',
 				notes: '',
 			};
 		}
