@@ -53,15 +53,41 @@ class Limpeed_Activator {
 		// ne traite que les biens dont building_id est encore vide.
 		self::backfill_default_buildings();
 
-		// Emplacement réservé pour d'éventuelles migrations de données spécifiques
-		// entre versions (ex: renommage de valeurs, backfill de colonnes).
-		// Exemple :
-		// if ( version_compare( $from_version, '1.1.0', '<' ) ) {
-		//     self::migrate_to_1_1_0();
-		// }
+		// Chiffre au repos les coordonnées bancaires des propriétaires déjà
+		// enregistrées en clair avant l'introduction du chiffrement. Idempotent :
+		// ne retraite jamais une valeur déjà chiffrée (voir Limpeed_Encryption).
+		if ( version_compare( $from_version, '1.17.0', '<' ) ) {
+			self::encrypt_existing_bank_details();
+		}
 
 		update_option( 'limpeed_db_version', LIMPEED_DB_VERSION );
 		update_option( 'limpeed_version', LIMPEED_VERSION );
+	}
+
+	/**
+	 * Chiffre en place les coordonnées bancaires des propriétaires encore
+	 * stockées en clair. N'écrase jamais une valeur déjà chiffrée et ne
+	 * touche à aucune autre colonne.
+	 */
+	private static function encrypt_existing_bank_details() {
+		global $wpdb;
+		$table = Limpeed_Owners::table();
+
+		$rows = $wpdb->get_results( "SELECT id, bank_details FROM {$table} WHERE bank_details IS NOT NULL AND bank_details != ''" );
+
+		foreach ( $rows as $row ) {
+			if ( Limpeed_Encryption::is_encrypted( $row->bank_details ) ) {
+				continue;
+			}
+
+			$wpdb->update(
+				$table,
+				array( 'bank_details' => Limpeed_Encryption::encrypt( $row->bank_details ) ),
+				array( 'id' => (int) $row->id ),
+				array( '%s' ),
+				array( '%d' )
+			);
+		}
 	}
 
 	/**

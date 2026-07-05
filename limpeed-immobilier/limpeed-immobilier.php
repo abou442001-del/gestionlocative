@@ -16,14 +16,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes du plugin.
-define( 'LIMPEED_VERSION', '1.40.0' );
-define( 'LIMPEED_DB_VERSION', '1.16.0' );
+define( 'LIMPEED_VERSION', '1.41.0' );
+define( 'LIMPEED_DB_VERSION', '1.17.0' );
 define( 'LIMPEED_PLUGIN_FILE', __FILE__ );
 define( 'LIMPEED_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LIMPEED_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'LIMPEED_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
 // Chargement des classes principales.
+require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-encryption.php';
+require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-login-guard.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-activator.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-roles.php';
 require_once LIMPEED_PLUGIN_DIR . 'includes/class-limpeed-owners.php';
@@ -121,6 +123,13 @@ function limpeed_init_rest_api() {
 	$rest_api->init();
 }
 add_action( 'plugins_loaded', 'limpeed_init_rest_api' );
+
+/**
+ * Initialise la protection anti-brute-force sur la connexion, indépendamment
+ * du contexte admin/frontend puisqu'elle doit couvrir wp-login.php comme les
+ * formulaires du plugin.
+ */
+add_action( 'plugins_loaded', array( 'Limpeed_Login_Guard', 'init' ) );
 
 /**
  * Initialise les pages d'administration.

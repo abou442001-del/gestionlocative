@@ -239,12 +239,21 @@ class Limpeed_Documents {
 			return $dirs;
 		};
 
+		// Nom de fichier stocké aléatoire (sans rapport avec le nom d'origine ni
+		// l'entité concernée) : la protection .htaccess du dossier ne s'applique
+		// que sous Apache, donc un nom prévisible (nom d'origine, id) resterait
+		// devinable si le fichier était un jour exposé sous un autre serveur web.
+		$unique_filename_callback = function ( $dir, $name, $ext ) {
+			return wp_generate_password( 40, false, false ) . $ext;
+		};
+
 		add_filter( 'upload_dir', $override_dir );
 		$result = wp_handle_upload(
 			$file,
 			array(
-				'test_form' => false,
-				'mimes'     => self::get_allowed_mimes(),
+				'test_form'                => false,
+				'mimes'                    => self::get_allowed_mimes(),
+				'unique_filename_callback' => $unique_filename_callback,
 			)
 		);
 		remove_filter( 'upload_dir', $override_dir );

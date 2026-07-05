@@ -473,12 +473,17 @@ class Limpeed_Statements {
 		$dompdf->setPaper( 'A4', 'landscape' );
 		$dompdf->render();
 
+		// Un jeton aléatoire est ajouté au nom de fichier : la protection
+		// .htaccess du dossier de stockage ne s'applique que sous Apache, un
+		// nom composé uniquement de l'id propriétaire et des dates resterait
+		// donc devinable par énumération sous un autre serveur web.
 		$filename = sprintf(
-			'bordereau-%d-%s_%s-%s.pdf',
+			'bordereau-%d-%s_%s-%s-%s.pdf',
 			$owner_id,
 			$period_start,
 			$period_end,
-			gmdate( 'YmdHis' )
+			gmdate( 'YmdHis' ),
+			wp_generate_password( 12, false, false )
 		);
 		$filename = sanitize_file_name( $filename );
 

@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.40.0
+Stable tag: 1.41.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,12 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.41.0 =
+* Sécurité, suite à un audit ciblé sur les besoins d'une agence immobilière manipulant des données de locataires/propriétaires :
+  * Protection contre les tentatives de connexion par force brute : après 5 échecs consécutifs (identifiant + IP), la connexion est bloquée 15 minutes — s'applique à la fois au formulaire de connexion du plugin et à wp-login.php natif.
+  * Les coordonnées bancaires des propriétaires (RIB/IBAN/mobile money) sont désormais chiffrées en base de données ; les valeurs déjà enregistrées sont automatiquement chiffrées à la mise à jour, sans aucune perte de donnée.
+  * Les fichiers déposés dans le module Documents (pièces d'identité, contrats...) et les bordereaux PDF générés sont désormais enregistrés sous un nom de fichier aléatoire et non prévisible, pour rester protégés même sur un serveur où la protection .htaccess du dossier de stockage ne s'appliquerait pas (elle ne fonctionne que sous Apache/LiteSpeed). Un message d'alerte s'affiche dans Réglages si le serveur détecté n'est pas de ce type, avec la configuration équivalente à demander à l'hébergeur.
 
 = 1.40.0 =
 * Dans la fiche locataire (panneau de détail), l'onglet "Paiements" affiche désormais les 12 mois de l'année (avec navigation « / » entre années) au lieu de la seule liste des paiements déjà enregistrés : chaque mois indique s'il est payé (avec le montant), en retard, à venir, ou hors période de bail — pour permettre de suivre un locataire au fil du temps, pas seulement de consulter son historique.

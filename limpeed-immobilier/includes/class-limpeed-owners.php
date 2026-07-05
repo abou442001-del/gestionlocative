@@ -28,9 +28,15 @@ class Limpeed_Owners {
 	public static function get( $id ) {
 		global $wpdb;
 		$table = self::table();
-		return $wpdb->get_row(
+		$owner = $wpdb->get_row(
 			$wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id )
 		);
+
+		if ( $owner ) {
+			$owner->bank_details = Limpeed_Encryption::decrypt( $owner->bank_details );
+		}
+
+		return $owner;
 	}
 
 	/**
@@ -79,7 +85,13 @@ class Limpeed_Owners {
 		$params[] = $per_page;
 		$params[] = $offset;
 
-		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
+		$owners = $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
+
+		foreach ( $owners as $owner ) {
+			$owner->bank_details = Limpeed_Encryption::decrypt( $owner->bank_details );
+		}
+
+		return $owners;
 	}
 
 	/**
@@ -124,7 +136,7 @@ class Limpeed_Owners {
 			'phone'        => sanitize_text_field( $data['phone'] ?? '' ),
 			'email'        => sanitize_email( $data['email'] ?? '' ),
 			'address'      => sanitize_textarea_field( $data['address'] ?? '' ),
-			'bank_details' => sanitize_textarea_field( $data['bank_details'] ?? '' ),
+			'bank_details' => Limpeed_Encryption::encrypt( sanitize_textarea_field( $data['bank_details'] ?? '' ) ),
 			'created_by'   => get_current_user_id(),
 			'created_at'   => current_time( 'mysql' ),
 		);
@@ -158,7 +170,7 @@ class Limpeed_Owners {
 			'phone'        => sanitize_text_field( $data['phone'] ?? '' ),
 			'email'        => sanitize_email( $data['email'] ?? '' ),
 			'address'      => sanitize_textarea_field( $data['address'] ?? '' ),
-			'bank_details' => sanitize_textarea_field( $data['bank_details'] ?? '' ),
+			'bank_details' => Limpeed_Encryption::encrypt( sanitize_textarea_field( $data['bank_details'] ?? '' ) ),
 			'updated_by'   => get_current_user_id(),
 			'updated_at'   => current_time( 'mysql' ),
 		);

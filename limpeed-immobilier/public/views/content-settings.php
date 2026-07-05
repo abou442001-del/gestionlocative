@@ -12,6 +12,14 @@ $advance_months = (int) get_option( 'limpeed_advance_months', 1 );
 $deposit_months = (int) get_option( 'limpeed_deposit_months', 1 );
 $logo_url       = Limpeed_Branding::get_logo_url();
 $message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '';
+
+// Les dossiers de stockage des documents et bordereaux sont protégés par un
+// fichier .htaccess, une mesure qui ne s'applique que sous Apache/LiteSpeed.
+// Sous un autre serveur web (Nginx, IIS...), l'hébergeur doit ajouter une
+// protection équivalente au niveau de la configuration du serveur.
+$server_software     = isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : '';
+$server_software_low = strtolower( $server_software );
+$is_apache_like      = false !== strpos( $server_software_low, 'apache' ) || false !== strpos( $server_software_low, 'litespeed' );
 ?>
 
 <div class="limpeed-app-panel">
@@ -25,6 +33,26 @@ $message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $
 		)
 	);
 	?>
+
+	<?php if ( '' !== $server_software && ! $is_apache_like ) : ?>
+		<div class="limpeed-app-notice limpeed-app-notice-warning">
+			<p>
+				<strong><?php esc_html_e( 'Action requise auprès de votre hébergeur', 'limpeed-immobilier' ); ?></strong><br>
+				<?php
+				printf(
+					/* translators: %s: nom du logiciel serveur détecté */
+					esc_html__( 'Votre serveur web semble être %s. Les dossiers contenant les documents (pièces d\'identité, contrats...) et les bordereaux PDF sont protégés par un fichier .htaccess, qui ne fonctionne que sous Apache ou LiteSpeed. Demandez à votre hébergeur d\'ajouter une protection équivalente pour ces deux dossiers :', 'limpeed-immobilier' ),
+					esc_html( $server_software )
+				);
+				?>
+			</p>
+			<pre>location ~* /wp-content/uploads/(limpeed-documents|limpeed-statements)/ {
+    deny all;
+    return 404;
+}</pre>
+			<p class="limpeed-app-description"><?php esc_html_e( 'Ces fichiers restent en tout état de cause accessibles uniquement via l\'application (vérification des droits à chaque téléchargement) : cette protection supplémentaire empêche seulement un accès direct par leur adresse si elle venait à être devinée.', 'limpeed-immobilier' ); ?></p>
+		</div>
+	<?php endif; ?>
 
 	<form method="post" action="<?php echo esc_url( Limpeed_Frontend::app_url( 'settings' ) ); ?>" class="limpeed-app-form" enctype="multipart/form-data">
 		<?php wp_nonce_field( 'limpeed_save_settings', 'limpeed_settings_nonce' ); ?>
