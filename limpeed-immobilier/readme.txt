@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.48.0
+Stable tag: 1.49.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.49.0 =
+* Les agents (rôle "Agent Limpeed") peuvent désormais générer et consulter les Bordereaux, sans avoir besoin du rôle Administrateur Limpeed. Trésorerie et Comptabilité (charges, caisses, grand livre), qui partageaient auparavant la même permission que les Bordereaux, restent réservées aux administrateurs Limpeed via une nouvelle permission dédiée ("manage_limpeed_treasury").
 
 = 1.48.0 =
 * Modernisation visuelle du design (tableau de bord et composants partagés dans toute l'application) : coins plus arrondis, ombres douces superposées, icônes des cartes KPI en dégradé au lieu d'aplats, bandeaux pleine largeur remplacés par des pastilles discrètes, en-têtes de listes ("Derniers locataires"...) avec puce colorée au lieu d'un bandeau plein, graphique de recouvrement avec barres en dégradé et surbrillance au survol, légère animation d'apparition des cartes au chargement. Effet purement visuel (CSS) : aucun changement de données ni de comportement.

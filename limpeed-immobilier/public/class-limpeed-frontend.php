@@ -182,13 +182,13 @@ class Limpeed_Frontend {
 			),
 			'treasury'     => array(
 				'label' => __( 'Trésorerie', 'limpeed-immobilier' ),
-				'cap'   => 'manage_limpeed_statements',
+				'cap'   => 'manage_limpeed_treasury',
 				'icon'  => 'dashicons-chart-line',
 				'group' => __( 'Finances', 'limpeed-immobilier' ),
 			),
 			'accounting'   => array(
 				'label' => __( 'Comptabilité', 'limpeed-immobilier' ),
-				'cap'   => 'manage_limpeed_statements',
+				'cap'   => 'manage_limpeed_treasury',
 				'icon'  => 'dashicons-calculator',
 				'group' => __( 'Finances', 'limpeed-immobilier' ),
 			),

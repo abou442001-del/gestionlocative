@@ -22,7 +22,7 @@ class Limpeed_Frontend_Accounting {
 			return;
 		}
 
-		if ( ! current_user_can( 'manage_limpeed_statements' ) ) {
+		if ( ! current_user_can( 'manage_limpeed_treasury' ) ) {
 			return;
 		}
 

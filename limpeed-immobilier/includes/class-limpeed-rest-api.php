@@ -637,7 +637,7 @@ class Limpeed_Rest_Api {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_expenses' ),
-					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'permission_callback' => array( $this, 'can_manage_treasury' ),
 					'args'                => array(
 						'search'      => array( 'sanitize_callback' => 'sanitize_text_field' ),
 						'category'    => array( 'sanitize_callback' => 'sanitize_key' ),
@@ -650,7 +650,7 @@ class Limpeed_Rest_Api {
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'create_expense' ),
-					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'permission_callback' => array( $this, 'can_manage_treasury' ),
 				),
 			)
 		);
@@ -662,13 +662,13 @@ class Limpeed_Rest_Api {
 				array(
 					'methods'             => WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'update_expense' ),
-					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'permission_callback' => array( $this, 'can_manage_treasury' ),
 					'args'                => $id_arg,
 				),
 				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete_expense' ),
-					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'permission_callback' => array( $this, 'can_manage_treasury' ),
 					'args'                => $id_arg,
 				),
 			)
@@ -680,7 +680,7 @@ class Limpeed_Rest_Api {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_fund_balances' ),
-				'permission_callback' => array( $this, 'can_manage_statements' ),
+				'permission_callback' => array( $this, 'can_manage_treasury' ),
 			)
 		);
 
@@ -691,7 +691,7 @@ class Limpeed_Rest_Api {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_fund_transactions' ),
-					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'permission_callback' => array( $this, 'can_manage_treasury' ),
 					'args'                => array(
 						'category' => array( 'sanitize_callback' => 'sanitize_key' ),
 						'paged'    => array( 'sanitize_callback' => 'absint' ),
@@ -701,7 +701,7 @@ class Limpeed_Rest_Api {
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'create_fund_transaction' ),
-					'permission_callback' => array( $this, 'can_manage_statements' ),
+					'permission_callback' => array( $this, 'can_manage_treasury' ),
 				),
 			)
 		);
@@ -712,7 +712,7 @@ class Limpeed_Rest_Api {
 			array(
 				'methods'             => WP_REST_Server::DELETABLE,
 				'callback'            => array( $this, 'delete_fund_transaction' ),
-				'permission_callback' => array( $this, 'can_manage_statements' ),
+				'permission_callback' => array( $this, 'can_manage_treasury' ),
 				'args'                => $id_arg,
 			)
 		);
@@ -723,7 +723,7 @@ class Limpeed_Rest_Api {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_accounting_ledger' ),
-				'permission_callback' => array( $this, 'can_manage_statements' ),
+				'permission_callback' => array( $this, 'can_manage_treasury' ),
 				'args'                => array(
 					'entry_type' => array( 'sanitize_callback' => 'sanitize_key' ),
 					'period'     => array( 'sanitize_callback' => 'sanitize_text_field' ),
@@ -740,7 +740,7 @@ class Limpeed_Rest_Api {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_accounting_summary' ),
-				'permission_callback' => array( $this, 'can_manage_statements' ),
+				'permission_callback' => array( $this, 'can_manage_treasury' ),
 				'args'                => array(
 					'period' => array( 'sanitize_callback' => 'sanitize_text_field' ),
 				),
@@ -779,13 +779,16 @@ class Limpeed_Rest_Api {
 	}
 
 	/**
-	 * Capacité requise pour les routes des sections Bordereaux/Trésorerie/
-	 * Comptabilité (finances de l'agence).
+	 * Capacité requise pour les routes des sections Trésorerie/Comptabilité
+	 * (charges, caisses, grand livre) : réservée aux administrateurs Limpeed,
+	 * à la différence des Bordereaux (gérés hors REST par un formulaire
+	 * classique, voir class-limpeed-frontend-statements.php) qui sont eux
+	 * accessibles aux agents.
 	 *
 	 * @return bool
 	 */
-	public function can_manage_statements() {
-		return current_user_can( 'manage_limpeed_statements' );
+	public function can_manage_treasury() {
+		return current_user_can( 'manage_limpeed_treasury' );
 	}
 
 	/**

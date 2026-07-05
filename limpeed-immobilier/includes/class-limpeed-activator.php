@@ -44,6 +44,12 @@ class Limpeed_Activator {
 		// Recréer/mettre à jour la structure des tables via dbDelta (idempotent et non destructif).
 		self::create_tables();
 
+		// Recrée les rôles limpeed_agent/limpeed_admin avec les capacités à jour
+		// (ex : ajout de manage_limpeed_treasury en 1.20.0) — n'affecte que les
+		// permissions, jamais les données ; nécessaire ici car add_roles() n'est
+		// sinon appelée qu'à l'activation du plugin, pas à chaque mise à jour.
+		Limpeed_Roles::add_roles();
+
 		// Crée les pages frontend (connexion/inscription) si elles n'existent pas déjà.
 		// Idempotent : ne recrée jamais une page déjà présente.
 		self::create_pages();

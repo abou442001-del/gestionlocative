@@ -21,12 +21,15 @@ class Limpeed_Roles {
 			'manage_limpeed_tenants',
 			'manage_limpeed_payments',
 			'manage_limpeed_statements',
+			'manage_limpeed_treasury',
 			'manage_limpeed_agents',
 		);
 	}
 
 	/**
-	 * Capacités accordées au rôle agent (pas la gestion des agents).
+	 * Capacités accordées au rôle agent (pas la gestion des agents, ni
+	 * Trésorerie/Comptabilité qui restent réservées aux administrateurs
+	 * Limpeed — mais les agents peuvent générer/consulter les bordereaux).
 	 *
 	 * @return array
 	 */
@@ -37,6 +40,7 @@ class Limpeed_Roles {
 			'manage_limpeed_properties'  => true,
 			'manage_limpeed_tenants'     => true,
 			'manage_limpeed_payments'    => true,
+			'manage_limpeed_statements'  => true,
 		);
 	}
 
@@ -47,8 +51,8 @@ class Limpeed_Roles {
 	 */
 	public static function get_admin_capabilities() {
 		$caps = self::get_agent_capabilities();
-		$caps['manage_limpeed_statements'] = true;
-		$caps['manage_limpeed_agents']     = true;
+		$caps['manage_limpeed_treasury'] = true;
+		$caps['manage_limpeed_agents']   = true;
 		return $caps;
 	}
 
