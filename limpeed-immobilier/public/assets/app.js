@@ -123,6 +123,20 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 	}
 
+	var branchSwitchToggle = document.getElementById( 'limpeed-branch-switch-toggle' );
+	var branchSwitchPanel  = document.getElementById( 'limpeed-branch-switch-panel' );
+	if ( branchSwitchToggle && branchSwitchPanel ) {
+		branchSwitchToggle.addEventListener( 'click', function ( event ) {
+			event.stopPropagation();
+			branchSwitchPanel.classList.toggle( 'is-open' );
+		} );
+		document.addEventListener( 'click', function ( event ) {
+			if ( branchSwitchPanel.classList.contains( 'is-open' ) && ! branchSwitchPanel.contains( event.target ) ) {
+				branchSwitchPanel.classList.remove( 'is-open' );
+			}
+		} );
+	}
+
 	var quickAddToggle = document.getElementById( 'limpeed-quick-add-toggle' );
 	var quickAddPanel  = document.getElementById( 'limpeed-quick-add-panel' );
 	if ( quickAddToggle && quickAddPanel ) {

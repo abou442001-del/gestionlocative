@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.53.0
+Stable tag: 1.54.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,6 +95,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.54.0 =
+* Nouveau sélecteur de succursale dans la barre du haut, pour les administrateurs (`limpeed_admin`/administrateur WordPress) qui voient normalement toute l'agence sans restriction : permet de filtrer temporairement l'affichage des listes (Propriétaires, Édifices, Biens, Locataires, Paiements, Bordereaux) sur une seule succursale à la fois, par confort de navigation (ex : superviser une équipe), avec un choix "Toute l'agence" pour revenir à la vue globale. Ce filtre n'affecte jamais les droits réels : un administrateur garde la possibilité d'ouvrir/modifier n'importe quelle fiche d'une autre succursale (ex : depuis la recherche globale) même pendant qu'un filtre est actif. N'apparaît pas pour les agents/responsables de succursale, déjà cantonnés à leur propre succursale.
 
 = 1.53.0 =
 * Nouveau cloisonnement des données par succursale ("mon portefeuille"), pour les agences à plusieurs bureaux/équipes :

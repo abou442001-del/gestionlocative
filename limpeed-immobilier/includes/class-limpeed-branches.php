@@ -26,6 +26,14 @@ class Limpeed_Branches {
 	const USER_META_KEY = 'limpeed_branch_id';
 
 	/**
+	 * Clé du usermeta stockant le filtre d'affichage optionnel d'un
+	 * utilisateur non restreint (administrateur) : simple confort de
+	 * navigation pour consulter une succursale à la fois, jamais une
+	 * restriction de droits (voir current_view_branch_id()).
+	 */
+	const VIEW_FILTER_META_KEY = 'limpeed_branch_view_filter';
+
+	/**
 	 * Nom de la table (avec préfixe WordPress).
 	 *
 	 * @return string
@@ -258,6 +266,35 @@ class Limpeed_Branches {
 	}
 
 	/**
+	 * Succursale à utiliser pour filtrer les LISTES (get_all()/count()) pour
+	 * l'utilisateur courant : contrairement à current_user_branch_id(), ceci
+	 * tient compte du filtre d'affichage optionnel qu'un administrateur non
+	 * restreint peut activer depuis le sélecteur de succursale de la barre du
+	 * haut, pour consulter une succursale à la fois sans changer ses droits.
+	 *
+	 * N'est JAMAIS utilisé pour les contrôles d'accès à une fiche précise
+	 * (can_access_owner()/can_access_property()) ni pour les capacités
+	 * administrateur : un administrateur qui filtre son affichage sur une
+	 * succursale garde la possibilité d'ouvrir/modifier une fiche d'une autre
+	 * succursale (ex : depuis la recherche globale) — le filtre est un
+	 * confort de navigation, jamais une restriction de droits.
+	 *
+	 * @return int
+	 */
+	public static function current_view_branch_id() {
+		$branch_id = self::current_user_branch_id();
+
+		if ( 0 !== $branch_id ) {
+			// Agent/responsable déjà cantonné à sa succursale : le filtre ne s'applique pas.
+			return $branch_id;
+		}
+
+		$filter = (int) get_user_meta( get_current_user_id(), self::VIEW_FILTER_META_KEY, true );
+
+		return ( $filter && self::get( $filter ) ) ? $filter : 0;
+	}
+
+	/**
 	 * Fragment SQL "AND owner_id IN (...)" à ajouter à une requête pour la
 	 * restreindre à la succursale de l'utilisateur courant, ou chaîne vide si
 	 * l'utilisateur n'est pas restreint (administrateur). Utilisé partout où
@@ -269,7 +306,7 @@ class Limpeed_Branches {
 	 * @return string
 	 */
 	public static function owner_scope_sql( $owner_id_column = 'owner_id' ) {
-		$branch_id = self::current_user_branch_id();
+		$branch_id = self::current_view_branch_id();
 
 		if ( 0 === $branch_id ) {
 			return '';
@@ -293,7 +330,7 @@ class Limpeed_Branches {
 	 * @return string
 	 */
 	public static function property_scope_sql( $property_id_column = 'property_id' ) {
-		$branch_id = self::current_user_branch_id();
+		$branch_id = self::current_view_branch_id();
 
 		if ( 0 === $branch_id ) {
 			return '';

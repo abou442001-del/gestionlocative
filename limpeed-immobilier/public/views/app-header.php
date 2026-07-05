@@ -43,6 +43,15 @@ $global_search_rest_config = array(
 	'root'  => esc_url_raw( rest_url( 'limpeed/v1/' ) ),
 	'nonce' => wp_create_nonce( 'wp_rest' ),
 );
+
+// Sélecteur de succursale : réservé aux utilisateurs non restreints
+// (administrateur WordPress/Limpeed) qui voient normalement toute l'agence.
+// Permet de filtrer temporairement l'affichage des listes sur une seule
+// succursale à la fois, par confort de navigation (ex : superviser une
+// équipe) — n'affecte jamais les droits, voir Limpeed_Branches::current_view_branch_id().
+$is_unrestricted_user   = 0 === Limpeed_Branches::current_user_branch_id();
+$branch_switch_branches = $is_unrestricted_user ? Limpeed_Branches::get_all( array( 'per_page' => 500 ) ) : array();
+$branch_switch_current  = $is_unrestricted_user ? Limpeed_Branches::current_view_branch_id() : 0;
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -89,6 +98,27 @@ $global_search_rest_config = array(
 			</div>
 		<?php endif; ?>
 		<div class="limpeed-app-topbar-right">
+			<?php if ( ! empty( $branch_switch_branches ) ) : ?>
+				<?php $branch_switch_label = $branch_switch_current ? Limpeed_Branches::get( $branch_switch_current ) : null; ?>
+				<div class="limpeed-app-user-menu">
+					<button type="button" id="limpeed-branch-switch-toggle" class="limpeed-app-branch-switch-toggle" title="<?php esc_attr_e( 'Filtrer l\'affichage par succursale', 'limpeed-immobilier' ); ?>">
+						<span class="dashicons dashicons-location"></span>
+						<span class="limpeed-app-branch-switch-label"><?php echo esc_html( $branch_switch_label ? $branch_switch_label->name : __( 'Toute l\'agence', 'limpeed-immobilier' ) ); ?></span>
+						<svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+					</button>
+					<div class="limpeed-app-user-menu-panel" id="limpeed-branch-switch-panel">
+						<div class="limpeed-app-user-menu-header"><?php esc_html_e( 'Afficher la succursale', 'limpeed-immobilier' ); ?></div>
+						<a href="<?php echo esc_url( wp_nonce_url( Limpeed_Frontend::app_url( $active_page, array( 'limpeed_branch_filter' => 'all' ) ), 'limpeed_switch_branch' ) ); ?>" class="<?php echo 0 === $branch_switch_current ? 'is-active' : ''; ?>">
+							<span class="dashicons dashicons-admin-multisite"></span> <?php esc_html_e( 'Toute l\'agence', 'limpeed-immobilier' ); ?>
+						</a>
+						<?php foreach ( $branch_switch_branches as $branch_option ) : ?>
+							<a href="<?php echo esc_url( wp_nonce_url( Limpeed_Frontend::app_url( $active_page, array( 'limpeed_branch_filter' => $branch_option->id ) ), 'limpeed_switch_branch' ) ); ?>" class="<?php echo $branch_switch_current === (int) $branch_option->id ? 'is-active' : ''; ?>">
+								<span class="dashicons dashicons-location"></span> <?php echo esc_html( $branch_option->name ); ?>
+							</a>
+						<?php endforeach; ?>
+					</div>
+				</div>
+			<?php endif; ?>
 			<?php if ( ! empty( $quick_add_links ) ) : ?>
 				<div class="limpeed-app-user-menu">
 					<button type="button" id="limpeed-quick-add-toggle" class="limpeed-app-quick-add-toggle" aria-label="<?php esc_attr_e( 'Ajouter', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Ajouter', 'limpeed-immobilier' ); ?>">

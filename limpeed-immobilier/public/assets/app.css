@@ -501,6 +501,42 @@ html[data-sidebar="collapsed"] .limpeed-app-nav-item {
 	height: 16px;
 }
 
+.limpeed-app-user-menu-panel a.is-active {
+	background: var(--limpeed-bg);
+	font-weight: 700;
+}
+
+.limpeed-app-branch-switch-toggle {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	background: rgba(255, 255, 255, .14);
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	padding: 6px 10px;
+	border-radius: 999px;
+	font-size: 13px;
+	transition: background .15s ease;
+	max-width: 180px;
+}
+
+.limpeed-app-branch-switch-toggle:hover {
+	background: rgba(255, 255, 255, .26);
+}
+
+.limpeed-app-branch-switch-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (max-width: 782px) {
+	.limpeed-app-branch-switch-label {
+		display: none;
+	}
+}
+
 /* Recherche globale (barre du haut) */
 .limpeed-app-topbar-search {
 	flex: 1;

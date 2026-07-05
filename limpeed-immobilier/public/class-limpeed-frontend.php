@@ -45,6 +45,7 @@ class Limpeed_Frontend {
 		add_action( 'template_redirect', array( $this, 'handle_login_submit' ) );
 		add_action( 'template_redirect', array( $this, 'handle_register_submit' ) );
 		add_action( 'template_redirect', array( $this, 'restrict_dashboard_access' ) );
+		add_action( 'template_redirect', array( $this, 'handle_branch_switch' ) );
 		add_filter( 'template_include', array( $this, 'maybe_load_dashboard_template' ) );
 	}
 
@@ -411,6 +412,39 @@ class Limpeed_Frontend {
 				array( 'response' => 403 )
 			);
 		}
+	}
+
+	/**
+	 * Change (ou réinitialise) le filtre d'affichage par succursale d'un
+	 * administrateur non restreint (voir Limpeed_Branches::current_view_branch_id()),
+	 * depuis le sélecteur de la barre du haut. Réservé aux utilisateurs non
+	 * restreints : un agent/responsable de succursale n'a pas ce sélecteur et
+	 * ne peut de toute façon pas changer sa propre succursale assignée ainsi.
+	 */
+	public function handle_branch_switch() {
+		$dashboard_page_id = self::dashboard_page_id();
+		if ( ! $dashboard_page_id || ! is_page( $dashboard_page_id ) || ! isset( $_GET['limpeed_branch_filter'] ) ) {
+			return;
+		}
+
+		if ( 0 !== Limpeed_Branches::current_user_branch_id() ) {
+			return;
+		}
+
+		check_admin_referer( 'limpeed_switch_branch' );
+
+		$value = sanitize_text_field( wp_unslash( $_GET['limpeed_branch_filter'] ) );
+
+		if ( 'all' === $value ) {
+			delete_user_meta( get_current_user_id(), Limpeed_Branches::VIEW_FILTER_META_KEY );
+		} else {
+			$branch_id = (int) $value;
+			if ( Limpeed_Branches::get( $branch_id ) ) {
+				update_user_meta( get_current_user_id(), Limpeed_Branches::VIEW_FILTER_META_KEY, $branch_id );
+			}
+		}
+
+		self::redirect_to( self::current_view() );
 	}
 
 	/**
