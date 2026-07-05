@@ -435,6 +435,70 @@ class Limpeed_Rest_Api {
 
 		register_rest_route(
 			self::NAMESPACE_V1,
+			'/work-requests',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_work_requests' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+					'args'                => array(
+						'building_id' => array( 'sanitize_callback' => 'absint' ),
+						'status'      => array( 'sanitize_callback' => 'sanitize_key' ),
+						'paged'       => array( 'sanitize_callback' => 'absint' ),
+						'per_page'    => array( 'sanitize_callback' => 'absint' ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_work_request' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/work-requests/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_work_request' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+					'args'                => $id_arg,
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_work_request' ),
+					'permission_callback' => array( $this, 'can_manage_properties' ),
+					'args'                => $id_arg,
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/work-requests/(?P<id>\d+)/approve',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'approve_work_request' ),
+				'permission_callback' => array( $this, 'can_manage_agents' ),
+				'args'                => $id_arg,
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/work-requests/(?P<id>\d+)/reject',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'reject_work_request' ),
+				'permission_callback' => array( $this, 'can_manage_agents' ),
+				'args'                => $id_arg,
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE_V1,
 			'/tenants/(?P<id>\d+)/amendments',
 			array(
 				array(
@@ -722,6 +786,18 @@ class Limpeed_Rest_Api {
 	 */
 	public function can_manage_statements() {
 		return current_user_can( 'manage_limpeed_statements' );
+	}
+
+	/**
+	 * Capacité requise pour approuver/refuser une demande de travaux : réservée
+	 * aux administrateurs (même capacité que Réglages/Agents), volontairement
+	 * distincte de manage_limpeed_properties qui ne suffit qu'à créer la
+	 * demande.
+	 *
+	 * @return bool
+	 */
+	public function can_manage_agents() {
+		return current_user_can( 'manage_limpeed_agents' );
 	}
 
 	/**
@@ -2377,6 +2453,156 @@ class Limpeed_Rest_Api {
 		);
 
 		return new WP_REST_Response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * GET /work-requests?building_id=&status=&paged=&per_page= : liste filtrée
+	 * + paginée des demandes de travaux.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_work_requests( WP_REST_Request $request ) {
+		$args = array(
+			'building_id' => (int) $request->get_param( 'building_id' ),
+			'status'      => (string) $request->get_param( 'status' ),
+			'paged'       => max( 1, (int) $request->get_param( 'paged' ) ?: 1 ),
+			'per_page'    => min( 100, max( 1, (int) $request->get_param( 'per_page' ) ?: 20 ) ),
+		);
+
+		$work_requests = Limpeed_Work_Requests::get_all( $args );
+		$total         = Limpeed_Work_Requests::count( $args );
+
+		$items = array_map( array( $this, 'format_work_request_row' ), $work_requests );
+
+		return new WP_REST_Response(
+			array(
+				'items'       => $items,
+				'total'       => $total,
+				'total_pages' => max( 1, (int) ceil( $total / $args['per_page'] ) ),
+				'paged'       => $args['paged'],
+				'can_review'  => current_user_can( 'manage_limpeed_agents' ),
+			)
+		);
+	}
+
+	/**
+	 * GET /work-requests/{id}.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_work_request( WP_REST_Request $request ) {
+		$work_request = Limpeed_Work_Requests::get( (int) $request['id'] );
+		if ( ! $work_request ) {
+			return new WP_Error( 'limpeed_not_found', __( 'Demande introuvable.', 'limpeed-immobilier' ), array( 'status' => 404 ) );
+		}
+
+		return new WP_REST_Response( $this->format_work_request_row( $work_request ) );
+	}
+
+	/**
+	 * POST /work-requests : un agent soumet une demande de travaux.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function create_work_request( WP_REST_Request $request ) {
+		$result = Limpeed_Work_Requests::create(
+			array(
+				'building_id' => (int) $request->get_param( 'building_id' ),
+				'amount'      => (float) $request->get_param( 'amount' ),
+				'reason'      => (string) $request->get_param( 'reason' ),
+			)
+		);
+
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		return new WP_REST_Response( $this->format_work_request_row( Limpeed_Work_Requests::get( $result ) ), 201 );
+	}
+
+	/**
+	 * DELETE /work-requests/{id} : uniquement tant que la demande est en attente.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function delete_work_request( WP_REST_Request $request ) {
+		$id     = (int) $request['id'];
+		$result = Limpeed_Work_Requests::delete( $id );
+
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		return new WP_REST_Response( array( 'deleted' => true, 'id' => $id ) );
+	}
+
+	/**
+	 * POST /work-requests/{id}/approve : réservé aux administrateurs. Crée
+	 * automatiquement la charge correspondante dans Comptabilité (voir
+	 * Limpeed_Work_Requests::approve()).
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function approve_work_request( WP_REST_Request $request ) {
+		$id     = (int) $request['id'];
+		$result = Limpeed_Work_Requests::approve( $id );
+
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		return new WP_REST_Response( $this->format_work_request_row( Limpeed_Work_Requests::get( $id ) ) );
+	}
+
+	/**
+	 * POST /work-requests/{id}/reject : réservé aux administrateurs.
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function reject_work_request( WP_REST_Request $request ) {
+		$id     = (int) $request['id'];
+		$result = Limpeed_Work_Requests::reject( $id, (string) $request->get_param( 'review_notes' ) );
+
+		if ( is_wp_error( $result ) ) {
+			return new WP_Error( $result->get_error_code(), $result->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		return new WP_REST_Response( $this->format_work_request_row( Limpeed_Work_Requests::get( $id ) ) );
+	}
+
+	/**
+	 * Formate une demande de travaux pour la liste/fiche.
+	 *
+	 * @param object $work_request
+	 * @return array
+	 */
+	private function format_work_request_row( $work_request ) {
+		$building        = Limpeed_Buildings::get( $work_request->building_id );
+		$statuses        = Limpeed_Work_Requests::get_statuses();
+		$requester       = $work_request->requested_by ? get_userdata( $work_request->requested_by ) : false;
+		$reviewer        = $work_request->reviewed_by ? get_userdata( $work_request->reviewed_by ) : false;
+
+		return array(
+			'id'                 => (int) $work_request->id,
+			'building_id'        => (int) $work_request->building_id,
+			'building_label'     => $building ? $building->name : '',
+			'amount'             => (float) $work_request->amount,
+			'amount_formatted'   => Limpeed_Payments::format_amount( $work_request->amount ),
+			'reason'             => $work_request->reason,
+			'status'             => $work_request->status,
+			'status_label'       => $statuses[ $work_request->status ] ?? $work_request->status,
+			'requested_by_label' => $requester ? $requester->display_name : '',
+			'reviewed_by_label'  => $reviewer ? $reviewer->display_name : '',
+			'review_notes'       => $work_request->review_notes,
+			'created_at'         => $work_request->created_at,
+			'reviewed_at'        => $work_request->reviewed_at,
+		);
 	}
 
 	/**

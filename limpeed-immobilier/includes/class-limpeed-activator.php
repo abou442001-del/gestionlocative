@@ -466,6 +466,26 @@ class Limpeed_Activator {
 			KEY transaction_date (transaction_date)
 		) {$charset_collate};";
 
+		$work_requests_table = $wpdb->prefix . 'limpeed_work_requests';
+
+		$sql_work_requests = "CREATE TABLE {$work_requests_table} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			building_id BIGINT UNSIGNED NOT NULL,
+			amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+			reason TEXT NOT NULL,
+			status VARCHAR(20) NOT NULL DEFAULT 'en_attente',
+			requested_by BIGINT UNSIGNED NULL,
+			reviewed_by BIGINT UNSIGNED NULL,
+			review_notes TEXT NULL,
+			expense_id BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			reviewed_at DATETIME NULL,
+			PRIMARY KEY  (id),
+			KEY building_id (building_id),
+			KEY status (status),
+			KEY requested_by (requested_by)
+		) {$charset_collate};";
+
 		dbDelta( $sql_owners );
 		dbDelta( $sql_buildings );
 		dbDelta( $sql_properties );
@@ -479,5 +499,6 @@ class Limpeed_Activator {
 		dbDelta( $sql_documents );
 		dbDelta( $sql_expenses );
 		dbDelta( $sql_fund_transactions );
+		dbDelta( $sql_work_requests );
 	}
 }
