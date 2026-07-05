@@ -1723,6 +1723,32 @@ a.limpeed-app-calendar-month-retard:hover {
    - un "hero" chiffré (gros montant) pour les sections où LE nombre qui
      compte est un montant (Paiements, Bordereaux, Charges), plutôt qu'une
      ligne de métadonnées comme les autres. */
+/* Regroupement d'une grille de cartes par propriétaire (Édifices, Biens,
+   Paiements) : un intitulé de groupe au-dessus des cartes de ce
+   propriétaire, même recette visuelle que .limpeed-dashboard-section-title. */
+.limpeed-owner-group {
+	margin-bottom: var(--space-6);
+}
+
+.limpeed-owner-group-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12.5px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: var(--limpeed-text-muted);
+	margin: 0 0 12px;
+}
+
+.limpeed-owner-group-title .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	color: var(--limpeed-primary);
+}
+
 .limpeed-entity-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));

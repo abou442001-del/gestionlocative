@@ -23,6 +23,7 @@ document.addEventListener( 'alpine:init', function () {
 			// Liste.
 			loading: true,
 			items: [],
+			groups: [],
 			total: 0,
 			totalPages: 1,
 			paged: 1,
@@ -84,7 +85,7 @@ document.addEventListener( 'alpine:init', function () {
 					period: self.filterPeriod,
 					status: self.filterStatus,
 					paged: self.paged,
-					per_page: 20,
+					per_page: 50,
 				} ).toString();
 
 				return self.apiFetch( 'payments?' + query )
@@ -93,6 +94,7 @@ document.addEventListener( 'alpine:init', function () {
 						self.total = body.total || 0;
 						self.totalPages = body.total_pages || 1;
 						self.paged = body.paged || 1;
+						self.groups = window.LimpeedGrouping.byOwner( self.items, 'owner_label', 'period' );
 					} )
 					.catch( function ( error ) {
 						self.toast( 'error', error.message );

@@ -310,40 +310,47 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			<button type="button" class="limpeed-app-btn" @click="openAddModal()"><?php esc_html_e( 'Ajouter un édifice', 'limpeed-immobilier' ); ?></button>
 		</div>
 
-		<div class="limpeed-entity-grid">
-			<template x-if="loading">
+		<template x-if="loading">
+			<div class="limpeed-entity-grid">
 				<template x-for="n in 6" :key="n">
 					<div class="limpeed-entity-card-skeleton"></div>
 				</template>
-			</template>
-			<p x-show="!loading && items.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun édifice pour le moment.', 'limpeed-immobilier' ); ?></p>
-			<template x-for="row in items" :key="row.id">
-				<div class="limpeed-entity-card limpeed-entity-card--blue" @click="openDrawer(row)">
-					<div class="limpeed-entity-card-header">
-						<span class="limpeed-entity-card-avatar limpeed-icon-blue"><span class="dashicons dashicons-building"></span></span>
-						<div class="limpeed-entity-card-header-text">
-							<div class="limpeed-entity-card-title" x-text="row.name"></div>
-							<div class="limpeed-entity-card-subtitle" x-text="row.owner_label || '—'"></div>
+			</div>
+		</template>
+		<p x-show="!loading && items.length === 0" class="limpeed-entity-card-empty"><?php esc_html_e( 'Aucun édifice pour le moment.', 'limpeed-immobilier' ); ?></p>
+		<template x-for="group in groups" :key="group.ownerLabel">
+			<div class="limpeed-owner-group" x-show="!loading">
+				<h3 class="limpeed-owner-group-title"><span class="dashicons dashicons-groups"></span> <span x-text="group.ownerLabel"></span></h3>
+				<div class="limpeed-entity-grid">
+					<template x-for="row in group.items" :key="row.id">
+						<div class="limpeed-entity-card limpeed-entity-card--blue" @click="openDrawer(row)">
+							<div class="limpeed-entity-card-header">
+								<span class="limpeed-entity-card-avatar limpeed-icon-blue"><span class="dashicons dashicons-building"></span></span>
+								<div class="limpeed-entity-card-header-text">
+									<div class="limpeed-entity-card-title" x-text="row.name"></div>
+									<div class="limpeed-entity-card-subtitle" x-text="row.owner_label || '—'"></div>
+								</div>
+								<span class="limpeed-app-badge" x-text="row.commission_rate_label"></span>
+							</div>
+							<div class="limpeed-entity-card-meta">
+								<div class="limpeed-entity-card-meta-row">
+									<span class="dashicons dashicons-location"></span>
+									<span x-text="row.address || '—'"></span>
+								</div>
+								<div class="limpeed-entity-card-meta-row">
+									<span class="dashicons dashicons-building"></span>
+									<span x-text="row.properties_count + ' sous-édifices'"></span>
+								</div>
+							</div>
+							<div class="limpeed-entity-card-footer">
+								<button type="button" class="limpeed-app-link-btn" @click.stop="openEditModal(row)"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></button>
+								<button type="button" class="limpeed-app-link-btn is-danger" @click.stop="deleteBuilding(row)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
+							</div>
 						</div>
-						<span class="limpeed-app-badge" x-text="row.commission_rate_label"></span>
-					</div>
-					<div class="limpeed-entity-card-meta">
-						<div class="limpeed-entity-card-meta-row">
-							<span class="dashicons dashicons-location"></span>
-							<span x-text="row.address || '—'"></span>
-						</div>
-						<div class="limpeed-entity-card-meta-row">
-							<span class="dashicons dashicons-building"></span>
-							<span x-text="row.properties_count + ' sous-édifices'"></span>
-						</div>
-					</div>
-					<div class="limpeed-entity-card-footer">
-						<button type="button" class="limpeed-app-link-btn" @click.stop="openEditModal(row)"><?php esc_html_e( 'Modifier', 'limpeed-immobilier' ); ?></button>
-						<button type="button" class="limpeed-app-link-btn is-danger" @click.stop="deleteBuilding(row)"><?php esc_html_e( 'Supprimer', 'limpeed-immobilier' ); ?></button>
-					</div>
+					</template>
 				</div>
-			</template>
-		</div>
+			</div>
+		</template>
 
 		<div class="limpeed-app-pagination" x-show="totalPages > 1" x-cloak>
 			<template x-for="p in totalPages" :key="p">
@@ -494,6 +501,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 	window.limpeedRest = <?php echo wp_json_encode( $rest_config ); ?>;
 	</script>
 	<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/limpeed-rest-client.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
+	<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/limpeed-grouping.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
 	<?php /* buildings-app.js enregistre son composant via l'événement "alpine:init", déclenché de façon synchrone dès l'exécution du script Alpine ci-dessous : il doit donc être chargé (et son listener attaché) AVANT le script Alpine, pas après. */ ?>
 	<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/js/buildings-app.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>
 	<script src="<?php echo esc_url( LIMPEED_PLUGIN_URL . 'public/assets/vendor/alpinejs/alpine.min.js' ); ?>?v=<?php echo esc_attr( LIMPEED_VERSION ); ?>" defer></script>

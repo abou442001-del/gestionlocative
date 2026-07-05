@@ -1961,6 +1961,8 @@ class Limpeed_Rest_Api {
 	private function format_payment_row( $payment ) {
 		$tenant   = Limpeed_Tenants::get( $payment->tenant_id );
 		$property = Limpeed_Properties::get( $payment->property_id );
+		$building = $property ? Limpeed_Buildings::get( $property->building_id ) : null;
+		$owner    = $building ? Limpeed_Owners::get( $building->owner_id ) : null;
 		$agent    = $payment->created_by ? get_userdata( $payment->created_by ) : false;
 		$statuses = Limpeed_Payments::get_statuses();
 		$methods  = Limpeed_Payments::get_payment_methods();
@@ -1972,6 +1974,8 @@ class Limpeed_Rest_Api {
 			'tenant_label'          => $tenant ? $tenant->full_name : '',
 			'property_id'           => (int) $payment->property_id,
 			'property_label'        => $property ? Limpeed_Properties::get_display_label( $property ) : '',
+			'owner_id'              => $owner ? (int) $owner->id : 0,
+			'owner_label'           => $owner ? $owner->full_name : '',
 			'amount'                => (float) $payment->amount,
 			'amount_formatted'      => Limpeed_Payments::format_amount( $payment->amount ),
 			'commission_amount'     => (float) $payment->commission_amount,

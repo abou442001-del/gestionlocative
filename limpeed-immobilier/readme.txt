@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.44.0
+Stable tag: 1.45.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.45.0 =
+* Les listes Édifices, Biens et Paiements sont désormais regroupées par propriétaire (un intitulé de section par propriétaire, puis ses cartes en dessous), pour rendre ces listes plus faciles à comprendre d'un coup d'œil. La recherche et les filtres existants continuent de fonctionner normalement à l'intérieur de cet affichage groupé.
 
 = 1.44.0 =
 * Nouvelle police Poppins dans toute l'application (titres et texte courant), à la place d'Inter/Manrope — police auto-hébergée (aucun appel à Google Fonts), 5 graisses vendorisées (400/500/600/700/800), y compris sur les pages de connexion/inscription.

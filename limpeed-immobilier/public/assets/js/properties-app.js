@@ -29,6 +29,7 @@ document.addEventListener( 'alpine:init', function () {
 			// Liste.
 			loading: true,
 			items: [],
+			groups: [],
 			total: 0,
 			totalPages: 1,
 			paged: 1,
@@ -86,7 +87,7 @@ document.addEventListener( 'alpine:init', function () {
 					building_id: self.filterBuildingId,
 					status: self.filterStatus,
 					paged: self.paged,
-					per_page: 20,
+					per_page: 50,
 				} ).toString();
 
 				return self.apiFetch( 'properties?' + query )
@@ -95,6 +96,7 @@ document.addEventListener( 'alpine:init', function () {
 						self.total = body.total || 0;
 						self.totalPages = body.total_pages || 1;
 						self.paged = body.paged || 1;
+						self.groups = window.LimpeedGrouping.byOwner( self.items, 'owner_label', 'reference' );
 					} )
 					.catch( function ( error ) {
 						self.toast( 'error', error.message );
