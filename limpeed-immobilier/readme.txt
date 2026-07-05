@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.46.0
+Stable tag: 1.47.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.47.0 =
+* Ajout d'une case "Nouveau locataire (première location)" au formulaire d'ajout/modification d'un locataire (formulaire classique et modale). Quand elle est cochée, le montant des honoraires d'agence (loyer × nombre de mois défini dans Réglages → "Mois d'honoraires agence", 1 par défaut) est calculé et affiché sur la fiche du locataire, aux côtés de l'avance et de la caution. Ce montant reste purement informatif : il n'est jamais ajouté automatiquement à une caisse, à enregistrer manuellement comme les autres honoraires d'agence.
 
 = 1.46.0 =
 * La liste des Bordereaux est elle aussi regroupée par propriétaire (même principe que Édifices/Biens/Paiements ajouté en 1.45.0), pour une lecture plus immédiate quand plusieurs propriétaires sont mélangés dans la liste.

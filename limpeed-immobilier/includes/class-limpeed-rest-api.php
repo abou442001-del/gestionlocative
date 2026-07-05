@@ -2165,6 +2165,7 @@ class Limpeed_Rest_Api {
 			'dependents_count'   => isset( $params['dependents_count'] ) ? wp_unslash( $params['dependents_count'] ) : '',
 			'guarantor_name'     => isset( $params['guarantor_name'] ) ? wp_unslash( $params['guarantor_name'] ) : '',
 			'guarantor_phone'    => isset( $params['guarantor_phone'] ) ? wp_unslash( $params['guarantor_phone'] ) : '',
+			'is_new_tenant'      => ! empty( $params['is_new_tenant'] ),
 		);
 	}
 
@@ -2261,8 +2262,9 @@ class Limpeed_Rest_Api {
 		$statuses = Limpeed_Tenants::get_statuses();
 		$id_types = Limpeed_Tenants::get_id_document_types();
 
-		$advance_status = Limpeed_Tenants::get_advance_status( $tenant );
-		$deposit_status = Limpeed_Tenants::get_deposit_status( $tenant );
+		$advance_status    = Limpeed_Tenants::get_advance_status( $tenant );
+		$deposit_status    = Limpeed_Tenants::get_deposit_status( $tenant );
+		$agency_fee_status = Limpeed_Tenants::get_agency_fee_status( $tenant );
 
 		return array(
 			'id'                 => (int) $tenant->id,
@@ -2290,6 +2292,7 @@ class Limpeed_Rest_Api {
 			'dependents_count'   => (int) $tenant->dependents_count,
 			'guarantor_name'     => $tenant->guarantor_name,
 			'guarantor_phone'    => $tenant->guarantor_phone,
+			'is_new_tenant'      => ! empty( $tenant->is_new_tenant ),
 			'advance_status'     => array(
 				'months_ahead'    => $advance_status['months_ahead'],
 				'status'          => $advance_status['status'],
@@ -2299,6 +2302,12 @@ class Limpeed_Rest_Api {
 				'status'   => $deposit_status['status'],
 				'paid'     => $deposit_status['paid'],
 				'required' => $deposit_status['required'],
+			),
+			'agency_fee_status'  => array(
+				'applicable'        => $agency_fee_status['applicable'],
+				'fee_months'        => $agency_fee_status['fee_months'],
+				'fee_amount'        => $agency_fee_status['fee_amount'],
+				'fee_amount_formatted' => Limpeed_Payments::format_amount( $agency_fee_status['fee_amount'] ),
 			),
 			'contract_url'       => Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'download_contract', 'id' => $tenant->id, '_wpnonce' => wp_create_nonce( 'limpeed_download_lease_contract_' . $tenant->id ) ) ),
 		);

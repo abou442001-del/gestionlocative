@@ -75,6 +75,7 @@ class Limpeed_Frontend_Tenants {
 				'dependents_count'    => isset( $_POST['dependents_count'] ) ? wp_unslash( $_POST['dependents_count'] ) : '',
 				'guarantor_name'      => isset( $_POST['guarantor_name'] ) ? wp_unslash( $_POST['guarantor_name'] ) : '',
 				'guarantor_phone'     => isset( $_POST['guarantor_phone'] ) ? wp_unslash( $_POST['guarantor_phone'] ) : '',
+				'is_new_tenant'       => isset( $_POST['is_new_tenant'] ) && '1' === $_POST['is_new_tenant'],
 			);
 
 			$id = isset( $_POST['tenant_id'] ) ? (int) $_POST['tenant_id'] : 0;

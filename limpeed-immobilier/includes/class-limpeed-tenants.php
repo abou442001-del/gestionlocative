@@ -197,11 +197,12 @@ class Limpeed_Tenants {
 			'dependents_count'    => max( 0, (int) ( $data['dependents_count'] ?? 0 ) ),
 			'guarantor_name'      => sanitize_text_field( $data['guarantor_name'] ?? '' ),
 			'guarantor_phone'     => sanitize_text_field( $data['guarantor_phone'] ?? '' ),
+			'is_new_tenant'       => ! empty( $data['is_new_tenant'] ) ? 1 : 0,
 			'created_by'          => get_current_user_id(),
 			'created_at'          => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s' );
+		$formats = array( '%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%d', '%s' );
 
 		$result = $wpdb->insert( $table, $record, $formats );
 
@@ -297,11 +298,12 @@ class Limpeed_Tenants {
 			'dependents_count'    => max( 0, (int) ( $data['dependents_count'] ?? 0 ) ),
 			'guarantor_name'      => sanitize_text_field( $data['guarantor_name'] ?? '' ),
 			'guarantor_phone'     => sanitize_text_field( $data['guarantor_phone'] ?? '' ),
+			'is_new_tenant'       => ! empty( $data['is_new_tenant'] ) ? 1 : 0,
 			'updated_by'          => get_current_user_id(),
 			'updated_at'          => current_time( 'mysql' ),
 		);
 
-		$formats = array( '%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s' );
+		$formats = array( '%d', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%d', '%s' );
 
 		$result = false !== $wpdb->update( $table, $record, array( 'id' => (int) $id ), $formats, array( '%d' ) );
 
@@ -495,6 +497,32 @@ class Limpeed_Tenants {
 			'required'       => $required,
 			'paid'           => $paid,
 			'status'         => $status,
+		);
+	}
+
+	/**
+	 * Calcule le montant des honoraires d'agence dus pour un locataire marqué
+	 * "nouveau locataire" (première location) : loyer × nombre de mois réglé
+	 * dans les Réglages. Ce montant est purement informatif (affiché sur la
+	 * fiche du locataire) : il n'est jamais ajouté automatiquement à une
+	 * caisse, la caisse "Honoraire agence" restant un enregistrement manuel.
+	 *
+	 * @param object $tenant
+	 * @return array {
+	 *     @type bool  $applicable  Vrai si le locataire est marqué "nouveau locataire".
+	 *     @type int   $fee_months  Nombre de mois d'honoraires réglé dans les paramètres.
+	 *     @type float $fee_amount  Loyer × nombre de mois d'honoraires (0 si non applicable).
+	 * }
+	 */
+	public static function get_agency_fee_status( $tenant ) {
+		$fee_months  = max( 1, (int) get_option( 'limpeed_agency_fee_months', 1 ) );
+		$applicable  = ! empty( $tenant->is_new_tenant );
+		$fee_amount  = $applicable ? (float) $tenant->rent_amount * $fee_months : 0.0;
+
+		return array(
+			'applicable' => $applicable,
+			'fee_months' => $fee_months,
+			'fee_amount' => $fee_amount,
 		);
 	}
 

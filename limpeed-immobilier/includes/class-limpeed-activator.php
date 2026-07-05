@@ -286,6 +286,7 @@ class Limpeed_Activator {
 			dependents_count SMALLINT UNSIGNED NOT NULL DEFAULT 0,
 			guarantor_name VARCHAR(200) NULL,
 			guarantor_phone VARCHAR(50) NULL,
+			is_new_tenant TINYINT(1) NOT NULL DEFAULT 0,
 			created_by BIGINT UNSIGNED NULL,
 			updated_by BIGINT UNSIGNED NULL,
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

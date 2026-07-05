@@ -127,8 +127,9 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 			</div>
 
 			<?php
-			$advance_status   = Limpeed_Tenants::get_advance_status( $tenant );
-			$deposit_status   = Limpeed_Tenants::get_deposit_status( $tenant );
+			$advance_status    = Limpeed_Tenants::get_advance_status( $tenant );
+			$deposit_status    = Limpeed_Tenants::get_deposit_status( $tenant );
+			$agency_fee_status = Limpeed_Tenants::get_agency_fee_status( $tenant );
 			$calendar_year    = isset( $_GET['calendar_year'] ) ? (int) $_GET['calendar_year'] : (int) current_time( 'Y' );
 			$payment_calendar = Limpeed_Tenants::get_payment_calendar( $tenant, $calendar_year );
 
@@ -182,6 +183,15 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 						<span class="limpeed-app-badge limpeed-app-badge-<?php echo esc_attr( $deposit_status['status'] ); ?>"><?php echo esc_html( $deposit_labels[ $deposit_status['status'] ] ); ?></span>
 					</span>
 				</div>
+				<?php if ( $agency_fee_status['applicable'] ) : ?>
+					<div class="limpeed-app-advance-stat">
+						<span class="limpeed-app-advance-label"><?php esc_html_e( 'Honoraires agence', 'limpeed-immobilier' ); ?></span>
+						<span class="limpeed-app-advance-value">
+							<?php echo esc_html( Limpeed_Payments::format_amount( $agency_fee_status['fee_amount'] ) ); ?>
+							<small>(<?php echo esc_html( $agency_fee_status['fee_months'] ); ?> <?php esc_html_e( 'mois', 'limpeed-immobilier' ); ?>)</small>
+						</span>
+					</div>
+				<?php endif; ?>
 			</div>
 
 			<div class="limpeed-app-calendar-nav">
@@ -332,6 +342,13 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<label for="guarantor_name"><?php esc_html_e( 'Garant', 'limpeed-immobilier' ); ?></label>
 				<input type="text" name="guarantor_name" id="guarantor_name" placeholder="<?php esc_attr_e( 'Nom complet du garant', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $field( 'guarantor_name' ) ); ?>">
 				<input type="text" name="guarantor_phone" id="guarantor_phone" placeholder="<?php esc_attr_e( 'Téléphone du garant', 'limpeed-immobilier' ); ?>" value="<?php echo esc_attr( $field( 'guarantor_phone' ) ); ?>">
+			</div>
+			<div class="limpeed-form-row">
+				<label>
+					<input type="checkbox" name="is_new_tenant" value="1" <?php checked( ! empty( $field( 'is_new_tenant' ) ) ); ?>>
+					<?php esc_html_e( 'Nouveau locataire (première location)', 'limpeed-immobilier' ); ?>
+				</label>
+				<p class="limpeed-app-description"><?php esc_html_e( 'Si coché, les honoraires d\'agence (nombre de mois défini dans les Réglages) seront affichés sur la fiche de ce locataire, en plus de la caution et de l\'avance de loyer.', 'limpeed-immobilier' ); ?></p>
 			</div>
 
 			<button type="submit" class="limpeed-app-btn"><?php echo $is_edit ? esc_html__( 'Mettre à jour', 'limpeed-immobilier' ) : esc_html__( 'Ajouter', 'limpeed-immobilier' ); ?></button>
@@ -666,6 +683,13 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 									</template>
 								</select>
 							</div>
+							<div class="limpeed-form-row is-full">
+								<label>
+									<input type="checkbox" x-model="modal.data.is_new_tenant">
+									<?php esc_html_e( 'Nouveau locataire (première location)', 'limpeed-immobilier' ); ?>
+								</label>
+								<p class="limpeed-app-form-hint"><?php esc_html_e( 'Si coché, les honoraires d\'agence (nombre de mois défini dans les Réglages) seront affichés sur la fiche de ce locataire, en plus de la caution et de l\'avance de loyer.', 'limpeed-immobilier' ); ?></p>
+							</div>
 						</div>
 
 						<h3><?php esc_html_e( 'Informations complémentaires', 'limpeed-immobilier' ); ?></h3>
@@ -771,6 +795,12 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 										<span x-text="drawer.tenant.lease_start || '—'"></span> &rarr; <span x-text="drawer.tenant.lease_end || '—'"></span>
 									</div>
 								</div>
+								<template x-if="drawer.tenant.agency_fee_status && drawer.tenant.agency_fee_status.applicable">
+									<div class="limpeed-app-drawer-field">
+										<span class="limpeed-app-drawer-field-label"><?php esc_html_e( 'Honoraires agence', 'limpeed-immobilier' ); ?></span>
+										<div class="limpeed-app-drawer-field-value" x-text="drawer.tenant.agency_fee_status.fee_amount_formatted + ' (' + drawer.tenant.agency_fee_status.fee_months + ' <?php echo esc_js( __( 'mois', 'limpeed-immobilier' ) ); ?>)'"></div>
+									</div>
+								</template>
 								<p><a :href="'<?php echo esc_url( Limpeed_Frontend::app_url( 'tenants', array( 'action' => 'edit', 'id' => '' ) ) ); ?>' + drawer.tenant.id"><?php esc_html_e( 'Voir la fiche complète (dossier, calendrier de paiement)', 'limpeed-immobilier' ); ?> &rarr;</a></p>
 								<p><a :href="drawer.tenant.contract_url" class="limpeed-app-btn limpeed-app-btn-secondary"><?php esc_html_e( 'Générer le contrat de bail (PDF)', 'limpeed-immobilier' ); ?></a></p>
 							</div>

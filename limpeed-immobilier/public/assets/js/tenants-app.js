@@ -167,6 +167,7 @@ document.addEventListener( 'alpine:init', function () {
 							dependents_count: tenant.dependents_count || 0,
 							guarantor_name: tenant.guarantor_name || '',
 							guarantor_phone: tenant.guarantor_phone || '',
+							is_new_tenant: !! tenant.is_new_tenant,
 						};
 						return Promise.all( [
 							self.loadOwners(),
@@ -446,6 +447,7 @@ document.addEventListener( 'alpine:init', function () {
 				dependents_count: 0,
 				guarantor_name: '',
 				guarantor_phone: '',
+				is_new_tenant: false,
 			};
 		}
 

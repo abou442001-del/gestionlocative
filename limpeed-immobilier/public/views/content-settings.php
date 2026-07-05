@@ -7,9 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$confirm        = '1' === get_option( 'limpeed_confirm_data_deletion', '0' );
-$advance_months = (int) get_option( 'limpeed_advance_months', 1 );
-$deposit_months = (int) get_option( 'limpeed_deposit_months', 1 );
+$confirm            = '1' === get_option( 'limpeed_confirm_data_deletion', '0' );
+$advance_months     = (int) get_option( 'limpeed_advance_months', 1 );
+$deposit_months     = (int) get_option( 'limpeed_deposit_months', 1 );
+$agency_fee_months  = (int) get_option( 'limpeed_agency_fee_months', 1 );
 $logo_url       = Limpeed_Branding::get_logo_url();
 $message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '';
 
@@ -93,6 +94,18 @@ $is_apache_like      = false !== strpos( $server_software_low, 'apache' ) || fal
 				<?php endfor; ?>
 			</select>
 			<p class="limpeed-app-description"><?php esc_html_e( 'Nombre de mois de loyer attendu au titre de la caution (dépôt de garantie). Utilisé pour calculer automatiquement le dépôt requis et comparer au dépôt réellement versé sur chaque fiche locataire.', 'limpeed-immobilier' ); ?></p>
+		</div>
+
+		<div class="limpeed-form-row">
+			<label for="limpeed_agency_fee_months"><?php esc_html_e( 'Mois d\'honoraires agence (nouveau locataire)', 'limpeed-immobilier' ); ?></label>
+			<select name="limpeed_agency_fee_months" id="limpeed_agency_fee_months">
+				<?php for ( $i = 1; $i <= 12; $i++ ) : ?>
+					<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $agency_fee_months, $i ); ?>>
+						<?php echo esc_html( sprintf( _n( '%d mois', '%d mois', $i, 'limpeed-immobilier' ), $i ) ); ?>
+					</option>
+				<?php endfor; ?>
+			</select>
+			<p class="limpeed-app-description"><?php esc_html_e( 'Nombre de mois de loyer facturé au titre des honoraires de l\'agence lorsqu\'un locataire est marqué "nouveau locataire" (première location) lors de son enregistrement. Ce montant est affiché sur sa fiche mais n\'est pas ajouté automatiquement à une caisse : à enregistrer manuellement dans la caisse "Honoraire agence".', 'limpeed-immobilier' ); ?></p>
 		</div>
 
 		<div class="limpeed-form-row">
