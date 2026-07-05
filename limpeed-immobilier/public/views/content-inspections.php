@@ -104,7 +104,7 @@ $inspections_sortie  = Limpeed_Inspections::count( array( 'type' => 'sortie' ) )
 					</div>
 					<div class="limpeed-entity-card-meta-row">
 						<span class="dashicons dashicons-list-view"></span>
-						<span x-text="row.rooms_count + ' pièces'"></span>
+						<span x-text="row.rooms_count + (row.rooms_count === 1 ? ' pièce' : ' pièces')"></span>
 					</div>
 				</div>
 				<div class="limpeed-entity-card-footer">

@@ -1225,6 +1225,8 @@ h2.limpeed-panel-title-blue::before { background: var(--limpeed-blue); }
 
 .limpeed-app-search { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .limpeed-app-search input[type="text"],
+.limpeed-app-search input[type="date"],
+.limpeed-app-search input[type="month"],
 .limpeed-app-search select {
 	padding: 8px 12px;
 	background: var(--limpeed-surface);
@@ -1236,11 +1238,15 @@ h2.limpeed-panel-title-blue::before { background: var(--limpeed-blue); }
 }
 
 .limpeed-app-search input[type="text"]:hover,
+.limpeed-app-search input[type="date"]:hover,
+.limpeed-app-search input[type="month"]:hover,
 .limpeed-app-search select:hover {
 	border-color: var(--limpeed-text-muted);
 }
 
 .limpeed-app-search input[type="text"]:focus,
+.limpeed-app-search input[type="date"]:focus,
+.limpeed-app-search input[type="month"]:focus,
 .limpeed-app-search select:focus {
 	outline: none;
 	border-color: var(--limpeed-primary);
@@ -1420,6 +1426,34 @@ h2.limpeed-panel-title-blue::before { background: var(--limpeed-blue); }
 	outline: none;
 	border-color: var(--limpeed-primary);
 	box-shadow: 0 0 0 3px rgba(var(--limpeed-primary-rgb), .15);
+}
+
+.limpeed-app-form input[type="file"] {
+	width: 100%;
+	max-width: 480px;
+	padding: 8px;
+	background-color: var(--limpeed-surface);
+	border: 1px solid var(--limpeed-border);
+	border-radius: var(--limpeed-radius-sm);
+	font-size: 13px;
+	color: var(--limpeed-text-muted);
+}
+
+.limpeed-app-form input[type="file"]::file-selector-button {
+	padding: 7px 14px;
+	margin-right: 12px;
+	border: none;
+	border-radius: var(--limpeed-radius-sm);
+	background: var(--limpeed-primary);
+	color: #fff;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background .15s ease;
+}
+
+.limpeed-app-form input[type="file"]::file-selector-button:hover {
+	background: var(--limpeed-primary-dark);
 }
 
 .limpeed-app-required { color: var(--limpeed-danger); }

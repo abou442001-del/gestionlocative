@@ -62,7 +62,7 @@ $documents_this_month = Limpeed_Documents::count_added_this_month();
 	</div>
 </div>
 
-<div class="limpeed-app-panel" x-data="limpeedDocumentsApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
+<div class="limpeed-app-panel limpeed-app-form" x-data="limpeedDocumentsApp(<?php echo esc_attr( wp_json_encode( $app_config ) ); ?>)">
 	<h2><?php esc_html_e( 'Rechercher une fiche', 'limpeed-immobilier' ); ?></h2>
 	<div class="limpeed-app-modal-grid">
 		<div class="limpeed-form-row">

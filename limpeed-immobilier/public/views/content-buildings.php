@@ -339,7 +339,7 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 								</div>
 								<div class="limpeed-entity-card-meta-row">
 									<span class="dashicons dashicons-building"></span>
-									<span x-text="row.properties_count + ' sous-édifices'"></span>
+									<span x-text="row.properties_count + (row.properties_count === 1 ? ' sous-édifice' : ' sous-édifices')"></span>
 								</div>
 							</div>
 							<div class="limpeed-entity-card-footer">

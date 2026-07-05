@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.55.0
+Stable tag: 1.56.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,6 +95,13 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.56.0 =
+* Revue visuelle systématique des 17 sections de l'application (captures d'écran de chacune) : corrige les quelques contrôles de formulaire qui échappaient encore au design system et s'affichaient avec l'apparence brute du navigateur au lieu du style de l'application.
+  * Les filtres par mois/date des barres d'outils (période dans Paiements et dans Comptabilité → Grand livre) ont désormais le même habillage que les autres champs de filtre.
+  * Le formulaire de recherche de la section Documents (sélection du type de fiche) est maintenant stylé comme le reste de l'application.
+  * Le sélecteur de fichier (logo dans Réglages, pièce jointe dans Documents) a désormais un bouton vert cohérent avec le reste des boutons de l'application, au lieu du bouton gris par défaut du navigateur.
+  * Petites corrections d'accord singulier/pluriel ("1 sous-édifice", "1 pièce") sur les cartes Édifices et États des lieux.
 
 = 1.55.0 =
 * Le cloisonnement par succursale s'étend désormais à Trésorerie et Comptabilité ("chaque agence a sa propre comptabilité et sa propre finance") :
