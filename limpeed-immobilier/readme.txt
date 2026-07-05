@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.43.0
+Stable tag: 1.44.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,10 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.44.0 =
+* Nouvelle police Poppins dans toute l'application (titres et texte courant), à la place d'Inter/Manrope — police auto-hébergée (aucun appel à Google Fonts), 5 graisses vendorisées (400/500/600/700/800), y compris sur les pages de connexion/inscription.
+* Les intitulés de la barre de navigation latérale (Propriétaires, Édifices, Biens...) passent en noir au lieu de gris, pour plus de lisibilité — l'élément actif et le survol conservent leur couleur d'accent verte.
 
 = 1.43.0 =
 * Nouvelle section "Travaux" : un agent peut demander la réalisation de travaux sur un édifice (montant estimé + motif). La demande reste "En attente" jusqu'à ce qu'un administrateur l'approuve ou la refuse (avec motif de refus optionnel). Une demande approuvée crée automatiquement la charge correspondante dans Comptabilité → Charges (catégorie Réparation), pour que le montant validé apparaisse dans les comptes sans ressaisie manuelle.
