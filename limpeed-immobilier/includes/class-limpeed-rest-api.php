@@ -2169,6 +2169,7 @@ class Limpeed_Rest_Api {
 			'guarantor_name'     => isset( $params['guarantor_name'] ) ? wp_unslash( $params['guarantor_name'] ) : '',
 			'guarantor_phone'    => isset( $params['guarantor_phone'] ) ? wp_unslash( $params['guarantor_phone'] ) : '',
 			'is_new_tenant'      => ! empty( $params['is_new_tenant'] ),
+			'advance_start_period' => isset( $params['advance_start_period'] ) ? sanitize_text_field( $params['advance_start_period'] ) : '',
 		);
 	}
 

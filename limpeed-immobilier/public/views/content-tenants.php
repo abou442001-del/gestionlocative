@@ -300,6 +300,13 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 				<label for="deposit_paid"><?php esc_html_e( 'Dépôt versé', 'limpeed-immobilier' ); ?></label>
 				<input type="number" step="0.01" min="0" name="deposit_paid" id="deposit_paid" value="<?php echo esc_attr( $field( 'deposit_paid', 0 ) ); ?>">
 			</div>
+			<?php if ( ! $is_edit ) : ?>
+				<div class="limpeed-form-row">
+					<label for="advance_start_period"><?php esc_html_e( 'Mois de début de l\'avance', 'limpeed-immobilier' ); ?></label>
+					<input type="month" name="advance_start_period" id="advance_start_period" value="<?php echo esc_attr( $field( 'lease_start' ) ? substr( $field( 'lease_start' ), 0, 7 ) : current_time( 'Y-m' ) ); ?>">
+					<p class="limpeed-app-description"><?php esc_html_e( 'Mois à partir duquel les paiements d\'avance (nombre de mois réglé dans les Réglages) seront enregistrés automatiquement comme payés. Par défaut, le mois du début de bail (ou le mois en cours si non renseigné).', 'limpeed-immobilier' ); ?></p>
+				</div>
+			<?php endif; ?>
 			<div class="limpeed-form-row">
 				<label for="status"><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></label>
 				<select name="status" id="status">
@@ -674,6 +681,11 @@ if ( in_array( $action, array( 'add', 'edit' ), true ) ) :
 							<div class="limpeed-form-row">
 								<label><?php esc_html_e( 'Dépôt versé', 'limpeed-immobilier' ); ?></label>
 								<input type="number" step="0.01" min="0" x-model="modal.data.deposit_paid">
+							</div>
+							<div class="limpeed-form-row is-full" x-show="modal.mode === 'add'">
+								<label><?php esc_html_e( 'Mois de début de l\'avance', 'limpeed-immobilier' ); ?></label>
+								<input type="month" x-model="modal.data.advance_start_period">
+								<p class="limpeed-app-form-hint"><?php esc_html_e( 'Mois à partir duquel les paiements d\'avance (nombre de mois réglé dans les Réglages) seront enregistrés automatiquement comme payés. Par défaut, le mois du début de bail (ou le mois en cours si non renseigné).', 'limpeed-immobilier' ); ?></p>
 							</div>
 							<div class="limpeed-form-row is-full">
 								<label><?php esc_html_e( 'Statut', 'limpeed-immobilier' ); ?></label>

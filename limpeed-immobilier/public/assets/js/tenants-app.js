@@ -439,6 +439,7 @@ document.addEventListener( 'alpine:init', function () {
 				lease_end: '',
 				rent_amount: 0,
 				deposit_paid: 0,
+				advance_start_period: new Date().toISOString().slice( 0, 7 ),
 				status: 'actif',
 				id_document_type: '',
 				id_document_number: '',

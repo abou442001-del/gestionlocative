@@ -209,6 +209,10 @@ class Limpeed_Tenants {
 		if ( $result ) {
 			$id = (int) $wpdb->insert_id;
 			self::sync_property_status( $record['property_id'] );
+			// advance_start_period n'est pas une colonne de la table (simple
+			// paramètre ponctuel de création) : ajouté après l'insertion, sans
+			// impact sur $formats ci-dessus.
+			$record['advance_start_period'] = isset( $data['advance_start_period'] ) ? sanitize_text_field( $data['advance_start_period'] ) : '';
 			self::generate_advance_payments( $id, $record );
 			Limpeed_Activity_Log::log( 'created', 'tenant', $id, sprintf( 'Locataire créé : %s', $record['full_name'] ) );
 			return $id;
@@ -220,11 +224,12 @@ class Limpeed_Tenants {
 	/**
 	 * Crée automatiquement les paiements "payé" du mois d'avance à la création
 	 * d'un nouveau locataire : le nombre de mois d'avance réglé dans les
-	 * Réglages, à partir du mois de début de bail (ou du mois en cours si
-	 * aucune date de début n'est renseignée).
+	 * Réglages, à partir du mois choisi par l'agent (advance_start_period),
+	 * ou à défaut du mois de début de bail, ou du mois en cours si ni l'un ni
+	 * l'autre n'est renseigné.
 	 *
 	 * @param int   $tenant_id
-	 * @param array $record Enregistrement locataire tel qu'inséré (property_id, lease_start, rent_amount).
+	 * @param array $record Enregistrement locataire tel qu'inséré (property_id, lease_start, rent_amount, advance_start_period).
 	 */
 	private static function generate_advance_payments( $tenant_id, $record ) {
 		if ( (float) $record['rent_amount'] <= 0 ) {
@@ -232,7 +237,14 @@ class Limpeed_Tenants {
 		}
 
 		$advance_months = max( 1, (int) get_option( 'limpeed_advance_months', 1 ) );
-		$start_period   = ! empty( $record['lease_start'] ) ? substr( $record['lease_start'], 0, 7 ) : Limpeed_Payments::get_current_period();
+
+		if ( ! empty( $record['advance_start_period'] ) && preg_match( '/^\d{4}-\d{2}$/', $record['advance_start_period'] ) ) {
+			$start_period = $record['advance_start_period'];
+		} elseif ( ! empty( $record['lease_start'] ) ) {
+			$start_period = substr( $record['lease_start'], 0, 7 );
+		} else {
+			$start_period = Limpeed_Payments::get_current_period();
+		}
 
 		for ( $i = 0; $i < $advance_months; $i++ ) {
 			Limpeed_Payments::insert(

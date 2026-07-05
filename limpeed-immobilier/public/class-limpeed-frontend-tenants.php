@@ -76,6 +76,7 @@ class Limpeed_Frontend_Tenants {
 				'guarantor_name'      => isset( $_POST['guarantor_name'] ) ? wp_unslash( $_POST['guarantor_name'] ) : '',
 				'guarantor_phone'     => isset( $_POST['guarantor_phone'] ) ? wp_unslash( $_POST['guarantor_phone'] ) : '',
 				'is_new_tenant'       => isset( $_POST['is_new_tenant'] ) && '1' === $_POST['is_new_tenant'],
+				'advance_start_period' => isset( $_POST['advance_start_period'] ) ? sanitize_text_field( wp_unslash( $_POST['advance_start_period'] ) ) : '',
 			);
 
 			$id = isset( $_POST['tenant_id'] ) ? (int) $_POST['tenant_id'] : 0;
