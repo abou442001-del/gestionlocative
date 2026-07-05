@@ -15,7 +15,7 @@ $logout_url     = wp_logout_url( Limpeed_Frontend::login_url() );
 $all_sections   = Limpeed_Frontend::get_sections();
 $current_label  = isset( $all_sections[ $active_page ] ) ? $all_sections[ $active_page ]['label'] : '';
 $notifications  = Limpeed_Frontend::get_notifications();
-$notif_count    = count( $notifications['unpaid_tenants'] ) + count( $notifications['expiring_leases'] );
+$notif_count    = count( $notifications['unpaid_tenants'] ) + count( $notifications['expiring_leases'] ) + count( $notifications['pending_statements'] );
 
 // Barre de recherche globale : visible si l'utilisateur a accès à au moins
 // une des sections consultables (même condition que can_view_lookups côté
@@ -104,7 +104,7 @@ $global_search_rest_config = array(
 					</div>
 				</div>
 			<?php endif; ?>
-			<?php if ( current_user_can( 'manage_limpeed_payments' ) || current_user_can( 'manage_limpeed_tenants' ) ) : ?>
+			<?php if ( current_user_can( 'manage_limpeed_payments' ) || current_user_can( 'manage_limpeed_tenants' ) || current_user_can( 'manage_limpeed_statements' ) ) : ?>
 			<div class="limpeed-app-user-menu">
 				<button type="button" id="limpeed-notif-toggle" class="limpeed-app-notif-toggle" aria-label="<?php esc_attr_e( 'Notifications', 'limpeed-immobilier' ); ?>" title="<?php esc_attr_e( 'Notifications', 'limpeed-immobilier' ); ?>">
 					<span class="dashicons dashicons-bell"></span>
@@ -137,6 +137,18 @@ $global_search_rest_config = array(
 								/* translators: %d: nombre de baux */
 								esc_html( _n( '%d bail expirant sous 30 jours', '%d baux expirant sous 30 jours', count( $notifications['expiring_leases'] ), 'limpeed-immobilier' ) ),
 								count( $notifications['expiring_leases'] )
+							);
+							?>
+						</a>
+					<?php endif; ?>
+					<?php if ( $notifications['pending_statements'] ) : ?>
+						<a href="<?php echo esc_url( Limpeed_Frontend::app_url( 'statements' ) ); ?>">
+							<span class="dashicons dashicons-media-document"></span>
+							<?php
+							printf(
+								/* translators: %d: nombre de propriétaires */
+								esc_html( _n( '%d propriétaire sans bordereau ce mois-ci', '%d propriétaires sans bordereau ce mois-ci', count( $notifications['pending_statements'] ), 'limpeed-immobilier' ) ),
+								count( $notifications['pending_statements'] )
 							);
 							?>
 						</a>

@@ -50,6 +50,10 @@ class Limpeed_Frontend_Settings {
 		$agency_fee_months = min( 12, max( 1, $agency_fee_months ) );
 		update_option( 'limpeed_agency_fee_months', $agency_fee_months );
 
+		$statement_closing_day = isset( $_POST['limpeed_statement_closing_day'] ) ? (int) $_POST['limpeed_statement_closing_day'] : 5;
+		$statement_closing_day = min( 28, max( 1, $statement_closing_day ) );
+		update_option( 'limpeed_statement_closing_day', $statement_closing_day );
+
 		if ( isset( $_POST['limpeed_remove_logo'] ) && '1' === $_POST['limpeed_remove_logo'] ) {
 			Limpeed_Branding::remove_logo();
 		} elseif ( ! empty( $_FILES['limpeed_logo']['name'] ) ) {

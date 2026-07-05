@@ -100,6 +100,48 @@ class Limpeed_Statements {
 	}
 
 	/**
+	 * Propriétaires (ayant au moins un édifice) pour lesquels aucun bordereau
+	 * ne couvre encore la période donnée. Utilisé par le rappel de clôture
+	 * mensuelle (voir Limpeed_Frontend::get_notifications()) : la comparaison
+	 * lexicographique sur period_start/period_end fonctionne car le format
+	 * AAAA-MM trie correctement en chaîne de caractères.
+	 *
+	 * @param string $period Format YYYY-MM.
+	 * @return array Liste d'objets propriétaires (voir Limpeed_Owners::get()).
+	 */
+	public static function get_owners_pending_for_period( $period ) {
+		global $wpdb;
+
+		$buildings_table  = Limpeed_Buildings::table();
+		$statements_table = self::table();
+
+		$owner_ids_with_building = $wpdb->get_col( "SELECT DISTINCT owner_id FROM {$buildings_table}" );
+		if ( empty( $owner_ids_with_building ) ) {
+			return array();
+		}
+
+		$owner_ids_with_statement = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT owner_id FROM {$statements_table} WHERE period_start <= %s AND period_end >= %s",
+				$period,
+				$period
+			)
+		);
+
+		$pending_ids = array_diff( $owner_ids_with_building, $owner_ids_with_statement );
+
+		$owners = array();
+		foreach ( $pending_ids as $owner_id ) {
+			$owner = Limpeed_Owners::get( (int) $owner_id );
+			if ( $owner ) {
+				$owners[] = $owner;
+			}
+		}
+
+		return $owners;
+	}
+
+	/**
 	 * Exporte l'historique des bordereaux (filtré par propriétaire le cas
 	 * échéant) en CSV, envoyé directement au navigateur, et termine la requête.
 	 * Complète le PDF individuel de chaque bordereau : un export global est

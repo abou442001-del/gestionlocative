@@ -4,7 +4,7 @@ Tags: immobilier, gestion locative, biens, locataires, propriétaires
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.51.0
+Stable tag: 1.52.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,6 +87,9 @@ location ^~ /wp-content/uploads/limpeed-statements/ {
 4. Accéder au menu "Limpeed Immobilier" pour gérer propriétaires, biens, locataires, paiements, bordereaux et agents.
 
 == Changelog ==
+
+= 1.52.0 =
+* Nouveau réglage "Jour de clôture mensuelle (bordereaux)" (Réglages, du 1er au 28 du mois, 5 par défaut) : à partir de ce jour, la cloche de notifications signale les propriétaires qui n'ont pas encore de bordereau généré pour le mois en cours. Le rappel disparaît de lui-même une fois tous les bordereaux du mois générés (ou au mois suivant si le jour de clôture n'est pas encore atteint). N'affecte aucun calcul : la génération des bordereaux reste manuelle, avec les périodes choisies librement comme aujourd'hui.
 
 = 1.51.0 =
 * Nouvelle barre de recherche globale dans la barre du haut, disponible sur toutes les pages de l'application : recherche un locataire, un propriétaire, un édifice ou un bien par nom/référence et propose un accès direct à sa fiche, sans devoir d'abord naviguer vers la bonne section.

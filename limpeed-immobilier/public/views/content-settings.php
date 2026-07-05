@@ -7,10 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$confirm            = '1' === get_option( 'limpeed_confirm_data_deletion', '0' );
-$advance_months     = (int) get_option( 'limpeed_advance_months', 1 );
-$deposit_months     = (int) get_option( 'limpeed_deposit_months', 1 );
-$agency_fee_months  = (int) get_option( 'limpeed_agency_fee_months', 1 );
+$confirm             = '1' === get_option( 'limpeed_confirm_data_deletion', '0' );
+$advance_months      = (int) get_option( 'limpeed_advance_months', 1 );
+$deposit_months      = (int) get_option( 'limpeed_deposit_months', 1 );
+$agency_fee_months   = (int) get_option( 'limpeed_agency_fee_months', 1 );
+$statement_closing_day = (int) get_option( 'limpeed_statement_closing_day', 5 );
 $logo_url       = Limpeed_Branding::get_logo_url();
 $message        = isset( $_GET['message'] ) ? sanitize_text_field( wp_unslash( $_GET['message'] ) ) : '';
 
@@ -106,6 +107,18 @@ $is_apache_like      = false !== strpos( $server_software_low, 'apache' ) || fal
 				<?php endfor; ?>
 			</select>
 			<p class="limpeed-app-description"><?php esc_html_e( 'Nombre de mois de loyer facturé au titre des honoraires de l\'agence lorsqu\'un locataire est marqué "nouveau locataire" (première location) lors de son enregistrement. Ce montant est affiché sur sa fiche mais n\'est pas ajouté automatiquement à une caisse : à enregistrer manuellement dans la caisse "Honoraire agence".', 'limpeed-immobilier' ); ?></p>
+		</div>
+
+		<div class="limpeed-form-row">
+			<label for="limpeed_statement_closing_day"><?php esc_html_e( 'Jour de clôture mensuelle (bordereaux)', 'limpeed-immobilier' ); ?></label>
+			<select name="limpeed_statement_closing_day" id="limpeed_statement_closing_day">
+				<?php for ( $i = 1; $i <= 28; $i++ ) : ?>
+					<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $statement_closing_day, $i ); ?>>
+						<?php echo esc_html( sprintf( __( 'Le %d du mois', 'limpeed-immobilier' ), $i ) ); ?>
+					</option>
+				<?php endfor; ?>
+			</select>
+			<p class="limpeed-app-description"><?php esc_html_e( 'À partir de ce jour du mois, un rappel apparaît (cloche de notifications) pour signaler qu\'il reste des propriétaires sans bordereau généré pour le mois en cours. N\'affecte aucun calcul : la génération des bordereaux reste manuelle, avec les périodes choisies librement comme aujourd\'hui.', 'limpeed-immobilier' ); ?></p>
 		</div>
 
 		<div class="limpeed-form-row">

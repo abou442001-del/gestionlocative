@@ -263,11 +263,12 @@ class Limpeed_Frontend {
 	 * en permanence, sur toutes les pages de l'application. Retourne des
 	 * tableaux vides pour un utilisateur sans droit sur les modules concernés.
 	 *
-	 * @return array { unpaid_tenants: array, expiring_leases: array }
+	 * @return array { unpaid_tenants: array, expiring_leases: array, pending_statements: array }
 	 */
 	public static function get_notifications() {
-		$unpaid_tenants  = array();
-		$expiring_leases = array();
+		$unpaid_tenants     = array();
+		$expiring_leases    = array();
+		$pending_statements = array();
 
 		if ( current_user_can( 'manage_limpeed_payments' ) ) {
 			$unpaid_tenants = Limpeed_Payments::get_unpaid_tenants();
@@ -277,9 +278,22 @@ class Limpeed_Frontend {
 			$expiring_leases = Limpeed_Tenants::get_expiring_leases( 30 );
 		}
 
+		// Rappel de clôture mensuelle des bordereaux : à partir du jour
+		// configuré dans les Réglages, signale les propriétaires qui n'ont
+		// pas encore de bordereau généré pour le mois en cours. Disparaît de
+		// lui-même une fois tous les bordereaux du mois générés, ou au début
+		// du mois suivant si le jour de clôture n'est pas encore atteint.
+		if ( current_user_can( 'manage_limpeed_statements' ) ) {
+			$closing_day = min( 28, max( 1, (int) get_option( 'limpeed_statement_closing_day', 5 ) ) );
+			if ( (int) current_time( 'j' ) >= $closing_day ) {
+				$pending_statements = Limpeed_Statements::get_owners_pending_for_period( Limpeed_Payments::get_current_period() );
+			}
+		}
+
 		return array(
-			'unpaid_tenants'  => $unpaid_tenants,
-			'expiring_leases' => $expiring_leases,
+			'unpaid_tenants'     => $unpaid_tenants,
+			'expiring_leases'    => $expiring_leases,
+			'pending_statements' => $pending_statements,
 		);
 	}
 
